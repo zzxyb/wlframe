@@ -1,0 +1,40 @@
+name: Build on Debian
+
+on:
+	push:
+		branches: [ "master" ]
+	pull_request:
+		branches: [ "master" ]
+
+env:
+	BUILD_TYPE: Release
+
+jobs:
+	meson-build:
+		runs-on: ubuntu-latest
+		container:
+			image: debian:latest
+		steps:
+		- name: Checkout code
+			uses: actions/checkout@v3
+
+		- name: Setup Debian software sources
+			run: |
+				echo "deb http://deb.debian.org/debian/ bullseye main" | tee /etc/apt/sources.list
+				echo "deb http://deb.debian.org/debian/ bullseye-updates main" | tee -a /etc/apt/sources.list
+				echo "deb http://security.debian.org/ bullseye-security main" | tee -a /etc/apt/sources.list
+				echo "deb http://deb.debian.org/debian unstable main" | tee -a /etc/apt/sources.list
+				echo "deb http://deb.debian.org/debian experimental main" | tee -a /etc/apt/sources.list
+
+		- name: Install Build Requirements
+			run: |
+				apt-get update -q
+				apt-get install -y libcairo2-dev libcairo2-dev libegl1-mesa-dev libegl-dev libgles2-mesa-dev libpixman-1-dev libpng-dev
+				apt-get install -y libpango1.0-dev libxpm-dev libjpeg-dev librsvg2-dev libsystemd-dev libvulkan-dev libwayland-dev
+				apt-get install -y libxkbcommon-dev pkgconf wayland-protocols glslang-tools
+				apt-get install -y meson clang ninja cppcheck doxygen graphviz libxslt1-dev xmlto dpkg-dev pkgconf
+
+		- name: Build with Meson
+			run: |
+				meson builddir -Dxwayland=enabled
+				ninja -C builddir

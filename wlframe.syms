@@ -1,0 +1,7 @@
+{
+	global:
+		wlf_*;
+		_wlf_*;
+	local:
+		*;
+};

@@ -1,0 +1,7 @@
+blank_issues_enabled: false
+
+templates:
+  - title: Bug Report
+    filename: bug_report.md
+  - title: Feature Request
+    filename: feature_request.md
