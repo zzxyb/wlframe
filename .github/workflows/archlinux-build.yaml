@@ -1,49 +1,49 @@
 name: Build on archlinux
 
 on:
-	push:
-		branches: [ "master" ]
-	pull_request:
-		branches: [ "master" ]
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
 
 env:
-	BUILD_TYPE: Release
+  BUILD_TYPE: Release
 
 jobs:
-	meson-build:
-		runs-on: ubuntu-latest
-		container: archlinux:latest
-		steps:
-		- name: Checkout code
-			uses: actions/checkout@v3
+  meson-build:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Install dependencies
+      run: |
+        pacman -Syu --noconfirm arch-install-scripts
+        pacman-key --init
+        pacman-key --populate archlinux
 
-		- name: Install dependencies
-			run: |
-				pacman -Syu --noconfirm arch-install-scripts
-				pacman-key --init
-				pacman-key --populate archlinux
+    - name: Enable testing repository
+      run: |
+        echo "[testing]" | tee -a /etc/pacman.conf
+        echo "Include = /etc/pacman.d/mirrorlist" | tee -a /etc/pacman.conf
+        pacman -Sy --noconfirm
 
-		- name: Enable testing repository
-			run: |
-				echo "[testing]" | tee -a /etc/pacman.conf
-				echo "Include = /etc/pacman.d/mirrorlist" | tee -a /etc/pacman.conf
-				pacman -Sy --noconfirm
+    - name: Update package databases
+      run: pacman -Sy
 
-		- name: Update package databases
-			run: pacman -Sy
+    - name: Install dep
+      run: |
+        pacman -S --noconfirm cairo mesa pixman libpng pango librsvg systemd wayland vulkan-headers libxkbcommon
+        pacman -S --noconfirm glslang wayland-protocols
+        pacman -S --noconfirm base-devel meson clang ninja cppcheck doxygen graphviz libxslt xmlto pkgconf
 
-		- name: Install dep
-			run: |
-				pacman -S --noconfirm cairo mesa pixman libpng pango xpm jpeg librsvg systemd vulkan wayland xcbcommon
-				pacman -S --noconfirm glslang wayland-protocols
-				pacman -S --noconfirm base-devel meson clang ninja cppcheck doxygen graphviz libxslt xmlto dpkg-dev pkgconf
+    - name: Build with Meson
+      run: |
+        CC=gcc meson setup build-gcc --fatal-meson-warnings --default-library=both -Dauto_features=enabled --prefix /usr -Db_sanitize=address,undefined
+        CC=clang meson setup build-clang --fatal-meson-warnings -Dauto_features=enabled -Dc_std=c11
+        ninja -C build-gcc
+        ninja -C build-clang
 
-		- name: Build with Meson
-			run: |
-				CC=gcc meson setup build-gcc --fatal-meson-warnings --default-library=both -Dauto_features=enabled --prefix /usr -Db_sanitize=address,undefined
-				CC=clang meson setup build-clang --fatal-meson-warnings -Dauto_features=enabled -Dc_std=c11
-				ninja -C build-gcc
-				ninja -C build-clang
-
-		- name: Run cppcheck
-			run: cppcheck --project=build-clang/compile_commands.json
+    - name: Run cppcheck
+      run: cppcheck --project=build-clang/compile_commands.json
