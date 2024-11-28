@@ -1,11 +1,11 @@
 #ifndef WLF_POINTER_H
 #define WLF_POINTER_H
 
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
 #include "wlf/types/wlf_input_device.h"
 
 #include <stdint.h>
-
-#include <wayland-server-core.h>
 
 #define WLF_POINTER_BUTTONS_CAP 16
 #define WLF_POINTER_AXIS_DISCRETE_STEP 120
@@ -26,22 +26,22 @@ struct wlf_pointer {
 	size_t button_count; /**< Number of buttons currently pressed */
 
 	struct {
-		struct wl_signal motion; /**< Signal for pointer motion events */
-		struct wl_signal motion_absolute; /**< Signal for absolute pointer motion events */
-		struct wl_signal button; /**< Signal for button events */
-		struct wl_signal axis; /**< Signal for axis events */
-		struct wl_signal frame; /**< Signal for frame events */
+		struct wlf_signal motion; /**< Signal for pointer motion events */
+		struct wlf_signal motion_absolute; /**< Signal for absolute pointer motion events */
+		struct wlf_signal button; /**< Signal for button events */
+		struct wlf_signal axis; /**< Signal for axis events */
+		struct wlf_signal frame; /**< Signal for frame events */
 
-		struct wl_signal swipe_begin; /**< Signal for swipe begin events */
-		struct wl_signal swipe_update; /**< Signal for swipe update events */
-		struct wl_signal swipe_end; /**< Signal for swipe end events */
+		struct wlf_signal swipe_begin; /**< Signal for swipe begin events */
+		struct wlf_signal swipe_update; /**< Signal for swipe update events */
+		struct wlf_signal swipe_end; /**< Signal for swipe end events */
 
-		struct wl_signal pinch_begin; /**< Signal for pinch begin events */
-		struct wl_signal pinch_update; /**< Signal for pinch update events */
-		struct wl_signal pinch_end; /**< Signal for pinch end events */
+		struct wlf_signal pinch_begin; /**< Signal for pinch begin events */
+		struct wlf_signal pinch_update; /**< Signal for pinch update events */
+		struct wlf_signal pinch_end; /**< Signal for pinch end events */
 
-		struct wl_signal hold_begin; /**< Signal for hold begin events */
-		struct wl_signal hold_end; /**< Signal for hold end events */
+		struct wlf_signal hold_begin; /**< Signal for hold begin events */
+		struct wlf_signal hold_end; /**< Signal for hold end events */
 	} events; /**< Events related to pointer actions */
 
 	void *data; /**< Pointer to device-specific data */

@@ -1,6 +1,8 @@
 #ifndef WLF_VECTOR3_H
 #define WLF_VECTOR3_H
 
+#include <stdbool.h>
+
 /**
  * @brief A structure representing a 3D vector
  */

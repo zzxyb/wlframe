@@ -11,7 +11,7 @@ static bool backend_start(struct wlf_backend *backend) {
 	wl->started = true;
 
 	// struct wlf_wl_seat *seat;
-	// wl_list_for_each(seat, &wl->seats, link) {
+	// wlf_double_list_for_each(seat, &wl->seats, link) {
 	// 	if (seat->wl_keyboard) {
 	// 		init_seat_keyboard(seat);
 	// 	}
@@ -64,7 +64,7 @@ static const struct wlf_backend_impl backend_impl = {
 	.get_buffer_caps = get_buffer_caps,
 };
 
-struct wlf_backend *wlf_wl_backend_create(struct wl_event_loop *loop) {
+struct wlf_backend *wlf_wl_backend_create(void) {
 	wlf_log(WLF_INFO, "Creating wayland backend");
 
 	struct wlf_wl_backend *wl = calloc(1, sizeof(*wl));
@@ -75,11 +75,11 @@ struct wlf_backend *wlf_wl_backend_create(struct wl_event_loop *loop) {
 
 	wlf_backend_init(&wl->backend, &backend_impl);
 
-	wl->event_loop = loop;
-	wl_list_init(&wl->outputs);
-	// wl_list_init(&wl->seats);
-	wl_list_init(&wl->buffers);
-	// wl_list_init(&wl->drm_syncobj_timelines);
+	// wl->event_loop = loop;
+	wlf_double_list_init(&wl->outputs);
+	// wlf_double_list_init(&wl->seats);
+	wlf_double_list_init(&wl->buffers);
+	// wlf_double_list_init(&wl->drm_syncobj_timelines);
 
 	wl->remote_display = wl_display_connect(NULL);
 	if (!wl->remote_display) {
@@ -101,6 +101,6 @@ bool wlf_backend_is_wl(struct wlf_backend *backend) {
 
 struct wlf_wl_backend *get_wl_backend_from_backend(struct wlf_backend *wlf_backend) {
 	assert(wlf_backend_is_wl(wlf_backend));
-	struct wlf_wl_backend *backend = wl_container_of(wlf_backend, backend, backend);
+	struct wlf_wl_backend *backend = wlf_container_of(wlf_backend, backend, backend);
 	return backend;
 }

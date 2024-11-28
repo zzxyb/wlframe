@@ -1,5 +1,5 @@
 # wlframe
-wayland frame is a C UI framework for building Wayland applications.
+wlframe is a C UI framework for muti platform.
 
 ## Contributing to wlframe
 
@@ -16,13 +16,11 @@ build dependencies(for arch linux):
 * pixman \*
 * libpng \*
 * pango \*
-* xpm \*
-* jpeg \*
 * librsvg \*
 * systemd \*
-* vulkan \*
+* vulkan-headers \*
 * wayland \*
-* xcbcommon \*
+* libxkbcommon \*
 * pkgconf \*
 * wayland-protocols \*
 * glslang \*

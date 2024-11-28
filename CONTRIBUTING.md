@@ -227,9 +227,9 @@ used and `#undef` them after.
 * Document fields which can be NULL with a `// may be NULL` comment, optionally
   with more details describing when this can happen.
 * Document the bits of a bitfield with a `// enum bar` comment.
-* Document the `data` argument of a `struct wl_signal` with a `// struct foo`
+* Document the `data` argument of a `struct wlf_signal` with a `// struct foo`
   comment.
-* Document the contents and container of a `struct wl_list` with a
+* Document the contents and container of a `struct wlf_double_list` with a
   `// content.link` and `// container.list` comment.
 
 [#Lychee on Maxtrix]: https://matrix.to/#/#lychee:matrix.org

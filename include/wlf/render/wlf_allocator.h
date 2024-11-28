@@ -1,7 +1,8 @@
 #ifndef WLF_ALLOCATOR_H
 #define WLF_ALLOCATOR_H
 
-#include <wayland-server-core.h>
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
 
 struct wlf_allocator;
 struct wlf_backend;
@@ -43,7 +44,7 @@ struct wlf_allocator {
 	uint32_t buffer_caps;                        /**< Capabilities of the buffers created with this allocator */
 
 	struct {
-		struct wl_signal destroy;                 /**< Signal emitted when the allocator is destroyed */
+		struct wlf_signal destroy;                 /**< Signal emitted when the allocator is destroyed */
 	} events;
 };
 

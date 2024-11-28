@@ -1,7 +1,11 @@
 #ifndef WLF_BACKEND_H
 #define WLF_BACKEND_H
 
-#include <wayland-server-core.h>
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
+
+#include <stdint.h>
+#include <stdbool.h>
 
 struct wlf_backend_impl;
 
@@ -18,11 +22,11 @@ struct wlf_backend {
 
 	struct {
 		/** Raised when destroyed */
-		struct wl_signal destroy;
+		struct wlf_signal destroy;
 		/** Raised when new inputs are added, passed the struct wlf_input_device */
-		struct wl_signal new_input;
+		struct wlf_signal new_input;
 		/** Raised when new outputs are added, passed the struct wlf_output */
-		struct wl_signal new_output;
+		struct wlf_signal new_output;
 	} events;
 };
 
@@ -44,7 +48,7 @@ struct wlf_backend_impl {
  * The multi-backend will be destroyed if one of the primary underlying
  * backends is destroyed (e.g. if the primary DRM device is unplugged).
  */
-struct wlf_backend *wlf_backend_autocreate(struct wl_event_loop *loop);
+struct wlf_backend *wlf_backend_autocreate(void);
 
 void wlf_backend_init(struct wlf_backend *backend,
 	const struct wlf_backend_impl *impl);

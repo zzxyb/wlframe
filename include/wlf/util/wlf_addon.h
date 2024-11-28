@@ -1,13 +1,14 @@
 #ifndef WLF_ADDON_H
 #define WLF_ADDON_H
 
-#include <wayland-server-core.h>
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
 
 /**
  * @brief A structure representing a set of addons
  */
 struct wlf_addon_set {
-	struct wl_list addons;  /**< List of addons in the addon set */
+	struct wlf_double_list addons;  /**< List of addons in the addon set */
 };
 
 struct wlf_addon;
@@ -27,7 +28,7 @@ struct wlf_addon {
 	const struct wlf_addon_interface *impl;  /**< Pointer to the addon interface implementation */
 
 	const void *owner;  /**< Owner of the addon */
-	struct wl_list link;  /**< Link for the addon in a list */
+	struct wlf_double_list link;  /**< Link for the addon in a list */
 };
 
 /**

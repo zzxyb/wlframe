@@ -1,6 +1,8 @@
 #ifndef WLF_VECTOR4_H
 #define WLF_VECTOR4_H
 
+#include <stdbool.h>
+
 /**
  * @brief A structure representing a 4D vector
  */

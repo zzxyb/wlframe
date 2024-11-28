@@ -1,7 +1,6 @@
 #include "wlf/util/wlf_log.h"
 #include "wlf/types/wlf_backend.h"
 
-#include <wayland-server-core.h>
 #include <wayland-client-core.h>
 
 struct  simple_client{
@@ -10,7 +9,7 @@ struct  simple_client{
 
 int main(int argc, char *argv[]) {
 	struct simple_client client = {0};
-	client.backend = wlf_backend_autocreate(NULL);
+	client.backend = wlf_backend_autocreate();
 	if (client.backend == NULL) {
 		wlf_log(WLF_ERROR, "failed to create wlr_backend");
 		return 1;

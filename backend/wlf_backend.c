@@ -2,11 +2,12 @@
 #include "wlf/types/wlf_muti_backend.h"
 #include "wlf/util/wlf_log.h"
 #include "wlf/wayland/wlf_wl_backend.h"
+#include "wlf/util/wlf_signal.h"
 
 #include <stdlib.h>
 
-struct wlf_backend *wlf_backend_autocreate(struct wl_event_loop *loop) {
-    struct wlf_backend *multi = wlf_multi_backend_create(loop);
+struct wlf_backend *wlf_backend_autocreate(void) {
+    struct wlf_backend *multi = wlf_multi_backend_create();
 
     if (!multi) {
         wlf_log(WLF_ERROR, "Failed to allocate multibackend");
@@ -14,7 +15,7 @@ struct wlf_backend *wlf_backend_autocreate(struct wl_event_loop *loop) {
     }
 
 	if (getenv("WAYLAND_DISPLAY") || getenv("WAYLAND_SOCKET")) {
-		struct wlf_backend *wl_backend = wlf_wl_backend_create(loop);
+		struct wlf_backend *wl_backend = wlf_wl_backend_create();
 		if (!wl_backend) {
 			goto error;
 		}
@@ -33,20 +34,21 @@ void wlf_backend_init(struct wlf_backend *backend,
 	*backend = (struct wlf_backend){
 		.impl = impl,
 	};
-	wl_signal_init(&backend->events.destroy);
-	wl_signal_init(&backend->events.new_input);
-	wl_signal_init(&backend->events.new_output);
+	wlf_signal_init(&backend->events.destroy);
+	wlf_signal_init(&backend->events.new_input);
+	wlf_signal_init(&backend->events.new_output);
 }
 
 void wlf_backend_finish(struct wlf_backend *backend) {
-    wl_signal_emit_mutable(&backend->events.destroy, backend);
+    wlf_signal_emit_mutable(&backend->events.destroy, backend);
 }
 
 bool wlf_backend_start(struct wlf_backend *backend) {
-	if (backend->impl->start) {
+	if (backend->impl && backend->impl->start) {
 		return backend->impl->start(backend);
 	}
-	return true;
+
+	return false;
 }
 
 void wlf_backend_destroy(struct wlf_backend *backend) {

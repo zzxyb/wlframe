@@ -32,11 +32,11 @@ struct wlf_surface {
 	float scale;
 
 	struct {
-		struct wl_signal frame;
-		struct wl_signal damage;
-		struct wl_signal precommit;
-		struct wl_signal commit;
-		struct wl_signal destroy;
+		struct wlf_signal frame;
+		struct wlf_signal damage;
+		struct wlf_signal precommit;
+		struct wlf_signal commit;
+		struct wlf_signal destroy;
 	} events;
 
 	struct wlf_allocator *allocator;

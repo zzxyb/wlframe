@@ -1,7 +1,8 @@
 #ifndef WLF_INPUT_DEVICE_H
 #define WLF_INPUT_DEVICE_H
 
-#include <wayland-server-core.h>
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
 
 enum wlf_button_state {
 	WLF_BUTTON_RELEASED, /**< Button is released */
@@ -39,7 +40,7 @@ struct wlf_input_device {
 	char *name; /**< The name of the input device, may be NULL */
 
 	struct {
-		struct wl_signal destroy; /**< Signal emitted when the device is destroyed */
+		struct wlf_signal destroy; /**< Signal emitted when the device is destroyed */
 	} events;
 
 	void *data; /**< Pointer to device-specific data */

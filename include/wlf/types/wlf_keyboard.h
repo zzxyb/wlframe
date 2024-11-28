@@ -2,11 +2,11 @@
 #define WLF_KEYBOARD_H
 
 #include "wlf/types/wlf_input_device.h"
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
 
 #include <stdbool.h>
 #include <stdint.h>
-
-#include <wayland-server-core.h>
 
 #include <xkbcommon/xkbcommon.h>
 
@@ -85,10 +85,10 @@ struct wlf_keyboard {
 	} repeat_info; /**< Information about key repeat settings */
 
 	struct {
-		struct wl_signal key; /**< Signal emitted for key press/release events */
-		struct wl_signal modifiers; /**< Signal emitted when modifier state changes */
-		struct wl_signal keymap; /**< Signal emitted when the keymap changes */
-		struct wl_signal repeat_info; /**< Signal emitted when repeat info changes */
+		struct wlf_signal key; /**< Signal emitted for key press/release events */
+		struct wlf_signal modifiers; /**< Signal emitted when modifier state changes */
+		struct wlf_signal keymap; /**< Signal emitted when the keymap changes */
+		struct wlf_signal repeat_info; /**< Signal emitted when repeat info changes */
 	} events; /**< Events related to keyboard actions */
 
 	void *data; /**< Pointer to device-specific data */

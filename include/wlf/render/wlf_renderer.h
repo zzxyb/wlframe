@@ -1,8 +1,10 @@
 #ifndef WLF_RENDERER_H
 #define WLF_RENDERER_H
 
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
+
 #include <stdint.h>
-#include <wayland-server-core.h>
 
 struct wlf_renderer_impl;
 struct wlf_drm_format_set;
@@ -15,13 +17,13 @@ struct wlf_renderer {
 	uint32_t render_buffer_caps; /**< Capabilities required for the buffer used as a render target (bitmask of enum wlf_buffer_cap) */
 
 	struct {
-		struct wl_signal destroy; /**< Signal emitted when the renderer is destroyed */
+		struct wlf_signal destroy; /**< Signal emitted when the renderer is destroyed */
 		/**
 		 * @brief Emitted when the GPU is lost, e.g. on GPU reset.
 		 *
 		 * Compositors should destroy the renderer and re-create it.
 		 */
-		struct wl_signal lost; /**< Signal emitted when the GPU is lost */
+		struct wlf_signal lost; /**< Signal emitted when the GPU is lost */
     } events;
 
 	struct {

@@ -1,8 +1,10 @@
 #ifndef WLF_SWAPCHAIN_H
 #define WLF_SWAPCHAIN_H
 
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
+
 #include <stdbool.h>
-#include <wayland-server-core.h>
 
 #define WLF_SWAPCHAIN_CAP 4
 
@@ -13,7 +15,7 @@ struct wlf_swapchain_slot {
 	struct wlf_buffer *buffer;  /**< Pointer to the buffer in the slot */
 	bool acquired;              /**< Indicates if the buffer is currently acquired (waiting for release) */
 
-	struct wl_listener release;  /**< Listener for buffer release events */
+	struct wlf_double_listener release;  /**< Listener for buffer release events */
 };
 
 /**
@@ -26,7 +28,7 @@ struct wlf_swapchain {
 	struct wlf_drm_format format;     /**< Format of the swapchain buffers */
 	struct wlf_swapchain_slot slots[WLF_SWAPCHAIN_CAP];  /**< Array of swapchain slots */
 
-	struct wl_listener allocator_destroy;  /**< Listener for allocator destroy events */
+	struct wlf_double_listener allocator_destroy;  /**< Listener for allocator destroy events */
 };
 
 /**
