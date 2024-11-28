@@ -1,6 +1,8 @@
 #ifndef WLF_VECTOR2_H
 #define WLF_VECTOR2_H
 
+#include <stdbool.h>
+
 /**
  * @brief A structure representing a 2D vector
  */

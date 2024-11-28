@@ -9,8 +9,8 @@ doxygen_conf = configuration_data()
 doxygen_conf.set('VERSION', meson.project_version())
 doxygen_conf.set('top_builddir', meson.project_build_root())
 wlf_doxygen = configure_file(
-		input: 'wlf.doxygen.in',
-		output: 'wlf.doxygen',
+		input: 'wlframe.doxygen.in',
+		output: 'wlframe.doxygen',
 	configuration: doxygen_conf,
 )
 

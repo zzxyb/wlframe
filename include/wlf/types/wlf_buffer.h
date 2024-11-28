@@ -2,8 +2,8 @@
 #define WLF_BUFFER_H
 
 #include "wlf/util/wlf_addon.h"
-
-#include <wayland-server-core.h>
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
 
 #define WLF_DMABUF_MAX_PLANES 4
 
@@ -20,7 +20,7 @@ struct wlf_shm_attributes {
 	uint32_t format;
 	int width, height;
 	int stride;
-	off_t offset;
+	size_t offset;
 };
 
 struct wlf_dmabuf_attributes {
@@ -70,8 +70,8 @@ struct wlf_buffer {
 	bool accessing_data_ptr;
 
 	struct {
-		struct wl_signal destroy;
-		struct wl_signal release;
+		struct wlf_signal destroy;
+		struct wlf_signal release;
 	} events;
 
 	struct wlf_addon_set addons;
@@ -120,14 +120,6 @@ bool wlf_buffer_get_dmabuf(struct wlf_buffer *buffer,
  */
 bool wlf_buffer_get_shm(struct wlf_buffer *buffer,
 	struct wlf_shm_attributes *attribs);
-
-/**
- * Transforms a struct wl_resource into a struct wlf_buffer and locks it. Once
- * the caller is done with the buffer, they must call wlf_buffer_unlock().
- *
- * The provided struct wl_resource must be a wl_buffer.
- */
-struct wlf_buffer *wlf_buffer_try_from_resource(struct wl_resource *resource);
 
 /**
  * Buffer data pointer access flags.

@@ -97,7 +97,7 @@ struct wlf_gles2_render_timer {
 struct wlf_gles2_buffer {
 	struct wlf_buffer *buffer; /**< Pointer to the associated buffer */
 	struct wlf_gles2_renderer *renderer; /**< Pointer to the associated OpenGL ES 2 renderer */
-	struct wl_list link; /**< Link for the buffer in the renderer's list */
+	struct wlf_double_list link; /**< Link for the buffer in the renderer's list */
 	bool external_only; /**< Indicates if the buffer is external only */
 
 	EGLImageKHR image; /**< EGL image associated with the buffer */
@@ -114,7 +114,7 @@ struct wlf_gles2_buffer {
 struct wlf_gles2_texture {
 	struct wlf_texture wlf_texture; /**< Base texture structure */
 	struct wlf_gles2_renderer *renderer; /**< Pointer to the associated OpenGL ES 2 renderer */
-	struct wl_list link; /**< Link for the texture in the renderer's list */
+	struct wlf_double_list link; /**< Link for the texture in the renderer's list */
 
 	GLenum target; /**< Target for the texture */
 

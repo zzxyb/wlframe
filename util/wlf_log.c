@@ -8,12 +8,12 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-
-#include <wayland-server-core.h>
+#include <signal.h>
 
 static bool colored = true;
 static enum wlf_log_importance log_importance = WLF_ERROR;
 static struct timespec start_time = {-1};
+static terminate_callback_t log_terminate = exit;
 
 static const char *verbosity_colors[] = {
 	[WLF_SILENT] = "",
@@ -70,16 +70,6 @@ static void log_stderr(enum wlf_log_importance verbosity, const char *fmt,
 
 static wlf_log_func_t log_callback = log_stderr;
 
-static void log_wl(const char *fmt, va_list args) {
-	static char wlf_fmt[1024];
-	int n = snprintf(wlf_fmt, sizeof(wlf_fmt), "[wayland] %s", fmt);
-	size_t len = strlen(wlf_fmt);
-	if (n > 0 && wlf_fmt[len - 1] == '\n') {
-		wlf_fmt[len - 1] = '\0';
-	}
-	_wlf_vlog(WLF_INFO, wlf_fmt, args);
-}
-
 void wlf_log_init(enum wlf_log_importance verbosity, wlf_log_func_t callback) {
 	init_start_time();
 
@@ -89,8 +79,6 @@ void wlf_log_init(enum wlf_log_importance verbosity, wlf_log_func_t callback) {
 	if (callback) {
 		log_callback = callback;
 	}
-
-	wl_log_set_handler_server(log_wl);
 }
 
 void _wlf_vlog(enum wlf_log_importance verbosity, const char *fmt, va_list args) {
@@ -106,4 +94,29 @@ void _wlf_log(enum wlf_log_importance verbosity, const char *fmt, ...) {
 
 enum wlf_log_importance wlf_log_get_verbosity(void) {
 	return log_importance;
+}
+
+void _wlf_abort(const char *format, ...) {
+	va_list args;
+	va_start(args, format);
+	_wlf_vlog(WLF_ERROR, format, args);
+	va_end(args);
+	log_terminate(EXIT_FAILURE);
+}
+
+bool _wlf_assert(bool condition, const char *format, ...) {
+	if (condition) {
+		return true;
+	}
+
+	va_list args;
+	va_start(args, format);
+	_wlf_vlog(WLF_ERROR, format, args);
+	va_end(args);
+
+#ifndef NDEBUG
+	raise(SIGABRT);
+#endif
+
+	return false;
 }

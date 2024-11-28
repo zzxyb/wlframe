@@ -24,6 +24,12 @@ typedef void (*wlf_log_func_t)(enum wlf_log_importance importance,
 	const char *fmt, va_list args);
 
 /**
+ * @brief Type definition for a termination callback function.
+ * @param exit_code The exit code to use for termination.
+ */
+typedef void (*terminate_callback_t)(int exit_code);
+
+/**
  * @brief Initializes logging with a specified verbosity level and callback.
  * @param verbosity The verbosity level for logging.
  * @param callback The callback function to handle log messages.
@@ -59,6 +65,21 @@ void _wlf_log(enum wlf_log_importance verbosity, const char *format, ...) _WLF_A
  * @param args The variable argument list.
  */
 void _wlf_vlog(enum wlf_log_importance verbosity, const char *format, va_list args) _WLF_ATTRIB_PRINTF(2, 0);
+
+/**
+ * @brief Aborts the program with a formatted message.
+ * @param filename The name of the file where the abort occurred.
+ * @return The formatted abort message.
+ */
+void _wlf_abort(const char *filename, ...) _WLF_ATTRIB_PRINTF(1, 2);
+
+/**
+ * @brief Asserts a condition and logs a message if the condition is false.
+ * @param condition The condition to check.
+ * @param format The format string for the log message.
+ * @return true if the condition is true, false otherwise.
+ */
+bool _wlf_assert(bool condition, const char* format, ...) _WLF_ATTRIB_PRINTF(2, 3);
 
 #ifdef _WLF_REL_SRC_DIR
 /**
@@ -97,5 +118,22 @@ void _wlf_vlog(enum wlf_log_importance verbosity, const char *format, va_list ar
 	wlf_log(verb, fmt ": %s", ##__VA_ARGS__, strerror(errno))
 
 #endif
+
+/**
+ * @brief Macro for aborting the program with a formatted message.
+ * @param FMT The format string for the abort message.
+ * @param ... Additional arguments for the format string.
+ */
+#define wlf_abort(FMT, ...) \
+	_wlf_abort("[%s:%d] " FMT, _WLF_FILENAME, __LINE__, ##__VA_ARGS__)
+
+/**
+ * @brief Macro for asserting a condition with a formatted message.
+ * @param COND The condition to check.
+ * @param FMT The format string for the log message.
+ * @param ... Additional arguments for the format string.
+ */
+#define wlf_assert(COND, FMT, ...) \
+	_wlf_assert(COND, "[%s:%d] %s:" FMT, _WLF_FILENAME, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__)
 
 #endif

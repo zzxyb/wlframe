@@ -1,0 +1,12 @@
+#ifndef WLF_VERSION_H
+#define WLF_VERSION_H
+
+#mesondefine WLF_VERSION_STR
+
+#mesondefine WLF_VERSION_MAJOR
+#mesondefine WLF_VERSION_MINOR
+#mesondefine WLF_VERSION_MICRO
+
+#define WLF_VERSION_NUM ((WLF_VERSION_MAJOR << 16) | (WLF_VERSION_MINOR << 8) | WLF_VERSION_MICRO)
+
+#endif

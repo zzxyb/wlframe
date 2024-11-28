@@ -2,19 +2,21 @@
 #define WLF_MULTI_BACKEND_H
 
 #include "wlf/types/wlf_backend.h"
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
 
-#include <wayland-server-core.h>
+#include <stdbool.h>
 
 struct wlf_multi_backend {
 	struct wlf_backend backend;
 
-	struct wl_list backends;
+	struct wlf_double_list backends;
 
-	struct wl_listener event_loop_destroy;
+	struct wlf_double_listener event_loop_destroy;
 
 	struct {
-		struct wl_signal backend_add;
-		struct wl_signal backend_remove;
+		struct wlf_signal backend_add;
+		struct wlf_signal backend_remove;
 	} events;
 };
 
@@ -22,7 +24,7 @@ struct wlf_multi_backend {
  * Creates a multi-backend. Multi-backends wrap an arbitrary number of backends
  * and aggregate their new_output/new_input signals.
  */
-struct wlf_backend *wlf_multi_backend_create(struct wl_event_loop *loop);
+struct wlf_backend *wlf_multi_backend_create(void);
 /**
  * Adds the given backend to the multi backend. This should be done before the
  * new backend is started.

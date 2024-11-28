@@ -24,8 +24,8 @@ struct wlf_pixman_buffer;
 struct wlf_pixman_renderer {
 	struct wlf_renderer wlf_renderer; /**< Base renderer structure */
 
-	struct wl_list buffers;  /**< List of Pixman buffers (wlf_pixman_buffer.link) */
-	struct wl_list textures;  /**< List of Pixman textures (wlf_pixman_texture.link) */
+	struct wlf_double_list buffers;  /**< List of Pixman buffers (wlf_pixman_buffer.link) */
+	struct wlf_double_list textures;  /**< List of Pixman textures (wlf_pixman_texture.link) */
 
 	struct wlf_drm_format_set drm_formats; /**< Set of DRM formats supported by the renderer */
 };
@@ -39,8 +39,8 @@ struct wlf_pixman_buffer {
 
 	pixman_image_t *image; /**< Pointer to the Pixman image associated with the buffer */
 
-	struct wl_listener buffer_destroy; /**< Listener for buffer destruction events */
-	struct wl_list link; /**< Link for the buffer in the renderer's list (wlf_pixman_renderer.buffers) */
+	struct wlf_double_listener buffer_destroy; /**< Listener for buffer destruction events */
+	struct wlf_double_list link; /**< Link for the buffer in the renderer's list (wlf_pixman_renderer.buffers) */
 };
 
 /**
@@ -49,7 +49,7 @@ struct wlf_pixman_buffer {
 struct wlf_pixman_texture {
 	struct wlf_texture wlf_texture; /**< Base texture structure */
 	struct wlf_pixman_renderer *renderer; /**< Pointer to the associated Pixman renderer */
-	struct wl_list link; /**< Link for the texture in the renderer's list (wlf_pixman_renderer.textures) */
+	struct wlf_double_list link; /**< Link for the texture in the renderer's list (wlf_pixman_renderer.textures) */
 
 	pixman_image_t *image; /**< Pointer to the Pixman image associated with the texture */
 	pixman_format_code_t format; /**< Pixman format code for the texture */

@@ -1,9 +1,11 @@
 #ifndef WLF_RENDER_PASS_H
 #define WLF_RENDER_PASS_H
 
+#include "wlf/util/wlf_double_list.h"
+#include "wlf/util/wlf_signal.h"
+
 #include <pixman.h>
 #include <stdint.h>
-#include <wayland-server-core.h>
 
 struct wlf_renderer;
 struct wlf_buffer;
