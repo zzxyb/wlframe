@@ -12,6 +12,53 @@
 
 struct wlf_pointer_impl;
 
+enum wlf_button_state {
+	WLF_BUTTON_RELEASED, /**< Button is released */
+	WLF_BUTTON_PRESSED,  /**< Button is pressed */
+};
+
+enum wlf_pointer_axis_source {
+	/**
+	 * a physical wheel rotation
+	 */
+	WLF_POINTER_AXIS_SOURCE_WHEEL = 0,
+	/**
+	 * finger on a touch surface
+	 */
+	WLF_POINTER_AXIS_SOURCE_FINGER = 1,
+	/**
+	 * continuous coordinate space
+	 */
+	WLF_POINTER_AXIS_SOURCE_CONTINUOUS = 2,
+	/**
+	 * a physical wheel tilt
+	 * @since 6
+	 */
+	WLF_POINTER_AXIS_SOURCE_WHEEL_TILT = 3,
+};
+
+enum wlf_pointer_axis {
+	/**
+	 * vertical axis
+	 */
+	WLF_POINTER_AXIS_VERTICAL_SCROLL = 0,
+	/**
+	 * horizontal axis
+	 */
+	WLF_POINTER_AXIS_HORIZONTAL_SCROLL = 1,
+};
+
+enum wlf_pointer_axis_relative_direction {
+	/**
+	 * physical motion matches axis direction
+	 */
+	WLF_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL = 0,
+	/**
+	 * physical motion is the inverse of the axis direction
+	 */
+	WLF_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED = 1,
+};
+
 /**
  * @brief A structure representing a pointer input device.
  */
@@ -73,7 +120,7 @@ struct wlf_pointer_button_event {
 	struct wlf_pointer *pointer; /**< Pointer to the associated wlf_pointer */
 	uint32_t time_msec; /**< Time of the event in milliseconds */
 	uint32_t button; /**< Button identifier */
-	enum wl_pointer_button_state state; /**< State of the button (pressed/released) */
+	enum wlf_button_state state; /**< State of the button (pressed/released) */
 };
 
 /**
@@ -82,9 +129,9 @@ struct wlf_pointer_button_event {
 struct wlf_pointer_axis_event {
 	struct wlf_pointer *pointer; /**< Pointer to the associated wlf_pointer */
 	uint32_t time_msec; /**< Time of the event in milliseconds */
-	enum wl_pointer_axis_source source; /**< Source of the axis event */
-	enum wl_pointer_axis orientation; /**< Orientation of the axis */
-	enum wl_pointer_axis_relative_direction relative_direction; /**< Relative direction of the axis */
+	enum wlf_pointer_axis_source source; /**< Source of the axis event */
+	enum wlf_pointer_axis orientation; /**< Orientation of the axis */
+	enum wlf_pointer_axis_relative_direction relative_direction; /**< Relative direction of the axis */
 	double delta; /**< Change in axis position */
 	int32_t delta_discrete; /**< Discrete change in axis position */
 };
@@ -174,5 +221,13 @@ struct wlf_pointer_hold_end_event {
  */
 struct wlf_pointer *wlf_pointer_from_input_device(
 	struct wlf_input_device *input_device);
+
+void wlf_pointer_init(struct wlf_pointer *pointer,
+	const struct wlf_pointer_impl *impl, const char *name, enum wlf_input_device_type type);
+
+void wlf_pointer_finish(struct wlf_pointer *pointer);
+
+void wlf_pointer_notify_button(struct wlf_pointer *pointer,
+	struct wlf_pointer_button_event *event);
 
 #endif

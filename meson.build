@@ -156,6 +156,7 @@ subdir('animator')
 subdir('effects')
 subdir('layouts')
 subdir('backend')
+subdir('types')
 
 wlf_inc = include_directories('include')
 
