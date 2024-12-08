@@ -9,57 +9,19 @@ Please refer to the [contributing document](CONTRIBUTING.md) for everything you 
 **Install dependencies:**
 
 build dependencies(for arch linux):
-* meson \*
-* dpkg \*
-* cairo \*
-* mesa \*
-* pixman \*
-* libpng \*
-* pango \*
-* librsvg \*
-* systemd \*
-* vulkan-headers \*
-* wayland \*
-* libxkbcommon \*
-* pkgconf \*
-* wayland-protocols \*
-* glslang \*
-* cppcheck
-* doxygen
-* graphviz
-* libxslt
-* xmlto
+```shell
+pacman -S cairo mesa pixman libpng pango librsvg systemd wayland vulkan-headers libxkbcommon glslang wayland-protocols base-devel meson clang ninja cppcheck doxygen graphviz libxslt xmlto pkgconf
+```
 
 build dependencies(for debian):
-* meson \*
-* dpkg-dev \*
-* libcairo2-dev \*
-* libegl1-mesa-dev \*
-* libegl-dev \*
-* libgles2-mesa-dev \*
-* libpixman-1-dev \*
-* libpng-dev \*
-* libpango1.0-dev \*
-* libxpm-dev \*
-* libjpeg-dev \*
-* librsvg2-dev \*
-* libsystemd-dev \*
-* libvulkan-dev \*
-* libwayland-dev \*
-* libxkbcommon-dev \*
-* pkgconf \*
-* wayland-protocols \*
-* glslang-tools \*
-* cppcheck
-* doxygen
-* graphviz
-* libxslt1-dev
-* xmlto
+```shell
+apt install libcairo2-dev libegl1-mesa-dev libegl-dev libgles2-mesa-dev libpixman-1-dev libpng-dev libpango1.0-dev librsvg2-dev libsystemd-dev libvulkan-dev libwayland-dev libxkbcommon-dev wayland-protocols glslang-tools meson clang cppcheck doxygen graphviz libxslt1-dev xmlto dpkg-dev pkgconf
+```
 
 **Run these commands:**
 ```shell
     meson build/ --prefix=/usr --buildtype=debug
-    sudo ninja -C build/
+    ninja -C build/
 ```
 
 ## doxygen
