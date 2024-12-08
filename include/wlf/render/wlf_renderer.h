@@ -1,8 +1,8 @@
 #ifndef WLF_RENDERER_H
 #define WLF_RENDERER_H
 
-#include "wlf/util/wlf_double_list.h"
-#include "wlf/util/wlf_signal.h"
+#include "wlf/utils/wlf_double_list.h"
+#include "wlf/utils/wlf_signal.h"
 
 #include <stdint.h>
 
@@ -30,19 +30,34 @@ struct wlf_renderer {
 		/**
 		 * @brief Indicates if the renderer supports color transforms on its output
 		 */
-		bool output_color_transform; 
+		bool output_color_transform;
 		/**
 		 * @brief Indicates whether wait/signal timelines are supported.
 		 *
 		 * See struct wlf_drm_syncobj_timeline.
 		 */
-		bool timeline; 
+		bool timeline;
 	} features;
 
 	struct {
 		const struct wlf_renderer_impl *impl; /**< Pointer to the renderer implementation (private) */
 	} WLR_PRIVATE;
 };
+
+struct wlf_render_pass {
+	const struct wlf_render_pass_impl *impl;
+};
+
+struct wlf_render_pass_impl {
+	bool (*submit)(struct wlf_render_pass *pass);
+	void (*add_texture)(struct wlf_render_pass *pass,
+		const struct wlf_render_texture_options *options);
+	void (*add_rect)(struct wlf_render_pass *pass,
+		const struct wlf_render_rect_options *options);
+};
+
+void wlf_render_pass_init(struct wlf_render_pass *pass,
+	const struct wlf_render_pass_impl *impl);
 
 /**
  * @brief Automatically creates a new renderer

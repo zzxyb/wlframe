@@ -1,8 +1,8 @@
 #ifndef WLF_SWAPCHAIN_H
 #define WLF_SWAPCHAIN_H
 
-#include "wlf/util/wlf_double_list.h"
-#include "wlf/util/wlf_signal.h"
+#include "wlf/utils/wlf_double_list.h"
+#include "wlf/utils/wlf_signal.h"
 
 #include <stdbool.h>
 
@@ -15,7 +15,7 @@ struct wlf_swapchain_slot {
 	struct wlf_buffer *buffer;  /**< Pointer to the buffer in the slot */
 	bool acquired;              /**< Indicates if the buffer is currently acquired (waiting for release) */
 
-	struct wlf_double_listener release;  /**< Listener for buffer release events */
+	struct wlf_listener release;  /**< Listener for buffer release events */
 };
 
 /**
@@ -28,7 +28,7 @@ struct wlf_swapchain {
 	struct wlf_drm_format format;     /**< Format of the swapchain buffers */
 	struct wlf_swapchain_slot slots[WLF_SWAPCHAIN_CAP];  /**< Array of swapchain slots */
 
-	struct wlf_double_listener allocator_destroy;  /**< Listener for allocator destroy events */
+	struct wlf_listener allocator_destroy;  /**< Listener for allocator destroy events */
 };
 
 /**
@@ -53,7 +53,7 @@ void wlf_swapchain_destroy(struct wlf_swapchain *swapchain);
  * @brief Acquires a buffer from the swapchain
  * @param swapchain Pointer to the swapchain to acquire from
  * @return Pointer to the acquired buffer, which is locked
- * 
+ *
  * The caller must unlock the buffer by calling wlf_buffer_unlock when done.
  */
 struct wlf_buffer *wlf_swapchain_acquire(struct wlf_swapchain *swapchain);

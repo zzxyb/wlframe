@@ -1,8 +1,8 @@
-#include "wlf/types/wlf_muti_backend.h"
-#include "wlf/util/wlf_log.h"
-#include "wlf/types/wlf_buffer.h"
-#include "wlf/util/wlf_double_list.h"
-#include "wlf/util/wlf_signal.h"
+#include "wlf/backend/wlf_muti_backend.h"
+#include "wlf/utils/wlf_log.h"
+#include "wlf/render/wlf_buffer.h"
+#include "wlf/utils/wlf_double_list.h"
+#include "wlf/utils/wlf_signal.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -10,9 +10,9 @@
 struct subbackend_state {
 	struct wlf_backend *backend;
 	struct wlf_backend *container;
-	struct wlf_double_listener new_input;
-	struct wlf_double_listener new_output;
-	struct wlf_double_listener destroy;
+	struct wlf_listener new_input;
+	struct wlf_listener new_output;
+	struct wlf_listener destroy;
 	struct wlf_double_list link;
 };
 
@@ -100,12 +100,6 @@ static const struct wlf_backend_impl backend_impl = {
 	.get_buffer_caps = multi_backend_get_buffer_caps,
 };
 
-// static void handle_event_loop_destroy(struct wlf_double_listener *listener, void *data) {
-// 	struct wlf_multi_backend *backend =
-// 		wlf_container_of(listener, backend, event_loop_destroy);
-// 	multi_backend_destroy((struct wlf_backend*)backend);
-// }
-
 struct wlf_backend *wlf_multi_backend_create(void) {
 	struct wlf_multi_backend *backend = calloc(1, sizeof(*backend));
 	if (!backend) {
@@ -119,11 +113,6 @@ struct wlf_backend *wlf_multi_backend_create(void) {
 	wlf_signal_init(&backend->events.backend_add);
 	wlf_signal_init(&backend->events.backend_remove);
 
-	// if (loop) {
-	// 	backend->event_loop_destroy.notify = handle_event_loop_destroy;
-	// 	wl_event_loop_add_destroy_listener(loop, &backend->event_loop_destroy);
-	// }
-
 	return &backend->backend;
 }
 
@@ -131,19 +120,19 @@ bool wlf_backend_is_multi(struct wlf_backend *b) {
 	return b->impl == &backend_impl;
 }
 
-static void new_input_reemit(struct wlf_double_listener *listener, void *data) {
+static void new_input_reemit(struct wlf_listener *listener, void *data) {
 	struct subbackend_state *state = wlf_container_of(listener,
 			state, new_input);
 	wlf_signal_emit_mutable(&state->container->events.new_input, data);
 }
 
-static void new_output_reemit(struct wlf_double_listener *listener, void *data) {
+static void new_output_reemit(struct wlf_listener *listener, void *data) {
 	struct subbackend_state *state = wlf_container_of(listener,
 			state, new_output);
 	wlf_signal_emit_mutable(&state->container->events.new_output, data);
 }
 
-static void handle_subbackend_destroy(struct wlf_double_listener *listener,
+static void handle_subbackend_destroy(struct wlf_listener *listener,
 		void *data) {
 	struct subbackend_state *state = wlf_container_of(listener, state, destroy);
 	subbackend_state_destroy(state);

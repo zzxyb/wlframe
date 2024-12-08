@@ -1,11 +1,9 @@
-#include "wlf/util/wlf_log.h"
-#include "wlf/util/wlf_time.h"
+#include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_time.h"
 
-#include <errno.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <signal.h>

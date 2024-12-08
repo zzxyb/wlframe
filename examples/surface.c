@@ -1,5 +1,5 @@
-#include "wlf/util/wlf_log.h"
-#include "wlf/types/wlf_backend.h"
+#include "wlf/utils/wlf_log.h"
+#include "wlf/backend/wlf_backend.h"
 
 #include <wayland-client-core.h>
 

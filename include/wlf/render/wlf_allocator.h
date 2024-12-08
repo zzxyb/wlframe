@@ -1,8 +1,8 @@
 #ifndef WLF_ALLOCATOR_H
 #define WLF_ALLOCATOR_H
 
-#include "wlf/util/wlf_double_list.h"
-#include "wlf/util/wlf_signal.h"
+#include "wlf/utils/wlf_double_list.h"
+#include "wlf/utils/wlf_signal.h"
 
 struct wlf_allocator;
 struct wlf_backend;
@@ -14,7 +14,7 @@ struct wlf_renderer;
  */
 struct wlf_allocator_interface {
 	struct wlf_buffer *(*create_buffer)(struct wlf_allocator *alloc,
-						int width, int height, 
+						int width, int height,
 						const struct wlf_drm_format *format); /**< Function to create a buffer */
 	void (*destroy)(struct wlf_allocator *alloc); /**< Function to destroy the allocator */
 };
@@ -34,7 +34,7 @@ void wlf_allocator_init(struct wlf_allocator *alloc,
  * An allocator is responsible for allocating memory for pixel buffers.
  * Each allocator may return buffers with different capabilities (shared
  * memory, DMA-BUF, memory mapping, etc.), placement (main memory, VRAM on a
- * GPU, etc.), and properties (possible usage, access performance, etc). 
+ * GPU, etc.), and properties (possible usage, access performance, etc).
  * See struct wlf_buffer for more details.
  *
  * An allocator can be passed to a struct wlf_swapchain for multiple buffering.

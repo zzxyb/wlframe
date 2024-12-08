@@ -1,7 +1,6 @@
-#include "wlf/util/wlf_addon.h"
-#include "wlf/util/wlf_log.h"
-#include "wlf/util/wlf_double_list.h"
-#include "wlf/util/wlf_signal.h"
+#include "wlf/utils/wlf_addon.h"
+#include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_double_list.h"
 
 #include <assert.h>
 #include <stdlib.h>

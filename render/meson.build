@@ -4,8 +4,6 @@ wlf_files += files(
 
 subdir('allocator')
 subdir('swapchain')
-subdir('texture')
 subdir('vulkan')
 subdir('opengl')
-subdir('raster')
 subdir('nodes')

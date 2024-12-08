@@ -1,5 +1,5 @@
-#include "wlf/util/wlf_utils.h"
-#include "wlf/util/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
+#include "wlf/utils/wlf_log.h"
 
 #include <fcntl.h>
 #include <inttypes.h>
@@ -17,21 +17,21 @@ bool generate_token(char out[static TOKEN_SIZE]) {
 	if (!urandom) {
 		int fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
 		if (fd < 0) {
-			wlf_log_errno(WLF_ERROR, "Failed to open random device");
+			wlf_log(WLF_ERROR, "Failed to open random device");
 			return false;
 		}
 		if (!(urandom = fdopen(fd, "r"))) {
-			wlf_log_errno(WLF_ERROR, "fdopen failed");
+			wlf_log(WLF_ERROR, "fdopen failed");
 			close(fd);
 			return false;
 		}
 	}
 	if (fread(data, sizeof(data), 1, urandom) != 1) {
-		wlf_log_errno(WLF_ERROR, "Failed to read from random device");
+		wlf_log(WLF_ERROR, "Failed to read from random device");
 		return false;
 	}
 	if (snprintf(out, TOKEN_SIZE, "%016" PRIx64 "%016" PRIx64, data[0], data[1]) != TOKEN_SIZE - 1) {
-		wlf_log_errno(WLF_ERROR, "Failed to format hex string token");
+		wlf_log(WLF_ERROR, "Failed to format hex string token");
 		return false;
 	}
 	return true;
@@ -101,3 +101,26 @@ bool is_utf8(const char *string) {
 	return true;
 }
 
+ssize_t set_add(uint32_t values[], size_t *len, size_t cap, uint32_t target) {
+	for (uint32_t i = 0; i < *len; ++i) {
+		if (values[i] == target) {
+			return i;
+		}
+	}
+	if (*len == cap) {
+		return -1;
+	}
+	values[*len] = target;
+	return (*len)++;
+}
+
+ssize_t set_remove(uint32_t values[], size_t *len, size_t cap, uint32_t target) {
+	for (uint32_t i = 0; i < *len; ++i) {
+		if (values[i] == target) {
+			--(*len);
+			values[i] = values[*len];
+			return i;
+		}
+	}
+	return -1;
+}

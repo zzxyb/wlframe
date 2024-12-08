@@ -1,8 +1,8 @@
 #ifndef WLF_RENDER_PASS_H
 #define WLF_RENDER_PASS_H
 
-#include "wlf/util/wlf_double_list.h"
-#include "wlf/util/wlf_signal.h"
+#include "wlf/utils/wlf_double_list.h"
+#include "wlf/utils/wlf_signal.h"
 
 #include <pixman.h>
 #include <stdint.h>
@@ -43,7 +43,7 @@ struct wlf_buffer_pass_options {
  * render pass.
  */
 struct wlf_render_pass *wlf_renderer_begin_buffer_pass(struct wlf_renderer *renderer,
-	struct wlf_buffer *buffer, 
+	struct wlf_buffer *buffer,
 	const struct wlf_buffer_pass_options *options);
 
 /**

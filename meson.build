@@ -151,11 +151,12 @@ subdir('include')
 subdir('math')
 subdir('util')
 subdir('render')
-subdir('platforms')
 subdir('animator')
 subdir('effects')
 subdir('layouts')
 subdir('backend')
+subdir('types')
+subdir('text')
 
 wlf_inc = include_directories('include')
 

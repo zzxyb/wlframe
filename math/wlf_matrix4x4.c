@@ -20,7 +20,6 @@ struct wlf_matrix4x4 wlf_matrix4x4_identity(void) {
 }
 
 char* wlf_matrix4x4_to_str(const struct wlf_matrix4x4 *matrix) {
- 	// Assume the string won't exceed 256 characters
 	char *buffer = malloc(256 * sizeof(char));
 	if (buffer != NULL) {
 		snprintf(buffer, 256, 

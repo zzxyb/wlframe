@@ -1,8 +1,8 @@
-#include "wlf/types/wlf_backend.h"
-#include "wlf/types/wlf_muti_backend.h"
-#include "wlf/util/wlf_log.h"
+#include "wlf/backend/wlf_backend.h"
+#include "wlf/backend/wlf_muti_backend.h"
+#include "wlf/utils/wlf_log.h"
 #include "wlf/wayland/wlf_wl_backend.h"
-#include "wlf/util/wlf_signal.h"
+#include "wlf/utils/wlf_signal.h"
 
 #include <stdlib.h>
 

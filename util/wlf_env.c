@@ -1,5 +1,5 @@
-#include "wlf/util/wlf_env.h"
-#include "wlf/util/wlf_log.h"
+#include "wlf/utils/wlf_env.h"
+#include "wlf/utils/wlf_log.h"
 
 #include <stdlib.h>
 #include <string.h>
