@@ -1,0 +1,2 @@
+option('examples', type: 'boolean', value: true, description: 'Build example applications')
+option('documentation', description: 'Build the documentation (requires Doxygen)', type: 'feature', value: 'disabled')
