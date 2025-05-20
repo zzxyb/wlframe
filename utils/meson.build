@@ -4,4 +4,5 @@ wlf_files += files(
 	'wlf_log.c',
 	'wlf_signal.c',
 	'wlf_utils.c',
+	'wlf_list.c',
 )
