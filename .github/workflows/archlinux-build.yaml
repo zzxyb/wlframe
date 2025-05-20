@@ -1,0 +1,48 @@
+name: Build on archlinux
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  meson-build:
+    runs-on: ubuntu-latest
+    container: archlinux:latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install dependencies
+      run: |
+        pacman -Syu --noconfirm arch-install-scripts
+        pacman-key --init
+        pacman-key --populate archlinux
+
+    # - name: Enable testing repository
+    #   run: |
+    #     echo "[testing]" | tee -a /etc/pacman.conf
+    #     echo "Include = /etc/pacman.d/mirrorlist" | tee -a /etc/pacman.conf
+    #     pacman -Sy --noconfirm
+
+    - name: Update package databases
+      run: pacman -Sy
+
+    - name: Install dep
+      run: |
+        pacman -S --noconfirm \
+          base-devel meson gcc clang ninja pkgconf cppcheck
+
+    - name: Build with Meson
+      run: |
+        CC=gcc meson setup build-gcc --fatal-meson-warnings --default-library=both -Dauto_features=enabled --prefix /usr -Db_sanitize=address,undefined
+        CC=clang meson setup build-clang --fatal-meson-warnings -Dauto_features=enabled -Dc_std=c11
+        ninja -C build-gcc
+        ninja -C build-clang
+
+    - name: Run cppcheck
+      run: cppcheck --project=build-clang/compile_commands.json
