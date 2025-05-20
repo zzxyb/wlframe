@@ -3,4 +3,5 @@ wlf_files += files(
 	'wlf_time.c',
 	'wlf_log.c',
 	'wlf_signal.c',
+	'wlf_utils.c',
 )
