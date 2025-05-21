@@ -96,6 +96,14 @@ if host_machine.system() == 'linux'
 	message('Building for Linux')
 	math = cc.find_library('m')
 	rt = cc.find_library('rt')
+
+	wayland_project_options = ['tests=false', 'documentation=false']
+
+	wayland_client = dependency('wayland-client',
+		version: '>=1.23',
+		fallback: 'wayland',
+		default_options: wayland_project_options,
+	)
 elif host_machine.system() == 'darwin'
 	message('Building for macOS')
 else
@@ -109,12 +117,14 @@ elif host_machine.system() == 'linux'
 	wlf_deps += [
 		math,
 		rt,
+		wayland_client,
 	]
 else
 endif
 
 subdir('include')
 subdir('utils')
+subdir('wayland')
 
 wlf_inc = include_directories('include')
 
