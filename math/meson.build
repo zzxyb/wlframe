@@ -10,4 +10,5 @@ wlf_files += files(
 	'wlf_vector4.c',
 	'wlf_ray.c',
 	'wlf_quaternion.c',
+	'wlf_matrix3x3.c',
 )
