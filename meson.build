@@ -133,6 +133,7 @@ if is_linux
 	subdir('wayland')
 endif
 subdir('image')
+subdir('math')
 
 wlf_inc = include_directories('include')
 
