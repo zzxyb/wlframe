@@ -6,4 +6,5 @@ wlf_files += files(
 	'wlf_vector3.c',
 	'wlf_vector4.c',
 	'wlf_ray.c',
+	'wlf_quaternion.c',
 )
