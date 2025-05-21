@@ -7,4 +7,5 @@ wlf_files += files(
 	'wlf_frect.c',
 	'wlf_vector2.c',
 	'wlf_vector3.c',
+	'wlf_vector4.c',
 )
