@@ -5,4 +5,5 @@ wlf_files += files(
 	'wlf_fsize.c',
 	'wlf_rect.c',
 	'wlf_frect.c',
+	'wlf_vector2.c',
 )

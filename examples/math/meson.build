@@ -23,6 +23,10 @@ math_examples = {
 		'src': ['wlf_frect_test.c'],
 		'dep': [],
 	},
+	'wlf_vector2_test': {
+		'src': ['wlf_vector2_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : math_examples
