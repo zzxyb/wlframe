@@ -13,4 +13,5 @@ wlf_files += files(
 	'wlf_quaternion.c',
 	'wlf_matrix3x3.c',
 	'wlf_matrix4x4.c',
+	'wlf_region.c',
 )
