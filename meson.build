@@ -115,6 +115,7 @@ endif
 
 subdir('include')
 subdir('utils')
+subdir('math')
 
 wlf_inc = include_directories('include')
 
