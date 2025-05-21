@@ -7,6 +7,14 @@ math_examples = {
 		'src': ['wlf_fpoint_test.c'],
 		'dep': [],
 	},
+	'wlf_size_test': {
+		'src': ['wlf_size_test.c'],
+		'dep': [],
+	},
+	'wlf_fsize_test': {
+		'src': ['wlf_fsize_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : math_examples
