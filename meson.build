@@ -155,6 +155,8 @@ meson.override_dependency(versioned_name, wlframe)
 
 summary(features + internal_features, bool_yn: true)
 
+subdir('examples')
+
 if get_option('documentation').enabled()
 	subdir('doc')
 endif
