@@ -35,7 +35,7 @@ jobs:
     - name: Install dep
       run: |
         pacman -S --noconfirm \
-          base-devel meson gcc clang ninja pkgconf cppcheck
+          base-devel meson gcc clang ninja pkgconf cppcheck wayland
 
     - name: Build with Meson
       run: |
