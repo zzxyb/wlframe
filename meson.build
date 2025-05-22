@@ -104,8 +104,20 @@ if is_linux
 		fallback: 'wayland',
 		default_options: wayland_project_options,
 	)
+
 	libpng = dependency('libpng', required: true)
-elif is_macos
+
+	xkbcommon = dependency(
+		'xkbcommon',
+		fallback: 'libxkbcommon',
+		default_options: [
+			'enable-tools=false',
+			'enable-x11=false',
+			'enable-docs=false',
+			'enable-xkbregistry=false',
+		],
+	)
+elif host_machine.system() == 'darwin'
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
 else
@@ -123,6 +135,7 @@ elif is_linux
 	wlf_deps += [
 		rt,
 		wayland_client,
+		xkbcommon,
 	]
 else
 endif

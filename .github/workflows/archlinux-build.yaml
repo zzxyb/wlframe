@@ -31,7 +31,8 @@ jobs:
           wayland \
           wayland-protocols \
           libpng \
-          cppcheck
+          cppcheck \
+          xkbcommon
 
     - name: Build with GCC
       run: |
