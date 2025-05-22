@@ -104,6 +104,17 @@ if host_machine.system() == 'linux'
 		fallback: 'wayland',
 		default_options: wayland_project_options,
 	)
+
+	xkbcommon = dependency(
+		'xkbcommon',
+		fallback: 'libxkbcommon',
+		default_options: [
+			'enable-tools=false',
+			'enable-x11=false',
+			'enable-docs=false',
+			'enable-xkbregistry=false',
+		],
+	)
 elif host_machine.system() == 'darwin'
 	message('Building for macOS')
 else
@@ -118,6 +129,7 @@ elif host_machine.system() == 'linux'
 		math,
 		rt,
 		wayland_client,
+		xkbcommon,
 	]
 else
 endif
