@@ -128,6 +128,7 @@ subdir('include')
 subdir('utils')
 subdir('wayland')
 subdir('image')
+subdir('backend')
 
 wlf_inc = include_directories('include')
 

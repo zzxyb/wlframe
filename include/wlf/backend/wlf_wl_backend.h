@@ -1,0 +1,19 @@
+#ifndef BACKEND_WLF_WL_BACKEND_H
+#define BACKEND_WLF_WL_BACKEND_H
+
+#include "wlf/backend/wlf_backend.h"
+
+struct wlf_wl_display;
+
+struct wlf_wl_backend {
+	struct wlf_backend backend;
+	struct wlf_wl_display *display;
+
+	bool started;
+};
+
+struct wlf_backend *wlf_wl_backend_create(void);
+bool wlf_backend_is_wl(struct wlf_backend *backend);
+struct wlf_wl_backend *get_wl_backend_from_backend(struct wlf_backend *wlf_backend);
+
+#endif
