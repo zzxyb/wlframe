@@ -1,0 +1,5 @@
+#ifndef COLOR_WLF_COLOR_H
+#define COLOR_WLF_COLOR_H
+
+
+#endif // COLOR_WLF_COLOR_H
