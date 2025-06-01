@@ -3,6 +3,10 @@ examples = {
 		'src': ['wayland_registry_test.c'],
 		'dep': [],
 	},
+	'wlf_region_test': {
+		'src': ['wlf_region_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : examples
