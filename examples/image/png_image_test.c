@@ -4,8 +4,7 @@
 #include <stdlib.h>
 
 int main(int argc, char *argv[]) {
-	int32_t log_level = WLF_DEBUG;
-	wlf_log_init(log_level, NULL);
+	wlf_log_init(WLF_DEBUG, NULL);
 
 	if (argc >1) {
 		const char *filename = argv[1];
