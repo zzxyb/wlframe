@@ -3,3 +3,4 @@ if is_linux
 endif
 
 subdir('image')
+subdir('font')
