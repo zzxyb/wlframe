@@ -125,6 +125,7 @@ endif
 subdir('include')
 subdir('utils')
 subdir('wayland')
+subdir('image')
 
 wlf_inc = include_directories('include')
 
