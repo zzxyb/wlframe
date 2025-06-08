@@ -142,4 +142,19 @@ const char *wlf_image_get_type_string(const struct wlf_image *image);
  */
 int wlf_image_get_channels(const struct wlf_image *image);
 
+/**
+ * @brief Save an image to a file.
+ * @param image Pointer to the wlf_image structure to save.
+ * @param filename Path to the file where the image will be saved.
+ * @return true on success, false on failure.
+ */
+bool wlf_image_save(struct wlf_image *image, const char *filename);
+
+/**
+ * @brief Load an image from a file.
+ * @param filename Path to the image file to load.
+ * @return Pointer to a newly allocated wlf_image structure, or NULL on failure.
+ */
+struct wlf_image *wlf_image_load(const char *filename);
+
 #endif // IMAGE_WLF_IMAGE_H

@@ -11,7 +11,7 @@ Please refer to the [contributing document](CONTRIBUTING.md) for everything you 
 build dependencies(for arch linux):
 ```shell
 pacman -S \
-	base-devel meson gcc clang ninja pkgconf cppcheck wayland
+	base-devel meson gcc clang ninja pkgconf cppcheck wayland libpng
 ```
 
 **Run these commands:**
