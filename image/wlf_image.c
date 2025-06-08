@@ -1,4 +1,5 @@
 #include "wlf/image/wlf_image.h"
+#include "wlf/image/wlf_png_image.h"
 
 #include <assert.h>
 #include <string.h>

@@ -104,6 +104,7 @@ if host_machine.system() == 'linux'
 		fallback: 'wayland',
 		default_options: wayland_project_options,
 	)
+	libpng = dependency('libpng', required: true)
 elif host_machine.system() == 'darwin'
 	message('Building for macOS')
 else
@@ -118,6 +119,7 @@ elif host_machine.system() == 'linux'
 		math,
 		rt,
 		wayland_client,
+		libpng,
 	]
 else
 endif
