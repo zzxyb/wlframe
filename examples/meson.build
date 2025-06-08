@@ -3,6 +3,10 @@ examples = {
 		'src': ['wayland_registry_test.c'],
 		'dep': [],
 	},
+	'png_image_test': {
+		'src': ['png_image_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : examples
