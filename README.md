@@ -1,9 +1,5 @@
 # wlframe
-wlframe is a C UI framework for muti platform.
-
-## Contributing to wlframe
-
-Please refer to the [contributing document](CONTRIBUTING.md) for everything you need to know to get started contributing to wlframe.
+**wlframe** is a cross-platform C UI framework.
 
 ### Compiling from Source
 **Install dependencies:**
@@ -20,5 +16,15 @@ pacman -S \
     ninja -C build/
 ```
 
-## doxygen
-set the documentation in meson_options.txt to enabled, reuse meson to compile, and you will see that the documentation has been generated in the build/doc/doxygen/html/wlframe directory.
+## Documentation
+
+To generate API documentation with Doxygen:
+
+1. Set the `documentation` option to `enabled` in `meson_options.txt`.
+2. Re-run the Meson build.
+3. The generated documentation will be available at:
+   `build/doc/doxygen/html/wlframe/index.html`
+
+## Contributing
+
+See the [contributing guide](CONTRIBUTING.md) for details on how to get started with wlframe development.
