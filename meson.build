@@ -54,9 +54,11 @@ macos_c_args = cc.get_supported_arguments([
 	'-Wno-unused-command-line-argument',
 ])
 
-if host_machine.system() == 'linux'
+is_linux = host_machine.system() == 'linux'
+is_macos = host_machine.system() == 'darwin'
+if is_linux
 	add_project_arguments(common_c_args + linux_c_args, language: 'c')
-elif host_machine.system() == 'darwin'
+elif is_macos
 	add_project_arguments(common_c_args + macos_c_args, language: 'c')
 else
 	error('Unsupported platform: ' + host_machine.system())
@@ -82,21 +84,19 @@ features = {
 	'x11-backend': false,
 	'gles2-renderer': false,
 	'vulkan-renderer': false,
-	'gbm-allocator': false,
-	'macos_specific': false,
-	'linux_specific': false,
-	'windows_specific': false,
 }
 internal_features = {
 	'egl': false,
+	'macos': is_macos,
+	'linux': is_linux,
 }
 internal_config = configuration_data()
 
-if host_machine.system() == 'linux'
+math = cc.find_library('m')
+if is_linux
 	message('Building for Linux')
-	math = cc.find_library('m')
-	rt = cc.find_library('rt')
 
+	rt = cc.find_library('rt')
 	wayland_project_options = ['tests=false', 'documentation=false']
 
 	wayland_client = dependency('wayland-client',
@@ -105,42 +105,58 @@ if host_machine.system() == 'linux'
 		default_options: wayland_project_options,
 	)
 	libpng = dependency('libpng', required: true)
-elif host_machine.system() == 'darwin'
+elif is_macos
 	message('Building for macOS')
+	libpng = dependency('libpng', required: true, method: 'pkg-config')
 else
 	error('Unsupported platform')
 endif
 
 wlf_files = []
-wlf_deps = []
-if host_machine.system() == 'darwin'
-elif host_machine.system() == 'linux'
+wlf_deps = [
+	math,
+	libpng,
+]
+
+if is_macos
+elif is_linux
 	wlf_deps += [
-		math,
 		rt,
 		wayland_client,
-		libpng,
 	]
 else
 endif
 
 subdir('include')
 subdir('utils')
-subdir('wayland')
+if is_linux
+	subdir('wayland')
+endif
 subdir('image')
 
 wlf_inc = include_directories('include')
 
 symbols_file = 'wlframe.syms'
 symbols_flag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), symbols_file)
-lib_wlf = library(
-	versioned_name, wlf_files,
-	dependencies: wlf_deps,
-	include_directories: [wlf_inc],
-	install: true,
-	link_args: symbols_flag,
-	link_depends: symbols_file,
-)
+if is_linux
+    symbols_flag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), symbols_file)
+    lib_wlf = library(
+        versioned_name, wlf_files,
+        dependencies: wlf_deps,
+        include_directories: [wlf_inc],
+        install: true,
+        link_args: symbols_flag,
+        link_depends: symbols_file,
+    )
+elif is_macos
+    # macOS 不支持 --version-script，使用 -exported_symbols_list
+    lib_wlf = library(
+        versioned_name, wlf_files,
+        dependencies: wlf_deps,
+        include_directories: [wlf_inc],
+        install: true,
+    )
+endif
 
 wlf_vars = {}
 foreach name, have : features
