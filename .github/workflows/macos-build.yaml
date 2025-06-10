@@ -1,0 +1,61 @@
+name: Build on MacOS
+
+on:
+  push:
+    branches: [ "*" ]
+  pull_request:
+    branches: [ "*" ]
+
+env:
+  BUILD_TYPE: Debug
+
+jobs:
+  build-macos:
+    strategy:
+      matrix:
+        buildtype: [debug]
+        os: [macos-14]
+        include:
+          - os: macos-14
+            arch: arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install dependencies
+      run: |
+        brew update
+        brew install \
+          meson \
+          ninja \
+          libpng \
+          pkg-config \
+          cppcheck
+
+    - name: Setup build
+      run: |
+        meson setup build-${{ matrix.buildtype }} \
+          --buildtype=${{ matrix.buildtype }} \
+          --strip
+
+    - name: Build
+      run: ninja -C build-${{ matrix.buildtype }} -v
+
+    - name: Run tests
+      run: ninja -C build-${{ matrix.buildtype }} test
+      continue-on-error: true
+
+    - name: Run static analysis (cppcheck)
+      if: matrix.buildtype == 'debug'
+      run: |
+        cppcheck --project=build-${{ matrix.buildtype }}/compile_commands.json \
+          --enable=all \
+          --inconclusive \
+          --error-exitcode=1 \
+          --suppress=missingIncludeSystem \
+          --suppress=unusedFunction
+      continue-on-error: true
