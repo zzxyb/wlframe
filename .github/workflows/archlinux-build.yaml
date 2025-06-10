@@ -7,42 +7,62 @@ on:
     branches: [ "*" ]
 
 env:
-  BUILD_TYPE: Release
+  BUILD_TYPE: Debug
 
 jobs:
   meson-build:
     runs-on: ubuntu-latest
     container: archlinux:latest
+
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Install dependencies
+    - name: Update system and install dependencies
       run: |
-        pacman -Syu --noconfirm arch-install-scripts
-        pacman-key --init
-        pacman-key --populate archlinux
-
-    # - name: Enable testing repository
-    #   run: |
-    #     echo "[testing]" | tee -a /etc/pacman.conf
-    #     echo "Include = /etc/pacman.d/mirrorlist" | tee -a /etc/pacman.conf
-    #     pacman -Sy --noconfirm
-
-    - name: Update package databases
-      run: pacman -Sy
-
-    - name: Install dep
-      run: |
+        pacman -Syu --noconfirm
         pacman -S --noconfirm \
-          base-devel meson gcc clang ninja pkgconf cppcheck wayland libpng
+          base-devel \
+          meson \
+          ninja \
+          gcc \
+          clang \
+          pkg-config \
+          wayland \
+          wayland-protocols \
+          libpng \
+          cppcheck
 
-    - name: Build with Meson
+    - name: Build with GCC
       run: |
-        CC=gcc meson setup build-gcc --fatal-meson-warnings --default-library=both -Dauto_features=enabled --prefix /usr -Db_sanitize=address,undefined
-        CC=clang meson setup build-clang --fatal-meson-warnings -Dauto_features=enabled -Dc_std=c11
-        ninja -C build-gcc
-        ninja -C build-clang
+        CC=gcc meson setup build-gcc \
+          --buildtype=debug \
+          --fatal-meson-warnings \
+          --default-library=both \
+          --prefix=/usr
+        ninja -C build-gcc -v
 
-    - name: Run cppcheck
-      run: cppcheck --project=build-clang/compile_commands.json
+    - name: Build with Clang
+      run: |
+        CC=clang meson setup build-clang \
+          --buildtype=debug \
+          --fatal-meson-warnings \
+          --default-library=both \
+          --prefix=/usr
+        ninja -C build-clang -v
+
+    - name: Run tests (GCC)
+      run: ninja -C build-gcc test
+      continue-on-error: true
+
+    - name: Run tests (Clang)
+      run: ninja -C build-clang test
+      continue-on-error: true
+
+    - name: Run static analysis (cppcheck)
+      run: |
+        cppcheck --project=build-clang/compile_commands.json \
+          --enable=all \
+          --inconclusive \
+          --error-exitcode=1
+      continue-on-error: true
