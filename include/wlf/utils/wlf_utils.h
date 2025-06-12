@@ -18,6 +18,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/types.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <assert.h>
 
 #define TOKEN_SIZE 33
 
@@ -69,5 +72,42 @@ ssize_t set_remove(uint32_t values[], size_t *len, size_t cap, uint32_t target);
  * @param x The parameter to be ignored.
  */
 #define WLF_UNUSED(x) (void)x;
+
+/**
+ * @brief Converts a string to an integer safely.
+ *
+ * Parses a base-10 number from the given string. Checks that the
+ * string is not blank, contains only numerical characters, and is
+ * within the range of INT32_MIN to INT32_MAX. If the validation is
+ * successful, the result is stored in *value; otherwise *value is
+ * unchanged and errno is set appropriately.
+ *
+ * @param str Input string to parse.
+ * @param value Pointer to store the converted integer.
+ * @return true if the number was parsed successfully, false on error.
+ */
+static inline bool safe_strtoint(const char *str, int32_t *value) {
+	long ret;
+	char *end;
+
+	assert(str != NULL);
+
+	errno = 0;
+	ret = strtol(str, &end, 10);
+	if (errno != 0) {
+		return false;
+	} else if (end == str || *end != '\0') {
+		errno = EINVAL;
+		return false;
+	}
+
+	if ((long)((int32_t)ret) != ret) {
+		errno = ERANGE;
+		return false;
+	}
+	*value = (int32_t)ret;
+
+	return true;
+}
 
 #endif // UTILS_WLF_UTILS_H
