@@ -6,4 +6,5 @@ wlf_files += files(
 	'wlf_utils.c',
 	'wlf_list.c',
 	'wlf_env.c',
+	'wlf_i18n.c',
 )
