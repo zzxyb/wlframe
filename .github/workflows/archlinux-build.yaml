@@ -31,6 +31,7 @@ jobs:
           wayland \
           wayland-protocols \
           libpng \
+          libjpeg-turbo	\
           cppcheck
 
     - name: Build with GCC

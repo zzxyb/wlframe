@@ -160,8 +160,7 @@ static bool png_image_load(struct wlf_image *image, const char *filename, bool e
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 	fclose(fp);
-	wlf_log(WLF_DEBUG, "PNG Info: %dx%d, Format: %d, Bit Depth: %d\n, Stride: %d",
-		image->width, image->height, image->format, image->bit_depth, image->stride);
+
 	return true;
 };
 
@@ -188,89 +187,19 @@ struct wlf_png_image *wlf_png_image_create(void) {
 	return image;
 };
 
+bool wlf_image_is_png(struct wlf_image *image) {
+	if (!image) {
+		return false;
+	}
+
+	return (image->impl == &png_image_impl &&
+			image->image_type == WLF_IMAGE_TYPE_PNG);
+}
+
 struct wlf_png_image *wlf_png_image_from_image(struct wlf_image *wlf_image) {
 	assert(wlf_image->impl == &png_image_impl);
 	struct wlf_png_image *image = wlf_container_of(wlf_image, image, base);
 	return image;
-}
-
-void wlf_png_image_print_data(const struct wlf_image *image) {
-	if (!image || !image->data) {
-		wlf_log(WLF_ERROR, "PNG image data is NULL");
-		return;
-	}
-
-	int channels = wlf_image_get_channels(image);
-	size_t pixel_count = image->width * image->height;
-	size_t stride = channels * image->bit_depth;
-
-	for (size_t i = 0; i < pixel_count; ++i) {
-		char line[128];
-		int offset = 0;
-		offset += snprintf(line + offset, sizeof(line) - offset, "Pixel %zu: ", i);
-
-		if (image->bit_depth == 16) {
-			for (int c = 0; c < channels; ++c) {
-				const uint8_t *p = image->data + i * stride + c * 2;
-				uint16_t value = (p[0] << 8) | p[1];  // Big-endian
-				offset += snprintf(line + offset, sizeof(line) - offset, "%04X ", value);
-			}
-		} else {
-			for (int c = 0; c < channels; ++c) {
-				offset += snprintf(line + offset, sizeof(line) - offset, "%02X ", image->data[i * channels + c]);
-			}
-		}
-		wlf_log(WLF_DEBUG, "%s", line);
-	}
-}
-
-void wlf_png_image_print_data_gimp_style(const struct wlf_image *image) {
-	if (!image || !image->data) {
-		wlf_log(WLF_ERROR, "PNG image data is NULL");
-		return;
-	}
-
-	int channels = 0;
-	const char *format_name = NULL;
-	switch (image->format) {
-		case WLF_COLOR_TYPE_RGB:
-			channels = 3; format_name = "RGB"; break;
-		case WLF_COLOR_TYPE_RGBA:
-			channels = 4; format_name = "RGBA"; break;
-		case WLF_COLOR_TYPE_GRAY:
-			channels = 1; format_name = "GRAY"; break;
-		case WLF_COLOR_TYPE_GRAY_ALPHA:
-			channels = 2; format_name = "GRAY_ALPHA"; break;
-		default:
-			wlf_log(WLF_ERROR, "Unknown format: %u", image->format);
-			return;
-	}
-
-	printf("/* GIMP %s C-Source image dump */\n", format_name);
-	printf("static const struct {\n");
-	printf("  unsigned int width, height;\n");
-	printf("  unsigned int bytes_per_pixel; /* %d: %s */\n", channels, format_name);
-	printf("  unsigned char pixel_data[%02u];\n", image->width * image->height * channels + 1);
-	printf("} wlf_image_data = {\n");
-	printf("  %d, %d, %d,\n", image->width, image->height, channels);
-	printf("  \"\n");
-
-	for (uint32_t y = 0; y < image->height; ++y) {
-		const unsigned char *row = image->data + y * image->stride;
-		char line[1024];
-		int offset = 0;
-		for (uint32_t x = 0; x < image->width * channels; ++x) {
-			offset += snprintf(line + offset, sizeof(line) - offset, "\\x%02u", row[x]);
-			if (offset >= (int)sizeof(line) - 6) {
-				printf("%s", line);
-				offset = 0;
-			}
-		}
-		if (offset > 0) {
-			printf("%s", line);
-		}
-	}
-	printf("\"\n};\n");
 }
 
 int wlf_color_type_to_png(struct wlf_image *image) {
