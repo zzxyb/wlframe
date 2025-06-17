@@ -43,6 +43,10 @@ math_examples = {
 		'src': ['wlf_ray_test.c'],
 		'dep': [],
 	},
+	'wlf_quaternion_test': {
+		'src': ['wlf_quaternion_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : math_examples
