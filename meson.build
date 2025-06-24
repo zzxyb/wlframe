@@ -134,6 +134,7 @@ if is_linux
 endif
 subdir('image')
 subdir('math')
+subdir('translator')
 
 wlf_inc = include_directories('include')
 
