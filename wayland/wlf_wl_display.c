@@ -34,9 +34,9 @@ static void display_handle_global(void *data, struct wl_registry *wl_registry,
 static void display_handle_global_remove(void *data,
 		struct wl_registry *wl_registry, uint32_t name) {
 	struct wlf_wl_display *display = data;
-	struct wlf_wl_interface *reg;
+	struct wlf_wl_interface *reg, *tmp;
 
-	wlf_linked_list_for_each(reg, &display->interfaces, link) {
+	wlf_linked_list_for_each_safe(reg, tmp, &display->interfaces, link) {
 		if (reg->name == name) {
 			wlf_log(WLF_DEBUG, "Interface %s removed", reg->interface);
 			wlf_signal_emit(&display->events.global_remove, reg);
@@ -62,8 +62,8 @@ struct wlf_wl_display *wlf_wl_display_create(void) {
 	wlf_signal_init(&display->events.destroy);
 	wlf_signal_init(&display->events.global_add);
 	wlf_signal_init(&display->events.global_remove);
-	display->display = wl_display_connect(NULL);
-	if (display->display == NULL) {
+	display->base = wl_display_connect(NULL);
+	if (display->base == NULL) {
 		wlf_log(WLF_ERROR, "Failed to connect to Wayland display");
 		free(display);
 		return NULL;
@@ -74,15 +74,15 @@ struct wlf_wl_display *wlf_wl_display_create(void) {
 
 bool wlf_wl_display_init_registry(struct wlf_wl_display *display) {
 	assert(display);
-	display->registry = wl_display_get_registry(display->display);
+	display->registry = wl_display_get_registry(display->base);
 	if (display->registry == NULL) {
 		wlf_log(WLF_ERROR, "Failed to get Wayland registry");
-		wl_display_disconnect(display->display);
+		wl_display_disconnect(display->base);
 		free(display);
 		return false;
 	}
 	wl_registry_add_listener(display->registry, &wl_registry_listener, display);
-	wl_display_roundtrip(display->display);
+	wl_display_roundtrip(display->base);
 
 	return true;
 }
@@ -95,12 +95,12 @@ void wlf_wl_display_destroy(struct wlf_wl_display *display) {
 	if (display->registry) {
 		wl_registry_destroy(display->registry);
 	}
-	if (display->display) {
-		wl_display_disconnect(display->display);
+	if (display->base) {
+		wl_display_disconnect(display->base);
 	}
 
-	struct wlf_wl_interface *reg;
-	wlf_linked_list_for_each(reg, &display->interfaces, link) {
+	struct wlf_wl_interface *reg, *tmp;
+	wlf_linked_list_for_each_safe(reg, tmp, &display->interfaces, link) {
 		wlf_wl_registry_destroy(reg);
 	}
 	wlf_linked_list_remove(&display->interfaces);
@@ -116,7 +116,6 @@ struct wlf_wl_interface *wlf_wl_interface_create(struct wlf_wl_display *display,
 	}
 
 	wlf_linked_list_init(&reg->link);
-	wlf_signal_init(&reg->events.destroy);
 	reg->name = name;
 	reg->interface = strdup(interface);
 	reg->version = version;
@@ -129,7 +128,6 @@ void wlf_wl_registry_destroy(struct wlf_wl_interface *registry) {
 		return;
 	}
 
-	wlf_signal_emit(&registry->events.destroy, registry);
 	wlf_linked_list_remove(&registry->link);
 	free(registry->interface);
 	free(registry);

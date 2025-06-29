@@ -33,17 +33,13 @@ struct wlf_wl_interface {
 	uint32_t name;                 /**< Global name (Wayland registry id) */
 	char *interface;               /**< Interface name string */
 	uint32_t version;              /**< Interface version */
-
-	struct {
-		struct wlf_signal destroy; /**< Signal emitted when interface is destroyed */
-	} events;
 };
 
 /**
  * @brief Structure representing a Wayland display and its registry/interfaces.
  */
 struct wlf_wl_display {
-	struct wl_display *display;         /**< Wayland display pointer */
+	struct wl_display *base;         /**< Wayland display pointer */
 	struct wl_registry *registry;       /**< Wayland registry pointer */
 
 	struct wlf_linked_list interfaces;  /**< List of global interfaces */
