@@ -84,13 +84,9 @@ features = {
 	'x11-backend': false,
 	'gles2-renderer': false,
 	'vulkan-renderer': false,
+	'macos_platform': is_macos,
+	'linux_platform': is_linux,
 }
-internal_features = {
-	'egl': false,
-	'macos': is_macos,
-	'linux': is_linux,
-}
-internal_config = configuration_data()
 
 math = cc.find_library('m')
 if is_linux
@@ -105,6 +101,9 @@ if is_linux
 		default_options: wayland_project_options,
 	)
 	libpng = dependency('libpng', required: true)
+	egl = dependency('egl',  required: true)
+	glesv2 = dependency('glesv2', required: true)
+	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -123,6 +122,9 @@ elif is_linux
 	wlf_deps += [
 		rt,
 		wayland_client,
+		egl,
+		glesv2,
+		vulkan,
 	]
 else
 endif
@@ -134,6 +136,9 @@ if is_linux
 endif
 subdir('image')
 subdir('math')
+subdir('platform')
+subdir('render')
+subdir('window')
 
 wlf_inc = include_directories('include')
 
@@ -172,8 +177,6 @@ wlframe = declare_dependency(
 )
 
 meson.override_dependency(versioned_name, wlframe)
-
-summary(features + internal_features, bool_yn: true)
 
 subdir('examples')
 

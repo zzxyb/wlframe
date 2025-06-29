@@ -31,6 +31,7 @@ jobs:
           wayland \
           wayland-protocols \
           libpng \
+          mesa \
           cppcheck
 
     - name: Build with GCC
