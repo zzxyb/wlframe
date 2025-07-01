@@ -7,10 +7,7 @@
 #mesondefine WLF_HAS_GLES2_RENDERER
 #mesondefine WLF_HAS_VULKAN_RENDERER
 
-#mesondefine WLF_HAS_GBM_ALLOCATOR
-
-#mesondefine WLF_HAS_MACOS_SPECIFIC
-#mesondefine WLF_HAS_LINUX_SPECIFIC
-#mesondefine WLF_HAS_WINDOWS_SPECIFIC
+#mesondefine WLF_HAS_MACOS_PLATFORM
+#mesondefine WLF_HAS_LINUX_PLATFORM
 
 #endif
