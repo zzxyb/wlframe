@@ -5,3 +5,4 @@ endif
 subdir('image')
 subdir('utils')
 subdir('math')
+subdir('platform')

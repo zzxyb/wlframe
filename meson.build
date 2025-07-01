@@ -74,7 +74,7 @@ if cc.has_argument('-fmacro-prefix-map=/prefix/to/hide=')
 	)
 else
 	add_project_arguments(
-		'-D_WLR_REL_SRC_DIR="@0@"'.format(relative_dir),
+		'-D_WLF_REL_SRC_DIR="@0@"'.format(relative_dir),
 		language: 'c',
 	)
 endif
@@ -84,13 +84,9 @@ features = {
 	'x11-backend': false,
 	'gles2-renderer': false,
 	'vulkan-renderer': false,
+	'macos_platform': is_macos,
+	'linux_platform': is_linux,
 }
-internal_features = {
-	'egl': false,
-	'macos': is_macos,
-	'linux': is_linux,
-}
-internal_config = configuration_data()
 
 math = cc.find_library('m')
 if is_linux
@@ -134,6 +130,7 @@ if is_linux
 endif
 subdir('image')
 subdir('math')
+subdir('platform')
 
 wlf_inc = include_directories('include')
 
@@ -172,8 +169,6 @@ wlframe = declare_dependency(
 )
 
 meson.override_dependency(versioned_name, wlframe)
-
-summary(features + internal_features, bool_yn: true)
 
 subdir('examples')
 
