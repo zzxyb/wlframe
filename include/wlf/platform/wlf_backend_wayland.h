@@ -38,4 +38,6 @@ struct wlf_backend_wayland {
  */
 bool wlf_backend_wayland_register(void);
 
+struct wlf_backend_wayland *wlf_backend_wayland_from_backend(struct wlf_backend *backend);
+
 #endif // PLATFORM_WLF_BACKEND_WAYLAND_H
