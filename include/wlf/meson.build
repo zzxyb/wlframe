@@ -23,3 +23,5 @@ ver_h = configure_file(
 )
 
 install_headers(conf_h, ver_h, subdir: versioned_name / 'wlf')
+
+subdir('types')

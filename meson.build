@@ -101,6 +101,9 @@ if is_linux
 		default_options: wayland_project_options,
 	)
 	libpng = dependency('libpng', required: true)
+	egl = dependency('egl',  required: true)
+	glesv2 = dependency('glesv2', required: true)
+	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -119,6 +122,9 @@ elif is_linux
 	wlf_deps += [
 		rt,
 		wayland_client,
+		egl,
+		glesv2,
+		vulkan,
 	]
 else
 endif
@@ -130,7 +136,14 @@ if is_linux
 endif
 subdir('image')
 subdir('math')
+subdir('types')
 subdir('platform')
+subdir('texture')
+subdir('render')
+subdir('blit')
+subdir('framebuffer')
+subdir('item')
+subdir('window')
 
 wlf_inc = include_directories('include')
 
