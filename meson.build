@@ -82,8 +82,8 @@ endif
 features = {
 	'wayland-backend': false,
 	'x11-backend': false,
-	'gles2-renderer': false,
-	'vulkan-renderer': false,
+	'gles2-render': false,
+	'vulkan-render': false,
 	'macos_platform': is_macos,
 	'linux_platform': is_linux,
 }
@@ -102,6 +102,12 @@ if is_linux
 	)
 	libpng = dependency('libpng', required: true)
 	libturbojpeg = dependency('libjpeg', required: true)
+	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
+	pixman = dependency('pixman-1',
+		version: '>=0.43.0',
+		fallback: 'pixman',
+		default_options: ['werror=false'],
+	)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -122,6 +128,8 @@ elif is_linux
 	wlf_deps += [
 		rt,
 		wayland_client,
+		vulkan,
+		pixman,
 	]
 else
 endif
@@ -134,6 +142,8 @@ endif
 subdir('image')
 subdir('math')
 subdir('platform')
+subdir('render')
+subdir('types')
 
 wlf_inc = include_directories('include')
 
