@@ -34,6 +34,7 @@ jobs:
           ninja \
           libpng \
           pkg-config \
+          libjpeg-turbo	\
           cppcheck
 
     - name: Setup build

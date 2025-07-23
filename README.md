@@ -7,7 +7,8 @@
 build dependencies(for arch linux):
 ```shell
 pacman -S \
-	base-devel meson gcc clang ninja pkgconf cppcheck wayland libpng
+	base-devel meson gcc clang ninja pkgconf cppcheck wayland libpng \
+	libjpeg-turbo
 ```
 
 **Run these commands:**

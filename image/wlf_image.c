@@ -1,7 +1,9 @@
 #include "wlf/image/wlf_image.h"
 #include "wlf/image/wlf_png_image.h"
+#include "wlf/image/wlf_jpeg_image.h"
 
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
@@ -69,17 +71,42 @@ int wlf_image_get_channels(const struct wlf_image *image) {
 }
 
 bool wlf_image_save(struct wlf_image *image, const char *filename) {
-	struct wlf_png_image *png_image = wlf_png_image_from_image(image);
-	if (png_image && png_image->base.impl->save) {
-		return png_image->base.impl->save(image, filename);
+	if (!image || !filename) {
+		return false;
+	}
+
+	// Try PNG first - check if this is a PNG image
+	if (wlf_image_is_png(image)) {
+		struct wlf_png_image *png_image = wlf_png_image_from_image(image);
+		if (png_image && png_image->base.impl->save) {
+			return png_image->base.impl->save(image, filename);
+		}
+	}
+
+	// Try JPEG - check if this is a JPEG image
+	if (wlf_image_is_jpeg(image)) {
+		struct wlf_jpeg_image *jpeg_image = wlf_jpeg_image_from_image(image);
+		if (jpeg_image && jpeg_image->base.impl->save) {
+			return jpeg_image->base.impl->save(image, filename);
+		}
 	}
 
 	return false;
 }
 
 struct wlf_image *wlf_image_load(const char *filename) {
+	if (!filename) {
+		return NULL;
+	}
+
 	const char *ext = strrchr(filename, '.');
-	if (ext && strcasecmp(ext, ".png") == 0) {
+	if (!ext) {
+		// No file extension found
+		return NULL;
+	}
+
+	// Check for PNG format
+	if (strcasecmp(ext, ".png") == 0) {
 		struct wlf_png_image *png_image = wlf_png_image_create();
 		if (png_image) {
 			png_image->base.image_type = WLF_IMAGE_TYPE_PNG;
@@ -87,6 +114,21 @@ struct wlf_image *wlf_image_load(const char *filename) {
 				return (struct wlf_image *)png_image;
 			} else {
 				png_image->base.impl->destroy((struct wlf_image *)png_image);
+				return NULL;
+			}
+		} else {
+			return NULL;
+		}
+	}
+	// Check for JPEG format (.jpg or .jpeg)
+	else if (strcasecmp(ext, ".jpg") == 0 || strcasecmp(ext, ".jpeg") == 0) {
+		struct wlf_jpeg_image *jpeg_image = wlf_jpeg_image_create();
+		if (jpeg_image) {
+			jpeg_image->base.image_type = WLF_IMAGE_TYPE_JPEG;
+			if (jpeg_image->base.impl->load(&jpeg_image->base, filename, false)) {
+				return (struct wlf_image *)jpeg_image;
+			} else {
+				jpeg_image->base.impl->destroy((struct wlf_image *)jpeg_image);
 				return NULL;
 			}
 		} else {

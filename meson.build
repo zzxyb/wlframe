@@ -101,9 +101,11 @@ if is_linux
 		default_options: wayland_project_options,
 	)
 	libpng = dependency('libpng', required: true)
+	libturbojpeg = dependency('libjpeg', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
+	libturbojpeg = dependency('libturbojpeg', required: true, method: 'pkg-config')
 else
 	error('Unsupported platform')
 endif
@@ -112,6 +114,7 @@ wlf_files = []
 wlf_deps = [
 	math,
 	libpng,
+	libturbojpeg,
 ]
 
 if is_macos
