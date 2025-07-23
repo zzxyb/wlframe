@@ -47,6 +47,16 @@ struct wlf_png_image {
 struct wlf_png_image *wlf_png_image_create(void);
 
 /**
+ * @brief Check if a wlf_image is a PNG image.
+ * @param image Pointer to the wlf_image structure to check.
+ * @return true if the image is a PNG image, false otherwise.
+ * @note This function checks the image type and implementation to determine
+ *       if the image is a PNG. It's useful for type checking before
+ *       calling PNG-specific functions.
+ */
+bool wlf_image_is_png(struct wlf_image *image);
+
+/**
  * @brief Convert a wlf_image pointer to a wlf_png_image pointer.
  * @param wlf_image Pointer to the base wlf_image structure.
  * @return Pointer to the corresponding wlf_png_image structure.
