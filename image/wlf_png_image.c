@@ -188,6 +188,15 @@ struct wlf_png_image *wlf_png_image_create(void) {
 	return image;
 };
 
+bool wlf_image_is_png(struct wlf_image *image) {
+	if (!image) {
+		return false;
+	}
+
+	return (image->impl == &png_image_impl &&
+			image->image_type == WLF_IMAGE_TYPE_PNG);
+}
+
 struct wlf_png_image *wlf_png_image_from_image(struct wlf_image *wlf_image) {
 	assert(wlf_image->impl == &png_image_impl);
 	struct wlf_png_image *image = wlf_container_of(wlf_image, image, base);
