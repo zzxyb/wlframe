@@ -34,7 +34,7 @@ enum wlf_image_type {
 	WLF_IMAGE_TYPE_UNKNOWN, /**< Unknown or unsupported image type */
 	WLF_IMAGE_TYPE_PNG,     /**< PNG (Portable Network Graphics) image */
 	WLF_IMAGE_TYPE_JPEG,    /**< JPEG (Joint Photographic Experts Group) image */
-	WLF_IMAGE_TYPE_SVG,     /**< SVG (Scalable Vector Graphics) image */
+	WLF_IMAGE_TYPE_BMP,     /**< SVG (Scalable Vector Graphics) image */
 };
 
 /**
@@ -61,7 +61,7 @@ static const struct wlf_image_type_map image_type[] = {
 	{ WLF_IMAGE_TYPE_UNKNOWN, "unknown" },
 	{ WLF_IMAGE_TYPE_PNG,  "png"  },
 	{ WLF_IMAGE_TYPE_JPEG, "jpeg" },
-	{ WLF_IMAGE_TYPE_SVG,  "svg"  },
+	{ WLF_IMAGE_TYPE_BMP,  "bmp"  },
 };
 
 /**

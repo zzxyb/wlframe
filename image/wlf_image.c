@@ -1,6 +1,7 @@
 #include "wlf/image/wlf_image.h"
 #include "wlf/image/wlf_png_image.h"
 #include "wlf/image/wlf_jpeg_image.h"
+#include "wlf/image/wlf_bmp_image.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -91,6 +92,14 @@ bool wlf_image_save(struct wlf_image *image, const char *filename) {
 		}
 	}
 
+	// Try BMP - check if this is a BMP image
+	if (wlf_image_is_bmp(image)) {
+		struct wlf_bmp_image *bmp_image = wlf_bmp_image_from_image(image);
+		if (bmp_image && bmp_image->base.impl->save) {
+			return bmp_image->base.impl->save(image, filename);
+		}
+	}
+
 	return false;
 }
 
@@ -119,9 +128,7 @@ struct wlf_image *wlf_image_load(const char *filename) {
 		} else {
 			return NULL;
 		}
-	}
-	// Check for JPEG format (.jpg or .jpeg)
-	else if (strcasecmp(ext, ".jpg") == 0 || strcasecmp(ext, ".jpeg") == 0) {
+	} else if (strcasecmp(ext, ".jpg") == 0 || strcasecmp(ext, ".jpeg") == 0) {
 		struct wlf_jpeg_image *jpeg_image = wlf_jpeg_image_create();
 		if (jpeg_image) {
 			jpeg_image->base.image_type = WLF_IMAGE_TYPE_JPEG;
@@ -129,6 +136,19 @@ struct wlf_image *wlf_image_load(const char *filename) {
 				return (struct wlf_image *)jpeg_image;
 			} else {
 				jpeg_image->base.impl->destroy((struct wlf_image *)jpeg_image);
+				return NULL;
+			}
+		} else {
+			return NULL;
+		}
+	} else if (strcasecmp(ext, ".bmp") == 0) {
+		struct wlf_bmp_image *bmp_image = wlf_bmp_image_create();
+		if (bmp_image) {
+			bmp_image->base.image_type = WLF_IMAGE_TYPE_BMP;
+			if (bmp_image->base.impl->load(&bmp_image->base, filename, false)) {
+				return (struct wlf_image *)bmp_image;
+			} else {
+				bmp_image->base.impl->destroy((struct wlf_image *)bmp_image);
 				return NULL;
 			}
 		} else {
