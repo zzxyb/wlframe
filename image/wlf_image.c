@@ -2,6 +2,7 @@
 #include "wlf/image/wlf_png_image.h"
 #include "wlf/image/wlf_jpeg_image.h"
 #include "wlf/image/wlf_bmp_image.h"
+#include "wlf/image/wlf_ppm_image.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -100,6 +101,14 @@ bool wlf_image_save(struct wlf_image *image, const char *filename) {
 		}
 	}
 
+	// Try PPM - check if this is a PPM image
+	if (wlf_image_is_ppm(image)) {
+		struct wlf_ppm_image *ppm_image = wlf_ppm_image_from_image(image);
+		if (ppm_image && ppm_image->base.impl->save) {
+			return ppm_image->base.impl->save(image, filename);
+		}
+	}
+
 	return false;
 }
 
@@ -149,6 +158,19 @@ struct wlf_image *wlf_image_load(const char *filename) {
 				return (struct wlf_image *)bmp_image;
 			} else {
 				bmp_image->base.impl->destroy((struct wlf_image *)bmp_image);
+				return NULL;
+			}
+		} else {
+			return NULL;
+		}
+	} else if (strcasecmp(ext, ".ppm") == 0) {
+		struct wlf_ppm_image *ppm_image = wlf_ppm_image_create();
+		if (ppm_image) {
+			ppm_image->base.image_type = WLF_IMAGE_TYPE_PPM;
+			if (ppm_image->base.impl->load(&ppm_image->base, filename, false)) {
+				return (struct wlf_image *)ppm_image;
+			} else {
+				ppm_image->base.impl->destroy((struct wlf_image *)ppm_image);
 				return NULL;
 			}
 		} else {
