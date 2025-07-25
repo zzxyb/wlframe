@@ -11,6 +11,10 @@ image_examples = {
 		'src': ['bmp_image_test.c'],
 		'dep': [],
 	},
+	'ppm_image_test': {
+		'src': ['ppm_image_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : image_examples

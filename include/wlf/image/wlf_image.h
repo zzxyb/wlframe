@@ -35,6 +35,7 @@ enum wlf_image_type {
 	WLF_IMAGE_TYPE_PNG,     /**< PNG (Portable Network Graphics) image */
 	WLF_IMAGE_TYPE_JPEG,    /**< JPEG (Joint Photographic Experts Group) image */
 	WLF_IMAGE_TYPE_BMP,     /**< SVG (Scalable Vector Graphics) image */
+	WLF_IMAGE_TYPE_PPM,     /**< PPM (Portable Pixmap Format) image */
 };
 
 /**
@@ -62,6 +63,7 @@ static const struct wlf_image_type_map image_type[] = {
 	{ WLF_IMAGE_TYPE_PNG,  "png"  },
 	{ WLF_IMAGE_TYPE_JPEG, "jpeg" },
 	{ WLF_IMAGE_TYPE_BMP,  "bmp"  },
+	{ WLF_IMAGE_TYPE_PPM,  "ppm"  },
 };
 
 /**
