@@ -1,9 +1,11 @@
 #include "wlf/platform/wlf_backend_builtin.h"
 #include "wlf/platform/wlf_backend.h"
-#include "wlf/platform/wlf_backend_wayland.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_env.h"
 #include "wlf/config.h"
+#if WLF_HAS_LINUX_PLATFORM
+#include "wlf/platform/wayland/wlf_backend_wayland.h"
+#endif
 
 bool wlf_backend_builtin_init(void) {
 	wlf_backend_init();
