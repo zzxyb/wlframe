@@ -82,7 +82,7 @@ endif
 features = {
 	'wayland-backend': false,
 	'x11-backend': false,
-	'vulkan-renderer': false,
+	'vulkan-render': false,
 	'macos_platform': is_macos,
 	'linux_platform': is_linux,
 }

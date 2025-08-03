@@ -4,7 +4,7 @@
 #mesondefine WLF_HAS_WAYlAND_BACKEND
 #mesondefine WLF_HAS_X11_BACKEND
 
-#mesondefine WLF_HAS_VULKAN_RENDERER
+#mesondefine WLF_HAS_VULKAN_RENDER
 
 #mesondefine WLF_HAS_MACOS_PLATFORM
 #mesondefine WLF_HAS_LINUX_PLATFORM
