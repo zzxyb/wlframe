@@ -101,6 +101,7 @@ if is_linux
 	)
 	libpng = dependency('libpng', required: true)
 	libturbojpeg = dependency('libjpeg', required: true)
+	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -121,6 +122,7 @@ elif is_linux
 	wlf_deps += [
 		rt,
 		wayland_client,
+		vulkan,
 	]
 else
 endif

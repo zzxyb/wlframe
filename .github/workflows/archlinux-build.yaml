@@ -32,7 +32,10 @@ jobs:
           wayland-protocols \
           libpng \
           libjpeg-turbo	\
-          cppcheck
+          cppcheck \
+          vulkan-icd-loader \
+          vulkan-headers \
+          glslang \
 
     - name: Build with GCC
       run: |
