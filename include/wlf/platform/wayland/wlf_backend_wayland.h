@@ -17,6 +17,8 @@
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/wayland/wlf_wl_display.h"
 
+#include <stdbool.h>
+
 /**
  * @brief Wayland backend specific data
  */
@@ -37,5 +39,19 @@ struct wlf_backend_wayland {
  * @return true on success, false on failure
  */
 bool wlf_backend_wayland_register(void);
+
+/**
+ * @brief Check if a backend is a Wayland backend
+ * @param backend Pointer to the backend to check
+ * @return true if the backend is a Wayland backend, false otherwise
+ */
+bool wlf_backend_is_wayland(struct wlf_backend *backend);
+
+/**
+ * @brief Cast a generic backend to a Wayland backend
+ * @param backend Pointer to the generic backend
+ * @return Pointer to the Wayland backend, or NULL if the backend is not a Wayland backend
+ */
+struct wlf_backend_wayland *wlf_backend_wayland_from_backend(struct wlf_backend *backend);
 
 #endif // PLATFORM_WLF_BACKEND_WAYLAND_H
