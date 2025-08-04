@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <assert.h>
 
 #include <wayland-client-protocol.h>
 
@@ -160,4 +161,16 @@ static struct wlf_backend_registry_entry entry = {
 
 bool wlf_backend_wayland_register(void) {
 	return wlf_backend_register(&entry);
+}
+
+bool wlf_backend_is_wayland(struct wlf_backend *backend) {
+	return (backend && backend->impl == &wayland_backend_impl &&
+			backend->type == WLF_BACKEND_WAYLAND);
+}
+
+struct wlf_backend_wayland *wlf_backend_wayland_from_backend(struct wlf_backend *wlf_backend) {
+	assert(wlf_backend && wlf_backend->impl == &wayland_backend_impl);
+	struct wlf_backend_wayland *backend = wlf_container_of(wlf_backend, backend, base);
+
+	return backend;
 }
