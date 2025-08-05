@@ -135,6 +135,7 @@ endif
 subdir('image')
 subdir('math')
 subdir('platform')
+subdir('render')
 
 wlf_inc = include_directories('include')
 
