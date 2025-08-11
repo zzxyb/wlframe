@@ -135,6 +135,7 @@ endif
 subdir('image')
 subdir('math')
 subdir('platform')
+subdir('renderer')
 
 wlf_inc = include_directories('include')
 
@@ -151,7 +152,6 @@ if is_linux
         link_depends: symbols_file,
     )
 elif is_macos
-    # macOS 不支持 --version-script，使用 -exported_symbols_list
     lib_wlf = library(
         versioned_name, wlf_files,
         dependencies: wlf_deps,
