@@ -10,4 +10,5 @@ wlf_files += files(
 	'wlf_addon.c',
 	'wlf_array.c',
 	'wlf_map.c',
+	'wlf_hash.c',
 )
