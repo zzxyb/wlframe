@@ -36,6 +36,7 @@ jobs:
           vulkan-icd-loader \
           vulkan-headers \
           glslang \
+          libva \
 
     - name: Build with GCC
       run: |
