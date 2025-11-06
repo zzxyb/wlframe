@@ -1,6 +1,6 @@
 project(
 	'wlframe',
-	'c',
+	['c'],
 	version: '0.0.1-dev',
 	license: 'MIT',
 	meson_version: '>=1.3',
@@ -10,6 +10,20 @@ project(
 		'werror=true',
 	],
 )
+
+if host_machine.system() == 'darwin'
+	message('Detected macOS: enabling Objective-C support')
+	add_languages('objc', required: false)
+	add_project_arguments('-fobjc-arc', '-Wall', '-Wextra', language: 'objc')
+	if meson.version().version_compare('>=1.4.0')
+		add_project_arguments('-std=gnu11', language: 'objc')
+	endif
+
+    metal_framework = declare_dependency(
+        compile_args: ['-framework', 'Metal', '-framework', 'QuartzCore', '-framework', 'Foundation'],
+        link_args: ['-framework', 'Metal', '-framework', 'QuartzCore', '-framework', 'Foundation'],
+    )
+endif
 
 version = meson.project_version().split('-')[0]
 version_major = version.split('.')[0]
@@ -116,8 +130,10 @@ wlf_deps = [
 	libpng,
 	libturbojpeg,
 ]
-
 if is_macos
+	wlf_deps += [
+		metal_framework,
+	]
 elif is_linux
 	wlf_deps += [
 		rt,
