@@ -178,7 +178,7 @@ meson.override_dependency(versioned_name, wlframe)
 subdir('examples')
 
 if get_option('documentation').enabled()
-	subdir('doc')
+	subdir('docs')
 endif
 
 pkgconfig = import('pkgconfig')

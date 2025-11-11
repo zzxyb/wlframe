@@ -36,6 +36,11 @@ jobs:
           vulkan-icd-loader \
           vulkan-headers \
           glslang \
+          doxygen \
+          graphviz \
+          libxslt \
+          xmlto \
+          libxml2 \
 
     - name: Build with GCC
       run: |
@@ -52,7 +57,8 @@ jobs:
           --buildtype=debug \
           --fatal-meson-warnings \
           --default-library=both \
-          --prefix=/usr
+          --prefix=/usr \
+          -Ddocumentation=enabled
         ninja -C build-clang -v
 
     - name: Run tests (GCC)
