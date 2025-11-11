@@ -36,12 +36,18 @@ jobs:
           pkg-config \
           libjpeg-turbo	\
           cppcheck \
+          doxygen \
+          graphviz \
+          libxslt \
+          xmlto \
+          libxml2 \
 
     - name: Setup build
       run: |
         meson setup build-${{ matrix.buildtype }} \
           --buildtype=${{ matrix.buildtype }} \
-          --strip
+          --strip \
+          -Ddocumentation=enabled
 
     - name: Build
       run: ninja -C build-${{ matrix.buildtype }} -v
