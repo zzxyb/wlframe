@@ -13,7 +13,7 @@ struct wlf_renderer *wlf_vk_renderer_create_from_backend(
 	wlf_log(WLF_INFO, "Run with VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation "
 		"to enable the validation layer");
 	struct wlf_vk_instance *ini = wlf_vk_instance_create(
-		wlf_env_parse_bool("WSM_RENDER_DEBUG)"));
+		wlf_env_parse_bool("WLF_RENDER_DEBUG)"));
 	if (!ini) {
 		wlf_log(WLF_ERROR, "creating vulkan instance for render failed");
 		return NULL;

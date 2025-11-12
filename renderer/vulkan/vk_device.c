@@ -297,8 +297,8 @@ VkPhysicalDevice wlf_vk_find_phdev(struct wlf_vk_instance *instance) {
 		return VK_NULL_HANDLE;
 	}
 
-	bool force_sw = wlf_env_parse_bool("WSM_RENDER_FORCE_SOFTWARE");
-	bool force_discrete_gpu = wlf_env_parse_bool("WSM_RENDER_FORCE_DISCRETE_GPU");
+	bool force_sw = wlf_env_parse_bool("WLF_RENDER_FORCE_SOFTWARE");
+	bool force_discrete_gpu = wlf_env_parse_bool("WLF_RENDER_FORCE_DISCRETE_GPU");
 	for (uint32_t i = 0; i < num_phdevs; ++i) {
 		VkPhysicalDevice phdev = phdevs[i];
 		VkPhysicalDeviceProperties phdev_props;
@@ -364,12 +364,12 @@ VkPhysicalDevice wlf_vk_find_phdev(struct wlf_vk_instance *instance) {
 		bool found;
 
 		if (force_sw) {
-			wlf_log(WLF_INFO, "WSM_RENDER_FORCE_SOFTWARE env variable is set, "
+			wlf_log(WLF_INFO, "WLF_RENDER_FORCE_SOFTWARE env variable is set, "
 				"forcing software render");
 			found = phdev_props.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU;
 		} else {
 			if (force_discrete_gpu) {
-				wlf_log(WLF_INFO, "WSM_RENDER_FORCE_DISCRETE_GPU env variable is set, "
+				wlf_log(WLF_INFO, "WLF_RENDER_FORCE_DISCRETE_GPU env variable is set, "
 					"forcing discrete GPU");
 				found = phdev_props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
 			} else {

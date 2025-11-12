@@ -18,7 +18,7 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		"vulkan",
 		NULL
 	};
-	const char *render_name = render_options[wlf_env_parse_switch("WSM_RENDERER",
+	const char *render_name = render_options[wlf_env_parse_switch("WLF_RENDERER",
 		render_options)];
 	bool is_auto = strcmp(render_name, "auto") == 0;
 	if (is_auto || strcmp(render_name, "vulkan") == 0) {
