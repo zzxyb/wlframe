@@ -1,4 +1,4 @@
-# Contributing to wlf
+# Contributing to wlframe
 
 Contributing just involves sending a merge request. You will probably be more
 successful with your contribution if you visit [#Lychee on Maxtrix]
@@ -14,8 +14,8 @@ If you already have your own merge request habits, feel free to use them. If you
 don't, however, allow me to make a suggestion: feature branches pulled from
 upstream. Try this:
 
-1. Fork wlf
-2. `git remote add upstream https://github.com/zzxyb/wlf`
+1. Fork wlframe
+2. `git remote add upstream https://github.com/zzxyb/wlframe`
 
 You only need to do this once. You're never going to use your fork's master
 branch. Instead, when you start working on a feature, do this:
@@ -57,7 +57,7 @@ read desktop GSettings configuration
 
 if necessary, give a detailed intriduction
 
-issues: https://github.com/zzxyb/wlf/issues/4
+issues: https://github.com/zzxyb/wlframe/issues/4
 
 Signed-off-by: user.name user.email
 ```
@@ -118,14 +118,14 @@ process is:
 
 ## Code of Conduct
 
-Note that as a project hosted on Github, wlfs follows its
+Note that as a project hosted on Github, wlframe follows its
 [Code of Conduct], based on the Contributor Covenant. Please conduct yourself
 in a respectful and civilized manner when communicating with community members
 on IRC and bug tracker.
 
 ## Style Reference
 
-wlfs is written in C with a style similar to the [kernel style], but with a
+wlframe is written in C with a style similar to the [kernel style], but with a
 few notable differences.
 
 Try to keep your code conforming to C11 and POSIX as much as possible, and do

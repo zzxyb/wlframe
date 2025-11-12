@@ -8,7 +8,8 @@ build dependencies(for arch linux):
 ```shell
 pacman -S \
 	base-devel meson gcc clang ninja pkgconf cppcheck wayland libpng \
-	libjpeg-turbo
+	libjpeg-turbo vulkan-icd-loader vulkan-headers glslang doxygen \
+	graphviz libxslt xmlto libxml2
 ```
 
 **Run these commands:**
@@ -24,7 +25,7 @@ To generate API documentation with Doxygen:
 1. Set the `documentation` option to `enabled` in `meson_options.txt`.
 2. Re-run the Meson build.
 3. The generated documentation will be available at:
-   `build/doc/doxygen/html/wlframe/index.html`
+   `build/docs/doxygen/html/wlframe/index.html`
 
 ## Contributing
 
