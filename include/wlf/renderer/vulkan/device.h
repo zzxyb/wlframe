@@ -1,5 +1,5 @@
 /**
- * @file        vk_device.h
+ * @file        device.h
  * @brief       Vulkan logical device management for wlframe.
  * @details     This file defines the Vulkan device wrapper used by wlframe.
  *              It provides management for Vulkan logical and physical devices,

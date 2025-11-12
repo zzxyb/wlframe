@@ -4,5 +4,5 @@ wlf_files += files(
 )
 
 if is_linux
-	wlf_files += files('wlf_backend_wayland.c')
+	subdir('wayland')
 endif

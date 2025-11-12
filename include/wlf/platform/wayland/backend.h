@@ -1,5 +1,5 @@
 /**
- * @file        wlf_backend_wayland.h
+ * @file        backend.h
  * @brief       Wayland client backend implementation
  * @details     This backend allows wlframe to run as a Wayland client,
  *              creating windows on an existing Wayland compositor.

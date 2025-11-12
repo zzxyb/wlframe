@@ -4,7 +4,7 @@
 #include "wlf/utils/wlf_env.h"
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
-#include "wlf/platform/wayland/wlf_backend_wayland.h"
+#include "wlf/platform/wayland/backend.h"
 #endif
 
 bool wlf_backend_builtin_init(void) {

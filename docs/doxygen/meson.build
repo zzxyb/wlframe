@@ -56,11 +56,11 @@ src_files = files([
 
 if is_linux
 	src_files += files([
-			'../../include/wlf/platform/wayland/wlf_backend_wayland.h',
+			'../../include/wlf/platform/wayland/backend.h',
 
-			'../../include/wlf/renderer/vulkan/vk_device.h',
-			'../../include/wlf/renderer/vulkan/vk_instance.h',
-			'../../include/wlf/renderer/vulkan/vk_renderer.h',
+			'../../include/wlf/renderer/vulkan/device.h',
+			'../../include/wlf/renderer/vulkan/instance.h',
+			'../../include/wlf/renderer/vulkan/renderer.h',
 
 			'../../include/wlf/wayland/wlf_wl_compositor.h',
 			'../../include/wlf/wayland/wlf_wl_display.h',

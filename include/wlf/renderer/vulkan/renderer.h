@@ -1,5 +1,5 @@
 /**
- * @file        vk_renderer.h
+ * @file        renderer.h
  * @brief       Vulkan renderer backend implementation for wlframe.
  * @details     This file defines the Vulkan-based renderer implementation for wlframe.
  *              It extends the generic `wlf_renderer` interface to provide hardware-accelerated
