@@ -4,7 +4,7 @@
 #include "wlf/utils/wlf_env.h"
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
-#include "wlf/renderer/vulkan/vk_renderer.h"
+#include "wlf/renderer/vulkan/renderer.h"
 #endif
 
 #include <stdlib.h>

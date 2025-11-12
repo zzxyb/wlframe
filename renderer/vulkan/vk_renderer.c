@@ -1,6 +1,6 @@
-#include "wlf/renderer/vulkan/vk_renderer.h"
-#include "wlf/renderer/vulkan/vk_device.h"
-#include "wlf/renderer/vulkan/vk_instance.h"
+#include "wlf/renderer/vulkan/renderer.h"
+#include "wlf/renderer/vulkan/device.h"
+#include "wlf/renderer/vulkan/instance.h"
 #include "wlf/utils/wlf_env.h"
 
 #include <stdint.h>

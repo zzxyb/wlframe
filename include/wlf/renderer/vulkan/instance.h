@@ -1,5 +1,5 @@
 /**
- * @file        vk_instance.h
+ * @file        instance.h
  * @brief       Vulkan instance management for wlframe.
  * @details     This file defines the Vulkan instance wrapper used by wlframe.
  *              It encapsulates the Vulkan `VkInstance` object, debug utilities,
