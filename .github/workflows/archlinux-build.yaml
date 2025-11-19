@@ -41,6 +41,7 @@ jobs:
           libxslt \
           xmlto \
           libxml2 \
+          libva \
 
     - name: Build with GCC
       run: |
