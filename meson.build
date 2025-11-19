@@ -116,6 +116,8 @@ if is_linux
 			'tests=false',
 		],
 	)
+	libva = dependency('libva', required: true)
+	libva_wayland = dependency('libva-wayland', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -140,6 +142,8 @@ elif is_linux
 		vulkan,
 		gbm,
 		drm,
+		libva,
+		libva_wayland,
 	]
 else
 endif
@@ -158,6 +162,7 @@ subdir('renderer')
 subdir('types')
 subdir('buffer')
 subdir('animator')
+subdir('va')
 
 wlf_inc = include_directories('include')
 

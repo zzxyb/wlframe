@@ -1,0 +1,105 @@
+#include "wlf/video/wlf_video_common.h"
+#include "wlf/utils/wlf_log.h"
+#include <stdlib.h>
+#include <string.h>
+
+bool wlf_video_buffer_init(struct wlf_video_buffer *buffer,
+	VkDevice device, VkDeviceSize size, VkBufferUsageFlags usage) {
+
+	if (!buffer || !device || size == 0) {
+		return false;
+	}
+
+	memset(buffer, 0, sizeof(struct wlf_video_buffer));
+	buffer->size = size;
+	buffer->ref_count = 1;
+
+	/* Create Vulkan buffer */
+	VkBufferCreateInfo buffer_info = {
+		.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+		.size = size,
+		.usage = usage | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
+		.sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+	};
+
+	VkResult result = vkCreateBuffer(device, &buffer_info, NULL, &buffer->buffer);
+	if (result != VK_SUCCESS) {
+		wlf_log(WLF_ERROR, "Failed to create buffer: %d", result);
+		return false;
+	}
+
+	/* Get memory requirements */
+	VkMemoryRequirements mem_reqs;
+	vkGetBufferMemoryRequirements(device, buffer->buffer, &mem_reqs);
+
+	/* Allocate memory */
+	VkMemoryAllocateInfo alloc_info = {
+		.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+		.allocationSize = mem_reqs.size,
+		.memoryTypeIndex = 0, /* Should find appropriate memory type */
+	};
+
+	result = vkAllocateMemory(device, &alloc_info, NULL, &buffer->memory);
+	if (result != VK_SUCCESS) {
+		wlf_log(WLF_ERROR, "Failed to allocate buffer memory: %d", result);
+		vkDestroyBuffer(device, buffer->buffer, NULL);
+		return false;
+	}
+
+	/* Bind memory to buffer */
+	result = vkBindBufferMemory(device, buffer->buffer, buffer->memory, 0);
+	if (result != VK_SUCCESS) {
+		wlf_log(WLF_ERROR, "Failed to bind buffer memory: %d", result);
+		vkFreeMemory(device, buffer->memory, NULL);
+		vkDestroyBuffer(device, buffer->buffer, NULL);
+		return false;
+	}
+
+	return true;
+}
+
+void wlf_video_buffer_destroy(struct wlf_video_buffer *buffer, VkDevice device) {
+	if (!buffer || !device) {
+		return;
+	}
+
+	if (buffer->mapped_data) {
+		vkUnmapMemory(device, buffer->memory);
+		buffer->mapped_data = NULL;
+	}
+
+	if (buffer->buffer != VK_NULL_HANDLE) {
+		vkDestroyBuffer(device, buffer->buffer, NULL);
+		buffer->buffer = VK_NULL_HANDLE;
+	}
+
+	if (buffer->memory != VK_NULL_HANDLE) {
+		vkFreeMemory(device, buffer->memory, NULL);
+		buffer->memory = VK_NULL_HANDLE;
+	}
+}
+
+void *wlf_video_buffer_map(struct wlf_video_buffer *buffer, VkDevice device) {
+	if (!buffer || !device || buffer->mapped_data) {
+		return NULL;
+	}
+
+	VkResult result = vkMapMemory(device, buffer->memory, buffer->offset,
+		buffer->size, 0, &buffer->mapped_data);
+
+	if (result != VK_SUCCESS) {
+		wlf_log(WLF_ERROR, "Failed to map buffer memory: %d", result);
+		return NULL;
+	}
+
+	return buffer->mapped_data;
+}
+
+void wlf_video_buffer_unmap(struct wlf_video_buffer *buffer, VkDevice device) {
+	if (!buffer || !device || !buffer->mapped_data) {
+		return;
+	}
+
+	vkUnmapMemory(device, buffer->memory);
+	buffer->mapped_data = NULL;
+}

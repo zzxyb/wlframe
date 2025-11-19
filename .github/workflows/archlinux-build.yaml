@@ -43,6 +43,7 @@ jobs:
           libxml2 \
           mesa \
           libdrm \
+          libva \
 
     - name: Build with GCC
       run: |

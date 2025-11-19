@@ -9,7 +9,7 @@ build dependencies(for arch linux):
 pacman -S \
 	base-devel meson gcc clang ninja pkgconf cppcheck wayland libpng \
 	libjpeg-turbo vulkan-icd-loader vulkan-headers glslang doxygen \
-	graphviz libxslt xmlto libxml2
+	graphviz libxslt xmlto libxml2 libva
 ```
 
 **Run these commands:**
