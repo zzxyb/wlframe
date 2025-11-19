@@ -1,5 +1,6 @@
 if is_linux
 	subdir('wayland')
+	subdir('va')
 endif
 
 subdir('image')

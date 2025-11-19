@@ -102,6 +102,8 @@ if is_linux
 	libpng = dependency('libpng', required: true)
 	libturbojpeg = dependency('libjpeg', required: true)
 	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
+	libva = dependency('libva', required: true)
+	libva_wayland = dependency('libva-wayland', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -123,6 +125,8 @@ elif is_linux
 		rt,
 		wayland_client,
 		vulkan,
+		libva,
+		libva_wayland,
 	]
 else
 endif
@@ -131,6 +135,7 @@ subdir('include')
 subdir('utils')
 if is_linux
 	subdir('wayland')
+	subdir('va')
 endif
 subdir('image')
 subdir('math')
