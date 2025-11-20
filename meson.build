@@ -137,6 +137,7 @@ subdir('math')
 subdir('platform')
 subdir('renderer')
 subdir('types')
+subdir('window')
 
 wlf_inc = include_directories('include')
 
