@@ -11,16 +11,6 @@ static void display_handle_global(void *data, struct wl_registry *wl_registry,
 		uint32_t name, const char *interface, uint32_t version) {
 	wlf_log(WLF_DEBUG, "Wayland registry global: %s v%" PRIu32, interface, version);
 	struct wlf_wl_display *display = data;
-	struct wlf_wl_interface *reg;
-	wlf_linked_list_for_each(reg, &display->interfaces, link) {
-		if (strcmp(reg->interface, interface) == 0
-				&& reg->name == name
-				&& reg->version == version
-				&& interface != wl_seat_interface.name) {
-			wlf_log(WLF_DEBUG, "Interface %s already registered", interface);
-			return;
-		}
-	}
 
 	struct wlf_wl_interface *new_reg = wlf_wl_interface_create(display, interface, version, name);
 	if (new_reg == NULL) {
