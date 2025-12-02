@@ -28,7 +28,7 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 	}
 
 	struct wlf_wl_interface *compositor_interface =
-		wlf_wl_display_get_registry_from_interface(wayland->display, wl_compositor_interface.name);
+		wlf_wl_display_find_interface(wayland->display, wl_compositor_interface.name);
 	if (!compositor_interface) {
 		wlf_log(WLF_ERROR, "Failed to find compositor interface in registry");
 		return false;
