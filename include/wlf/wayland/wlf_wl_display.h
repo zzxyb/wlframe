@@ -76,7 +76,7 @@ void wlf_wl_display_destroy(struct wlf_wl_display *display);
  * @param interface Name of the interface to search for.
  * @return Pointer to the found wlf_wl_interface, or NULL if not found.
  */
-struct wlf_wl_interface *wlf_wl_display_get_registry_from_interface(
+struct wlf_wl_interface *wlf_wl_display_find_interface(
 	const struct wlf_wl_display *display, const char *interface);
 
 /**
@@ -92,9 +92,9 @@ struct wlf_wl_interface *wlf_wl_interface_create(struct wlf_wl_display *display,
 
 /**
  * @brief Destroy a wlf_wl_interface (registry) object.
- * @param registry Pointer to the wlf_wl_interface object.
+ * @param interface Pointer to the wlf_wl_interface object.
  */
-void wlf_wl_registry_destroy(struct wlf_wl_interface *registry);
+void wlf_wl_interface_destroy(struct wlf_wl_interface *interface);
 
 /**
  * @brief Check if the client interface version is higher than the remote version.

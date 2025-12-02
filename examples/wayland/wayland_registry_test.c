@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 
 	wlf_wl_display_init_registry(g_display);
 	struct wlf_wl_interface *compositor_interface =
-		wlf_wl_display_get_registry_from_interface(g_display, wl_compositor_interface.name);
+		wlf_wl_display_find_interface(g_display, wl_compositor_interface.name);
 
 	if (compositor_interface == NULL) {
 		wlf_log(WLF_INFO, "Compositor interface not found initially, setting up listeners...");

@@ -30,7 +30,7 @@ static void display_handle_global_remove(void *data,
 		if (reg->name == name) {
 			wlf_log(WLF_DEBUG, "Interface %s removed", reg->interface);
 			wlf_signal_emit(&display->events.global_remove, reg);
-			wlf_wl_registry_destroy(reg);
+			wlf_wl_interface_destroy(reg);
 			break;
 		}
 	}
@@ -91,7 +91,7 @@ void wlf_wl_display_destroy(struct wlf_wl_display *display) {
 
 	struct wlf_wl_interface *reg, *tmp;
 	wlf_linked_list_for_each_safe(reg, tmp, &display->interfaces, link) {
-		wlf_wl_registry_destroy(reg);
+		wlf_wl_interface_destroy(reg);
 	}
 	wlf_linked_list_remove(&display->interfaces);
 	free(display);
@@ -113,17 +113,17 @@ struct wlf_wl_interface *wlf_wl_interface_create(struct wlf_wl_display *display,
 	return reg;
 }
 
-void wlf_wl_registry_destroy(struct wlf_wl_interface *registry) {
-	if (registry == NULL) {
+void wlf_wl_interface_destroy(struct wlf_wl_interface *interface) {
+	if (interface == NULL) {
 		return;
 	}
 
-	wlf_linked_list_remove(&registry->link);
-	free(registry->interface);
-	free(registry);
+	wlf_linked_list_remove(&interface->link);
+	free(interface->interface);
+	free(interface);
 }
 
-struct wlf_wl_interface *wlf_wl_display_get_registry_from_interface(
+struct wlf_wl_interface *wlf_wl_display_find_interface(
 		const struct wlf_wl_display *display, const char *interface) {
 	struct wlf_wl_interface *reg;
 	wlf_linked_list_for_each(reg, &display->interfaces, link) {
