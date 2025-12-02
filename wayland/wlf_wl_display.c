@@ -18,7 +18,7 @@ static void display_handle_global(void *data, struct wl_registry *wl_registry,
 	}
 
 	wlf_linked_list_insert(&display->interfaces, &new_reg->link);
-	wlf_signal_emit(&display->events.global_add, new_reg);
+	wlf_signal_emit_mutable(&display->events.global_add, new_reg);
 }
 
 static void display_handle_global_remove(void *data,
@@ -29,7 +29,7 @@ static void display_handle_global_remove(void *data,
 	wlf_linked_list_for_each_safe(reg, tmp, &display->interfaces, link) {
 		if (reg->name == name) {
 			wlf_log(WLF_DEBUG, "Interface %s removed", reg->interface);
-			wlf_signal_emit(&display->events.global_remove, reg);
+			wlf_signal_emit_mutable(&display->events.global_remove, reg);
 			wlf_wl_interface_destroy(reg);
 			break;
 		}
@@ -81,7 +81,7 @@ void wlf_wl_display_destroy(struct wlf_wl_display *display) {
 	if (display == NULL) {
 		return;
 	}
-	wlf_signal_emit(&display->events.destroy, display);
+	wlf_signal_emit_mutable(&display->events.destroy, display);
 	if (display->registry) {
 		wl_registry_destroy(display->registry);
 	}
