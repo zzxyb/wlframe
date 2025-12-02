@@ -45,7 +45,7 @@ void wlf_wl_compositor_destroy(struct wlf_wl_compositor *compositor) {
 		return;
 	}
 
-	wlf_signal_emit(&compositor->events.destroy, compositor);
+	wlf_signal_emit_mutable(&compositor->events.destroy, compositor);
 
 	if (compositor->base != NULL) {
 		wl_compositor_destroy(compositor->base);

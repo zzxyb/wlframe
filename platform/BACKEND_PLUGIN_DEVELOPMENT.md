@@ -136,7 +136,7 @@ static void custom_backend_destroy(struct wlf_backend *backend) {
         free(custom->custom_data);
     }
 
-    wlf_signal_emit(&backend->events.destroy, backend);
+    wlf_signal_emit_mutable(&backend->events.destroy, backend);
     free(custom);
 
     wlf_log(WLF_INFO, "Custom backend destroyed");

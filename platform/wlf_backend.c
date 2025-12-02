@@ -251,7 +251,7 @@ void wlf_backend_destroy(struct wlf_backend *backend) {
 	wlf_log(WLF_DEBUG, "Destroying backend type %d", backend->type);
 
 	// Emit destroy signal
-	wlf_signal_emit(&backend->events.destroy, backend);
+	wlf_signal_emit_mutable(&backend->events.destroy, backend);
 
 	if (backend->impl && backend->impl->destroy) {
 		backend->impl->destroy(backend);
