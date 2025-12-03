@@ -50,7 +50,7 @@ char* wlf_frect_to_str_prec(const struct wlf_frect *rect, uint8_t precision) {
 
 	char *buffer = malloc(WLF_FRECT_STRLEN);
 	if (buffer == NULL) {
-		wlf_log(WLF_ERROR, "Memory allocation failed for wlf_frect_to_str_prec");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate buffer");
 		return NULL;
 	}
 

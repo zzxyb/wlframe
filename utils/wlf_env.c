@@ -22,7 +22,7 @@ bool wlf_env_parse_bool(const char *option) {
 		wlf_log(WLF_INFO, "Loading %s option: %s", option, env);
 	}
 
-	if (!env || strcmp(env, "0") == 0) {
+	if (env == NULL || strcmp(env, "0") == 0) {
 		return false;
 	} else if (strcmp(env, "1") == 0) {
 		return true;

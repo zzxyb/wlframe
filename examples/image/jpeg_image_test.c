@@ -10,7 +10,7 @@
 static void create_test_jpeg(const char *filename, int quality) {
 	// Create a simple test JPEG image
 	struct wlf_jpeg_image *jpeg_image = wlf_jpeg_image_create();
-	if (!jpeg_image) {
+	if (jpeg_image == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create JPEG image");
 		return;
 	}
@@ -29,8 +29,8 @@ static void create_test_jpeg(const char *filename, int quality) {
 
 	// Allocate image data
 	base->data = malloc(base->height * base->stride);
-	if (!base->data) {
-		wlf_log(WLF_ERROR, "Failed to allocate image data");
+	if (base->data == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate image data");
 		free(jpeg_image);
 		return;
 	}

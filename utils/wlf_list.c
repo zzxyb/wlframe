@@ -7,7 +7,8 @@
 
 struct wlf_list *wlf_list_create(void) {
 	struct wlf_list *list = malloc(sizeof(struct wlf_list));
-	if (!list) {
+	if (list == NULL) {
+		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_list");
 		return NULL;
 	}
 	list->capacity = 10;
@@ -159,8 +160,7 @@ void wlf_list_stable_sort(struct wlf_list *list,
 }
 
 void wlf_list_free_items_and_destroy(struct wlf_list *list) {
-	if (!list) {
-		wlf_log(WLF_ERROR, "wlf_list is NULL!");
+	if (list == NULL) {
 		return;
 	}
 

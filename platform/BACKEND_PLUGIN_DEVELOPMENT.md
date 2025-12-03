@@ -145,7 +145,8 @@ static void custom_backend_destroy(struct wlf_backend *backend) {
 // Create backend instance
 struct wlf_backend *wlf_backend_custom_create(void *args) {
     struct wlf_backend_custom *backend = calloc(1, sizeof(*backend));
-    if (!backend) {
+    if (backend == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_backend_custom");
         return NULL;
     }
 

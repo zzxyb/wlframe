@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	struct wlf_backend *backend = wlf_backend_autocreate();
-	if (!backend) {
+	if (backend == NULL) {
 		wlf_log(WLF_ERROR, "Failed to auto-create backend");
 		wlf_backend_builtin_cleanup();
 		return 1;
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	struct wlf_renderer *render = wlf_renderer_autocreate(backend);
-	if (!render) {
+	if (render == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create render");
 		wlf_backend_destroy(backend);
 		wlf_backend_builtin_cleanup();

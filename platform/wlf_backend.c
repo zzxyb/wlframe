@@ -90,7 +90,7 @@ bool wlf_backend_register(struct wlf_backend_registry_entry *entry) {
 		return false;
 	}
 
-	if (!entry || !entry->create || !entry->name) {
+	if (entry == NULL || !entry->create || !entry->name) {
 		wlf_log(WLF_ERROR, "Invalid backend registry entry");
 		return false;
 	}
@@ -112,7 +112,7 @@ bool wlf_backend_register(struct wlf_backend_registry_entry *entry) {
 
 void wlf_backend_unregister(enum wlf_backend_type type) {
 	struct wlf_backend_registry_entry *entry = find_backend_entry(type);
-	if (!entry) {
+	if (entry == NULL) {
 		return;
 	}
 
@@ -132,13 +132,13 @@ void wlf_backend_unregister(enum wlf_backend_type type) {
 }
 
 bool wlf_backend_load_plugin(const char *plugin_path) {
-	if (!plugin_path) {
+	if (plugin_path == NULL) {
 		wlf_log(WLF_ERROR, "Plugin path is NULL");
 		return false;
 	}
 
 	void *handle = dlopen(plugin_path, RTLD_LAZY);
-	if (!handle) {
+	if (handle == NULL) {
 		wlf_log(WLF_ERROR, "Failed to load plugin %s: %s", plugin_path, dlerror());
 		return false;
 	}
@@ -192,7 +192,7 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 
 	// Auto-detect best backend
 	struct wlf_backend_registry_entry *best = find_best_backend();
-	if (!best) {
+	if (best == NULL) {
 		wlf_log(WLF_ERROR, "No available backend found");
 		return NULL;
 	}
@@ -202,13 +202,13 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 }
 
 struct wlf_backend *wlf_backend_create(const struct wlf_backend_create_args *args) {
-	if (!args) {
+	if (args == NULL) {
 		wlf_log(WLF_ERROR, "Backend creation arguments are NULL");
 		return NULL;
 	}
 
 	struct wlf_backend_registry_entry *entry = find_backend_entry(args->type);
-	if (!entry) {
+	if (entry == NULL) {
 		wlf_log(WLF_ERROR, "Backend type %d not registered", args->type);
 		return NULL;
 	}
@@ -223,7 +223,7 @@ struct wlf_backend *wlf_backend_create(const struct wlf_backend_create_args *arg
 }
 
 bool wlf_backend_start(struct wlf_backend *backend) {
-	if (!backend || !backend->impl || !backend->impl->start) {
+	if (backend == NULL || !backend->impl || !backend->impl->start) {
 		wlf_log(WLF_ERROR, "Invalid backend or missing start implementation");
 		return false;
 	}
@@ -233,7 +233,7 @@ bool wlf_backend_start(struct wlf_backend *backend) {
 }
 
 void wlf_backend_stop(struct wlf_backend *backend) {
-	if (!backend || !backend->impl) {
+	if (backend == NULL || !backend->impl) {
 		return;
 	}
 
@@ -244,7 +244,7 @@ void wlf_backend_stop(struct wlf_backend *backend) {
 }
 
 void wlf_backend_destroy(struct wlf_backend *backend) {
-	if (!backend) {
+	if (backend == NULL) {
 		return;
 	}
 

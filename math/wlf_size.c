@@ -16,7 +16,7 @@ char* wlf_size_to_str(const struct wlf_size *size) {
 
 	char *buffer = malloc(WLF_SIZE_STRLEN);
 	if (buffer == NULL) {
-		wlf_log(WLF_ERROR, "Memory allocation failed for wlf_size_to_str");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate buffer");
 		return NULL;
 	}
 

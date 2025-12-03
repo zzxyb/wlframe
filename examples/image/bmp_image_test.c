@@ -5,6 +5,7 @@
 #include "wlf/image/wlf_image.h"
 #include "wlf/image/wlf_bmp_image.h"
 #include "wlf/utils/wlf_cmd_parser.h"
+#include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_log.h"
 
 #ifndef PATH_MAX
@@ -21,7 +22,7 @@
  */
 static struct wlf_bmp_image *create_test_image(uint32_t width, uint32_t height, const char *output_path, const char *filename) {
 	struct wlf_bmp_image *bmp_image = wlf_bmp_image_create();
-	if (!bmp_image) {
+	if (bmp_image == NULL) {
 		return NULL;
 	}
 
@@ -36,7 +37,7 @@ static struct wlf_bmp_image *create_test_image(uint32_t width, uint32_t height, 
 	// Allocate pixel data
 	size_t data_size = width * height * 3;
 	bmp_image->base.data = malloc(data_size);
-	if (!bmp_image->base.data) {
+	if (bmp_image->base.data == NULL) {
 		free(bmp_image);
 		return NULL;
 	}
@@ -198,7 +199,7 @@ int main(int argc, char *argv[]) {
 		// Create and test BMP images
 		printf("\nTest 1: Creating a test BMP image...\n");
 		struct wlf_bmp_image *test_image = create_test_image(width, height, output_path, "test_image.bmp");
-		if (!test_image) {
+		if (test_image == NULL) {
 			printf("Failed to create test image!\n");
 			free(input_path);
 			free(output_path);

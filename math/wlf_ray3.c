@@ -19,7 +19,7 @@ char* wlf_ray3_to_str(const struct wlf_ray3 *ray) {
 
 	char *buffer = malloc(WLF_RAY3_STRLEN);
 	if (buffer == NULL) {
-		wlf_log(WLF_ERROR, "Memory allocation failed for wlf_ray3_to_str");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate buffer");
 		return NULL;
 	}
 

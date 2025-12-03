@@ -102,7 +102,7 @@ uint32_t wlf_color_to_hex_rgb(const struct wlf_color *color) {
 }
 
 bool wlf_color_equal(const struct wlf_color *a, const struct wlf_color *b) {
-	if (!a || !b) {
+	if (a == NULL || b == NULL) {
 		return false;
 	}
 
@@ -110,7 +110,7 @@ bool wlf_color_equal(const struct wlf_color *a, const struct wlf_color *b) {
 }
 
 bool wlf_color_nearly_equal(const struct wlf_color *a, const struct wlf_color *b, double epsilon) {
-	if (!a || !b) {
+	if (a == NULL || b == NULL) {
 		return false;
 	}
 
@@ -121,7 +121,7 @@ bool wlf_color_nearly_equal(const struct wlf_color *a, const struct wlf_color *b
 }
 
 struct wlf_color wlf_color_clamp(const struct wlf_color *color) {
-	if (!color) {
+	if (color == NULL) {
 		return WLF_COLOR_TRANSPARENT;
 	}
 
@@ -134,7 +134,7 @@ struct wlf_color wlf_color_clamp(const struct wlf_color *color) {
 }
 
 struct wlf_color wlf_color_lerp(const struct wlf_color *a, const struct wlf_color *b, double t) {
-	if (!a || !b) {
+	if (a == NULL || b == NULL) {
 		return WLF_COLOR_TRANSPARENT;
 	}
 
@@ -162,7 +162,7 @@ struct wlf_color wlf_color_scale(const struct wlf_color *color, double scalar) {
 }
 
 struct wlf_color wlf_color_add(const struct wlf_color *a, const struct wlf_color *b) {
-	if (!a || !b) {
+	if (a == NULL || b == NULL) {
 		return WLF_COLOR_TRANSPARENT;
 	}
 
@@ -175,7 +175,7 @@ struct wlf_color wlf_color_add(const struct wlf_color *a, const struct wlf_color
 }
 
 struct wlf_color wlf_color_multiply(const struct wlf_color *a, const struct wlf_color *b) {
-	if (!a || !b) {
+	if (a == NULL || b == NULL) {
 		return WLF_COLOR_TRANSPARENT;
 	}
 
@@ -196,7 +196,7 @@ struct wlf_color wlf_color_with_alpha(const struct wlf_color *color, double alph
 }
 
 bool wlf_color_from_str(const char *str, struct wlf_color *color) {
-	if (!str || !color) {
+	if (str == NULL || color == NULL) {
 		return false;
 	}
 

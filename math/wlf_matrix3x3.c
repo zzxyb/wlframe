@@ -30,7 +30,7 @@ char* wlf_matrix3x3_to_str(const struct wlf_matrix3x3 *matrix) {
 
 	char *buffer = malloc(WLF_MATRIX3x3_STRLEN);
 	if (buffer == NULL) {
-		wlf_log(WLF_ERROR, "Memory allocation failed for wlf_matrix3x3_to_str");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate buffer");
 		return NULL;
 	}
 

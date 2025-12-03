@@ -45,7 +45,7 @@ static const struct wl_registry_listener wl_registry_listener = {
 struct wlf_wl_display *wlf_wl_display_create(void) {
 	struct wlf_wl_display *display = malloc(sizeof(struct wlf_wl_display));
 	if (display == NULL) {
-		wlf_log(WLF_ERROR, "Allocation struct wlf_wl_display failed!");
+		wlf_log(WLF_ERROR, "Failed to allocate wlf_wl_display");
 		return NULL;
 	}
 
@@ -82,6 +82,7 @@ void wlf_wl_display_destroy(struct wlf_wl_display *display) {
 	if (display == NULL) {
 		return;
 	}
+
 	wlf_signal_emit_mutable(&display->events.destroy, display);
 	if (display->registry) {
 		wl_registry_destroy(display->registry);
@@ -102,7 +103,7 @@ struct wlf_wl_interface *wlf_wl_interface_create(struct wlf_wl_display *display,
 		const char *interface, uint32_t version, uint32_t name) {
 	struct wlf_wl_interface *reg = malloc(sizeof(struct wlf_wl_interface));
 	if (reg == NULL) {
-		wlf_log(WLF_ERROR, "Allocation struct wlf_wl_interface failed!");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_wl_interface");
 		return NULL;
 	}
 

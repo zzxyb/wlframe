@@ -93,8 +93,8 @@ struct wlf_vk_instance *wlf_vk_instance_create(bool debug) {
 	}
 
 	struct wlf_vk_instance *ini = calloc(1, sizeof(*ini));
-	if (!ini) {
-		wlf_log_errno(WLF_ERROR, "allocation wlr_vk_instance failed");
+	if (ini == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate wlr_vk_instance");
 		return NULL;
 	}
 
@@ -177,7 +177,7 @@ error:
 }
 
 void wlf_vk_instance_destroy(struct wlf_vk_instance *instance) {
-	if (!instance) {
+	if (instance == NULL) {
 		return;
 	}
 

@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <wayland-client-protocol.h>
 
@@ -13,7 +14,7 @@ struct wlf_wl_compositor *wlf_wl_compositor_create(
 
 	struct wlf_wl_compositor *compositor = malloc(sizeof(struct wlf_wl_compositor));
 	if (compositor == NULL) {
-		wlf_log(WLF_ERROR, "Failed to allocate memory for wlf_wl_compositor");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_wl_compositor");
 		return NULL;
 	}
 
