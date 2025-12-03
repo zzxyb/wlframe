@@ -1,4 +1,5 @@
 #include "wlf/platform/wayland/backend.h"
+#include "wlf/utils/wlf_linked_list.h"
 #include "wlf/wayland/wlf_wl_compositor.h"
 #include "wlf/utils/wlf_log.h"
 
@@ -8,6 +9,13 @@
 #include <assert.h>
 
 #include <wayland-client-protocol.h>
+
+static void handle_wl_compositor_destroy(struct wlf_listener *listener, void *data) {
+	struct wlf_backend_wayland *backend =
+		wlf_container_of(listener, backend, listeners.display_destroy);
+	wlf_wl_compositor_destroy(backend->compositor);
+	backend->compositor = NULL;
+}
 
 static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 	struct wlf_backend_wayland *wayland = (struct wlf_backend_wayland *)backend;
@@ -33,6 +41,9 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 		wlf_log(WLF_ERROR, "Failed to find compositor interface in registry");
 		return false;
 	}
+
+	wayland->listeners.compositor_destroy.notify = handle_wl_compositor_destroy;
+	wlf_signal_add(&compositor_interface->events.destroy, &wayland->listeners.compositor_destroy);
 
 	wayland->compositor = wlf_wl_compositor_create(
 		wayland->display->registry,
@@ -73,6 +84,7 @@ static void handle_wayland_backend_destroy(struct wlf_backend *backend) {
 
 	handle_wayland_backend_stop(backend);
 	wlf_linked_list_remove(&wayland->listeners.display_destroy.link);
+	wlf_linked_list_remove(&wayland->listeners.compositor_destroy.link);
 
 	if (wayland->display) {
 		wlf_wl_display_destroy(wayland->display);

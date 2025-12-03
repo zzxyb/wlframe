@@ -30,6 +30,10 @@ struct wl_registry;
  */
 struct wlf_wl_interface {
 	struct wlf_linked_list link;   /**< Linked list node for interface list */
+	struct {
+		struct wlf_signal destroy;      /**< Signal emitted when interface is destroyed */
+	} events;
+
 	uint32_t name;                 /**< Global name (Wayland registry id) */
 	char *interface;               /**< Interface name string */
 	uint32_t version;              /**< Interface version */

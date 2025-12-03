@@ -15,6 +15,7 @@
 #define PLATFORM_WLF_BACKEND_WAYLAND_H
 
 #include "wlf/platform/wlf_backend.h"
+#include "wlf/utils/wlf_signal.h"
 #include "wlf/wayland/wlf_wl_display.h"
 
 #include <stdbool.h>
@@ -29,6 +30,7 @@ struct wlf_backend_wayland {
 
 	struct {
 		struct wlf_listener display_destroy;  /**< Display destroy listener */
+		struct wlf_listener compositor_destroy; /**< wl_compositor destroy listener */
 	} listeners;
 
 	bool started;                         /**< Whether backend is started */

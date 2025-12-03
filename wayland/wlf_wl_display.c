@@ -1,5 +1,6 @@
 #include "wlf/wayland/wlf_wl_display.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_signal.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -106,6 +107,7 @@ struct wlf_wl_interface *wlf_wl_interface_create(struct wlf_wl_display *display,
 	}
 
 	wlf_linked_list_init(&reg->link);
+	wlf_signal_init(&reg->events.destroy);
 	reg->name = name;
 	reg->interface = strdup(interface);
 	reg->version = version;
@@ -118,6 +120,7 @@ void wlf_wl_interface_destroy(struct wlf_wl_interface *interface) {
 		return;
 	}
 
+	wlf_signal_emit_mutable(&interface->events.destroy, interface);
 	wlf_linked_list_remove(&interface->link);
 	free(interface->interface);
 	free(interface);
