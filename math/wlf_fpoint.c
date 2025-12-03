@@ -27,7 +27,7 @@ char *wlf_fpoint_to_str_prec(const struct wlf_fpoint *point, uint8_t precision) 
 
 	char *buffer = malloc(WLF_FPOINT_STRLEN);
 	if (buffer == NULL) {
-		wlf_log(WLF_ERROR, "Memory allocation failed for wlf_fpoint_to_str_prec");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate buffer");
 		return NULL;
 	}
 

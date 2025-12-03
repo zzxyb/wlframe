@@ -8,25 +8,26 @@
 #include <strings.h>
 
 #include <png.h>
+#include <time.h>
 
 #define PNG_BYTES_TO_CHECK 4
 
 static bool png_image_save(struct wlf_image *image, const char *filename) {
 	FILE *fp = fopen(filename, "wb");
-	if (!fp) {
-		wlf_log(WLF_ERROR, "Open %s failed!", filename);
+	if (fp == NULL) {
+		wlf_log_errno(WLF_ERROR, "Open %s failed!", filename);
 		return false;
 	}
 
 	png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-	if (!png_ptr) {
+	if (png_ptr == NULL) {
 		wlf_log(WLF_ERROR, "png_create_write_struct failed!");
 		fclose(fp);
 		return false;
 	}
 
 	png_infop info_ptr = png_create_info_struct(png_ptr);
-	if (!info_ptr) {
+	if (info_ptr == NULL) {
 		wlf_log(WLF_ERROR, "png_create_info_struct failed!");
 		png_destroy_write_struct(&png_ptr, NULL);
 		fclose(fp);
@@ -73,8 +74,8 @@ static bool png_image_save(struct wlf_image *image, const char *filename) {
 
 static bool png_image_load(struct wlf_image *image, const char *filename, bool enable_16_bit) {
 	FILE *fp = fopen(filename, "rb");
-	if (!fp) {
-		wlf_log(WLF_ERROR, "File %s is not a valid PNG image!", filename);
+	if (fp == NULL) {
+		wlf_log_errno(WLF_ERROR, "File %s is not a valid PNG image!", filename);
 		return false;
 	}
 
@@ -179,7 +180,7 @@ static const struct wlf_image_impl png_image_impl = {
 struct wlf_png_image *wlf_png_image_create(void) {
 	struct wlf_png_image *image = malloc(sizeof(struct wlf_png_image));
 	if (image == NULL) {
-		wlf_log(WLF_ERROR, "Allocation struct wlf_png_image failed!");
+		wlf_log(WLF_ERROR, "Failed to allocate wlf_png_image");
 		return NULL;
 	}
 
@@ -189,7 +190,7 @@ struct wlf_png_image *wlf_png_image_create(void) {
 };
 
 bool wlf_image_is_png(struct wlf_image *image) {
-	if (!image) {
+	if (image == NULL) {
 		return false;
 	}
 
@@ -204,7 +205,7 @@ struct wlf_png_image *wlf_png_image_from_image(struct wlf_image *wlf_image) {
 }
 
 void wlf_png_image_print_data(const struct wlf_image *image) {
-	if (!image || !image->data) {
+	if (image == NULL || !image->data) {
 		wlf_log(WLF_ERROR, "PNG image data is NULL");
 		return;
 	}
@@ -234,7 +235,7 @@ void wlf_png_image_print_data(const struct wlf_image *image) {
 }
 
 void wlf_png_image_print_data_gimp_style(const struct wlf_image *image) {
-	if (!image || !image->data) {
+	if (image == NULL || !image->data) {
 		wlf_log(WLF_ERROR, "PNG image data is NULL");
 		return;
 	}

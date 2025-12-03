@@ -68,8 +68,8 @@ struct wlf_vk_device *wlf_vk_device_create(struct wlf_vk_instance *instance,
 	}
 
 	struct wlf_vk_device *dev = calloc(1, sizeof(*dev));
-	if (!dev) {
-		wlf_log_errno(WLF_ERROR, "allocation wlf_vk_device failed");
+	if (dev == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_vk_device");
 		return NULL;
 	}
 
@@ -255,7 +255,7 @@ error:
 }
 
 void wlf_vk_device_destroy(struct wlf_vk_device *device) {
-	if (!device) {
+	if (device == NULL) {
 		return;
 	}
 

@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 
 	wlf_log(WLF_INFO, "=== Auto-create backend ===");
 	struct wlf_backend *backend = wlf_backend_autocreate();
-	if (!backend) {
+	if (backend == NULL) {
 		wlf_log(WLF_ERROR, "Failed to auto-create backend");
 		wlf_backend_builtin_cleanup();
 		return 1;
@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 	};
 
 	struct wlf_backend *wayland = wlf_backend_create(&args);
-	if (!wayland) {
+	if (wayland == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create Wayland backend");
 		wlf_backend_builtin_cleanup();
 		return 1;

@@ -84,8 +84,8 @@ static uint32_t read_uint32_le(FILE *fp) {
 
 static bool bmp_image_save(struct wlf_image *image, const char *filename) {
 	FILE *fp = fopen(filename, "wb");
-	if (!fp) {
-		wlf_log(WLF_ERROR, "Open %s failed!", filename);
+	if (fp == NULL) {
+		wlf_log_errno(WLF_ERROR, "Open %s failed!", filename);
 		return false;
 	}
 
@@ -148,8 +148,8 @@ static bool bmp_image_save(struct wlf_image *image, const char *filename) {
 
 static bool bmp_image_load(struct wlf_image *image, const char *filename, bool enable_16_bit) {
 	FILE *fp = fopen(filename, "rb");
-	if (!fp) {
-		wlf_log(WLF_ERROR, "File %s cannot be opened!", filename);
+	if (fp == NULL) {
+		wlf_log_errno(WLF_ERROR, "File %s cannot be opened!", filename);
 		return false;
 	}
 
@@ -207,8 +207,8 @@ static bool bmp_image_load(struct wlf_image *image, const char *filename, bool e
 	// Allocate memory for pixel data
 	size_t data_size = width * abs_height * 3; // RGB format
 	image->data = malloc(data_size);
-	if (!image->data) {
-		wlf_log(WLF_ERROR, "Memory allocation failed!");
+	if (image->data == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate image data");
 		fclose(fp);
 		return false;
 	}
@@ -218,8 +218,8 @@ static bool bmp_image_load(struct wlf_image *image, const char *filename, bool e
 
 	// Read pixel data
 	uint8_t *row_buffer = malloc(row_size);
-	if (!row_buffer) {
-		wlf_log(WLF_ERROR, "Row buffer allocation failed!");
+	if (row_buffer == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate row buffer");
 		free(image->data);
 		fclose(fp);
 		return false;
@@ -286,7 +286,7 @@ static const struct wlf_image_impl bmp_image_impl = {
 struct wlf_bmp_image *wlf_bmp_image_create(void) {
 	struct wlf_bmp_image *image = malloc(sizeof(struct wlf_bmp_image));
 	if (image == NULL) {
-		wlf_log(WLF_ERROR, "Allocation struct wlf_bmp_image failed!");
+		wlf_log(WLF_ERROR, "Failed to allocate wlf_bmp_image");
 		return NULL;
 	}
 
@@ -302,7 +302,7 @@ struct wlf_bmp_image *wlf_bmp_image_create(void) {
 }
 
 bool wlf_image_is_bmp(struct wlf_image *image) {
-	if (!image) {
+	if (image == NULL) {
 		return false;
 	}
 

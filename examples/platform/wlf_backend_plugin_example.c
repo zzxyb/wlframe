@@ -65,8 +65,8 @@ static struct wlf_backend *example_backend_create(void *args) {
 	WLF_UNUSED(args);
 
 	struct wlf_backend_example *backend = calloc(1, sizeof(struct wlf_backend_example));
-	if (!backend) {
-		wlf_log(WLF_ERROR, "Failed to allocate example backend");
+	if (backend == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate example backend");
 		return NULL;
 	}
 

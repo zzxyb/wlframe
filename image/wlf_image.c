@@ -73,7 +73,7 @@ int wlf_image_get_channels(const struct wlf_image *image) {
 }
 
 bool wlf_image_save(struct wlf_image *image, const char *filename) {
-	if (!image || !filename) {
+	if (image == NULL || filename == NULL) {
 		return false;
 	}
 
@@ -113,12 +113,12 @@ bool wlf_image_save(struct wlf_image *image, const char *filename) {
 }
 
 struct wlf_image *wlf_image_load(const char *filename) {
-	if (!filename) {
+	if (filename == NULL) {
 		return NULL;
 	}
 
 	const char *ext = strrchr(filename, '.');
-	if (!ext) {
+	if (ext == NULL) {
 		// No file extension found
 		return NULL;
 	}

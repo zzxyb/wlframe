@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
+#include <string.h>
 
 #include <wayland-client-protocol.h>
 
@@ -25,7 +26,7 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 		return true;
 	}
 
-	if (!wayland->display) {
+	if (wayland->display == NULL) {
 		wlf_log(WLF_ERROR, "No Wayland display connection");
 		return false;
 	}
@@ -37,7 +38,7 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 
 	struct wlf_wl_interface *compositor_interface =
 		wlf_wl_display_find_interface(wayland->display, wl_compositor_interface.name);
-	if (!compositor_interface) {
+	if (compositor_interface == NULL) {
 		wlf_log(WLF_ERROR, "Failed to find compositor interface in registry");
 		return false;
 	}
@@ -50,7 +51,7 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 		compositor_interface->name,
 		compositor_interface->version
 	);
-	if (!wayland->compositor) {
+	if (wayland->compositor == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create Wayland compositor interface");
 		return false;
 	}
@@ -109,8 +110,8 @@ static void handle_display_destroy(struct wlf_listener *listener, void *data) {
 
 static struct wlf_backend *handle_backend_create(void *args) {
 	struct wlf_backend_wayland *backend = calloc(1, sizeof(struct wlf_backend_wayland));
-	if (!backend) {
-		wlf_log(WLF_ERROR, "Failed to allocate Wayland backend");
+	if (backend == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate Wayland backend");
 		return NULL;
 	}
 
@@ -127,7 +128,7 @@ static struct wlf_backend *handle_backend_create(void *args) {
 		wlf_log(WLF_DEBUG, "Using provided Wayland display");
 	} else {
 		backend->display = wlf_wl_display_create();
-		if (!backend->display) {
+		if (backend->display == NULL) {
 			wlf_log(WLF_ERROR, "Failed to connect to Wayland display");
 			free(backend);
 			return NULL;
@@ -146,7 +147,7 @@ static struct wlf_backend *handle_backend_create(void *args) {
 
 static bool handle_backend_is_available(void) {
 	const char *wayland_display = getenv("WAYLAND_DISPLAY");
-	if (!wayland_display) {
+	if (wayland_display == NULL) {
 		wlf_log(WLF_ERROR, "WAYLAND_DISPLAY environment variable is not set");
 		wayland_display = "wayland-0";
 	}

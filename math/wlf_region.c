@@ -1,6 +1,7 @@
 #include "wlf/math/wlf_region.h"
 #include "wlf/utils/wlf_log.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
@@ -40,13 +41,13 @@ void wlf_region_init(struct wlf_region *region) {
 		region->data->numRects = 0;
 		region->data->rects = calloc(region->data->size, sizeof(struct wlf_frect));
 		if (region->data->rects == NULL) {
-			wlf_log(WLF_ERROR, "Failed to allocate memory for wlf_region_data rects");
+			wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_region_data rects");
 			free(region->data);
 			region->data = NULL;
 			return;
 		}
 	} else {
-		wlf_log(WLF_ERROR, "Failed to allocate memory for wlf_region_data");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_region_data");
 	}
 
 	region->extents = (struct wlf_frect){
@@ -78,8 +79,8 @@ char* wlf_region_to_str(const struct wlf_region *region) {
 
 	size_t str_size = 256 + region->data->numRects * 64;
 	char *str = malloc(str_size);
-	if (!str) {
-		wlf_log(WLF_ERROR, "Failed to allocate memory for region string representation");
+	if (str == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate region string");
 		return NULL;
 	}
 
@@ -190,15 +191,15 @@ bool wlf_region_is_nil(const struct wlf_region *region) {
 }
 
 bool wlf_region_add_rect(struct wlf_region *region, const struct wlf_frect *rect) {
-	if (!region->data) {
+	if (region->data == NULL) {
 		return false;
 	}
 
 	if (region->data->numRects >= region->data->size) {
 		long new_size = region->data->size * 2;
 		struct wlf_frect *new_rects = realloc(region->data->rects, new_size * sizeof(struct wlf_frect));
-		if (!new_rects) {
-			wlf_log(WLF_ERROR, "Failed to reallocate memory for wlf_region_data");
+		if (new_rects == NULL) {
+			wlf_log_errno(WLF_ERROR, "Failed to reallocate memory for wlf_region_data");
 			return false;
 		}
 		region->data->rects = new_rects;

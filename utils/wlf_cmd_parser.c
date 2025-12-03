@@ -1,4 +1,5 @@
 #include "wlf/utils/wlf_cmd_parser.h"
+#include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_utils.h"
 
 #include <stdlib.h>
@@ -34,7 +35,7 @@ static bool long_option(const struct wlf_cmd_option *options, int count, char *a
 	int k, len;
 
 	for (k = 0; k < count; k++) {
-		if (!options[k].name)
+		if (options[k].name == NULL)
 			continue;
 
 		len = strlen(options[k].name);

@@ -48,8 +48,8 @@ static void wlf_jpeg_error_exit(j_common_ptr cinfo) {
  */
 static bool jpeg_image_save(struct wlf_image *image, const char *filename) {
 	FILE *fp = fopen(filename, "wb");
-	if (!fp) {
-		wlf_log(WLF_ERROR, "Cannot open %s for writing!", filename);
+	if (fp == NULL) {
+		wlf_log_errno(WLF_ERROR, "Cannot open %s for writing!", filename);
 		return false;
 	}
 
@@ -159,8 +159,8 @@ static bool jpeg_image_save(struct wlf_image *image, const char *filename) {
 	bool need_conversion = (image->format == WLF_COLOR_TYPE_RGBA || image->format == WLF_COLOR_TYPE_GRAY_ALPHA);
 	if (need_conversion) {
 		row_buffer = malloc(image->width * cinfo.input_components);
-		if (!row_buffer) {
-			wlf_log(WLF_ERROR, "Failed to allocate row buffer");
+		if (row_buffer == NULL) {
+			wlf_log_errno(WLF_ERROR, "Failed to allocate row buffer");
 			jpeg_destroy_compress(&cinfo);
 			fclose(fp);
 			return false;
@@ -216,8 +216,8 @@ static bool jpeg_image_save(struct wlf_image *image, const char *filename) {
  */
 static bool jpeg_image_load(struct wlf_image *image, const char *filename, bool enable_16_bit) {
 	FILE *fp = fopen(filename, "rb");
-	if (!fp) {
-		wlf_log(WLF_ERROR, "Cannot open %s for reading!", filename);
+	if (fp == NULL) {
+		wlf_log_errno(WLF_ERROR, "Cannot open %s for reading!", filename);
 		return false;
 	}
 
@@ -288,8 +288,8 @@ static bool jpeg_image_load(struct wlf_image *image, const char *filename, bool 
 	int row_stride = cinfo.output_width * cinfo.output_components;
 	image->stride = row_stride;
 	image->data = malloc(image->height * row_stride);
-	if (!image->data) {
-		wlf_log(WLF_ERROR, "Failed to allocate image data");
+	if (image->data == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate image data");
 		jpeg_destroy_decompress(&cinfo);
 		fclose(fp);
 		return false;
@@ -328,7 +328,7 @@ static const struct wlf_image_impl jpeg_image_impl = {
 struct wlf_jpeg_image *wlf_jpeg_image_create(void) {
 	struct wlf_jpeg_image *image = malloc(sizeof(struct wlf_jpeg_image));
 	if (image == NULL) {
-		wlf_log(WLF_ERROR, "Allocation struct wlf_jpeg_image failed!");
+		wlf_log(WLF_ERROR, "Failed to allocate wlf_jpeg_image");
 		return NULL;
 	}
 
@@ -355,7 +355,7 @@ struct wlf_jpeg_image *wlf_jpeg_image_from_image(struct wlf_image *wlf_image) {
 }
 
 bool wlf_image_is_jpeg(struct wlf_image *image) {
-	if (!image) {
+	if (image == NULL) {
 		return false;
 	}
 
@@ -381,7 +381,7 @@ enum wlf_jpeg_colorspace wlf_color_type_to_jpeg_colorspace(struct wlf_image *ima
 }
 
 bool wlf_jpeg_image_set_quality(struct wlf_jpeg_image *jpeg_image, int quality) {
-	if (!jpeg_image || quality < 0 || quality > 100) {
+	if (jpeg_image == NULL || quality < 0 || quality > 100) {
 		return false;
 	}
 
@@ -390,7 +390,7 @@ bool wlf_jpeg_image_set_quality(struct wlf_jpeg_image *jpeg_image, int quality) 
 }
 
 bool wlf_jpeg_image_set_subsampling(struct wlf_jpeg_image *jpeg_image, enum wlf_jpeg_subsampling subsampling) {
-	if (!jpeg_image) {
+	if (jpeg_image == NULL) {
 		return false;
 	}
 
@@ -399,7 +399,7 @@ bool wlf_jpeg_image_set_subsampling(struct wlf_jpeg_image *jpeg_image, enum wlf_
 }
 
 bool wlf_jpeg_image_set_progressive(struct wlf_jpeg_image *jpeg_image, bool progressive) {
-	if (!jpeg_image) {
+	if (jpeg_image == NULL) {
 		return false;
 	}
 

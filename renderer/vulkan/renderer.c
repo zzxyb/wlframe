@@ -14,7 +14,7 @@ struct wlf_renderer *wlf_vk_renderer_create_from_backend(
 		"to enable the validation layer");
 	struct wlf_vk_instance *ini = wlf_vk_instance_create(
 		wlf_env_parse_bool("WLF_RENDER_DEBUG)"));
-	if (!ini) {
+	if (ini == NULL) {
 		wlf_log(WLF_ERROR, "creating vulkan instance for render failed");
 		return NULL;
 	}
@@ -26,7 +26,7 @@ struct wlf_renderer *wlf_vk_renderer_create_from_backend(
 	}
 
 	struct wlf_vk_device *device = wlf_vk_device_create(ini, phdev);
-	if (!device) {
+	if (device == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create vulkan device");
 		goto cleanup;
 	}
@@ -56,7 +56,7 @@ bool check_extension(const VkExtensionProperties *avail,
 struct wlf_renderer *wlr_vk_render_create_for_device(struct wlf_vk_device *device) {
 	VkResult res;
 	struct wlf_vk_renderer *render = calloc(1, sizeof(*render));
-	if (!render) {
+	if (render == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlr_vk_render");
 		wlf_vk_device_destroy(device);
 		return NULL;

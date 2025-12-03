@@ -23,7 +23,7 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 	bool is_auto = strcmp(render_name, "auto") == 0;
 	if (is_auto || strcmp(render_name, "vulkan") == 0) {
 		render = wlf_vk_renderer_create_from_backend(backend);
-		if (!render) {
+		if (render == NULL) {
 			wlf_log(WLF_ERROR, "Failed to create Vulkan render");
 			return NULL;
 		}

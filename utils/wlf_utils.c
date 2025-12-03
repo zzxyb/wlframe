@@ -14,18 +14,17 @@ bool generate_token(char out[static TOKEN_SIZE]) {
 	static FILE *urandom = NULL;
 	uint64_t data[2];
 
-	if (!urandom) {
-		int fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
-		if (fd < 0) {
-			wlf_log(WLF_ERROR, "Failed to open random device");
-			return false;
-		}
-		if (!(urandom = fdopen(fd, "r"))) {
-			wlf_log(WLF_ERROR, "fdopen failed");
-			close(fd);
-			return false;
-		}
+	int fd = open("/dev/urandom", O_RDONLY | O_CLOEXEC);
+	if (fd < 0) {
+		wlf_log(WLF_ERROR, "Failed to open random device");
+		return false;
 	}
+	if (!(urandom = fdopen(fd, "r"))) {
+		wlf_log(WLF_ERROR, "fdopen failed");
+		close(fd);
+		return false;
+	}
+
 	if (fread(data, sizeof(data), 1, urandom) != 1) {
 		wlf_log(WLF_ERROR, "Failed to read from random device");
 		return false;

@@ -27,7 +27,7 @@ char *wlf_fsize_to_str_prec(const struct wlf_fsize *size, uint8_t precision) {
 
 	char *buffer = malloc(WLF_FSIZE_STRLEN);
 	if (buffer == NULL) {
-		wlf_log(WLF_ERROR, "Memory allocation failed for wlf_fsize_to_str_prec");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate buffer");
 		return NULL;
 	}
 

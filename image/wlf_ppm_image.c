@@ -49,8 +49,8 @@ static int read_ppm_number(FILE *fp) {
 
 static bool ppm_image_save(struct wlf_image *image, const char *filename) {
 	FILE *fp = fopen(filename, "wb");
-	if (!fp) {
-		wlf_log(WLF_ERROR, "Open %s failed!", filename);
+	if (fp == NULL) {
+		wlf_log_errno(WLF_ERROR, "Open %s failed!", filename);
 		return false;
 	}
 
@@ -93,7 +93,7 @@ static bool ppm_image_save(struct wlf_image *image, const char *filename) {
 			// Direct write if max_val is 255
 			size_t pixels = image->width * image->height * 3;
 			if (fwrite(image->data, 1, pixels, fp) != pixels) {
-				wlf_log(WLF_ERROR, "Failed to write pixel data!");
+				wlf_log(WLF_ERROR, "Failed to write pixel data");
 				fclose(fp);
 				return false;
 			}
@@ -120,8 +120,8 @@ static bool ppm_image_save(struct wlf_image *image, const char *filename) {
 
 static bool ppm_image_load(struct wlf_image *image, const char *filename, bool enable_16_bit) {
 	FILE *fp = fopen(filename, "rb");
-	if (!fp) {
-		wlf_log(WLF_ERROR, "File %s cannot be opened!", filename);
+	if (fp == NULL) {
+		wlf_log_errno(WLF_ERROR, "File %s cannot be opened!", filename);
 		return false;
 	}
 
@@ -157,8 +157,8 @@ static bool ppm_image_load(struct wlf_image *image, const char *filename, bool e
 	fgetc(fp);
 	size_t data_size = width * height * 3; // RGB format
 	image->data = malloc(data_size);
-	if (!image->data) {
-		wlf_log(WLF_ERROR, "Memory allocation failed!");
+	if (image->data == NULL) {
+		wlf_log_errno(WLF_ERROR, "Failed to allocate image data");
 		fclose(fp);
 		return false;
 	}
@@ -237,7 +237,7 @@ static const struct wlf_image_impl ppm_image_impl = {
 struct wlf_ppm_image *wlf_ppm_image_create(void) {
 	struct wlf_ppm_image *image = malloc(sizeof(struct wlf_ppm_image));
 	if (image == NULL) {
-		wlf_log(WLF_ERROR, "Allocation struct wlf_ppm_image failed!");
+		wlf_log(WLF_ERROR, "Failed to allocate wlf_ppm_image");
 		return NULL;
 	}
 
@@ -250,7 +250,7 @@ struct wlf_ppm_image *wlf_ppm_image_create(void) {
 }
 
 bool wlf_image_is_ppm(struct wlf_image *image) {
-	if (!image) {
+	if (image == NULL) {
 		return false;
 	}
 
