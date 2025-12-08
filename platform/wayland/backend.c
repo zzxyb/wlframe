@@ -43,9 +43,6 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 		return false;
 	}
 
-	wayland->listeners.compositor_destroy.notify = handle_wl_compositor_destroy;
-	wlf_signal_add(&compositor_interface->events.destroy, &wayland->listeners.compositor_destroy);
-
 	wayland->compositor = wlf_wl_compositor_create(
 		wayland->display->registry,
 		compositor_interface->name,
@@ -55,6 +52,9 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 		wlf_log(WLF_ERROR, "Failed to create Wayland compositor interface");
 		return false;
 	}
+
+	wayland->listeners.compositor_destroy.notify = handle_wl_compositor_destroy;
+	wlf_signal_add(&compositor_interface->events.destroy, &wayland->listeners.compositor_destroy);
 
 	wayland->started = true;
 	wlf_log(WLF_INFO, "Wayland backend started successfully");
