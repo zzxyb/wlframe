@@ -31,6 +31,7 @@ struct wlf_backend_wayland {
 	struct {
 		struct wlf_listener display_destroy;  /**< Display destroy listener */
 		struct wlf_listener compositor_destroy; /**< wl_compositor destroy listener */
+		struct wlf_listener output_manager_destroy; /**< zxdg_output_manager_v1 destroy listener */
 	} listeners;
 
 	bool started;                         /**< Whether backend is started */
