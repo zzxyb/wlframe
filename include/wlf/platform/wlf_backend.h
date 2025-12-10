@@ -23,6 +23,7 @@
 
 #include "wlf/utils/wlf_signal.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/types/wlf_output.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -90,6 +91,13 @@ struct wlf_backend {
 	 * Each backend implementation can store its private data here.
 	 */
 	void *data;
+
+	/**
+	 * Output manager associated with this backend.
+	 * Handles creation, removal, and tracking of all outputs provided
+	 * by the backend (e.g., Wayland).
+	 */
+	struct wlf_output_manager *output_manager;
 };
 
 /**

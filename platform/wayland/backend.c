@@ -1,7 +1,12 @@
 #include "wlf/platform/wayland/backend.h"
+#include "wlf/types/wlf_output.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/utils/wlf_signal.h"
 #include "wlf/wayland/wlf_wl_compositor.h"
 #include "wlf/utils/wlf_log.h"
+#include "protocols/xdg-output-unstable-v1-client-protocol.h"
+#include "wlf/wayland/wlf_wl_display.h"
+#include "wlf/wayland/wlf_wl_output.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -16,6 +21,13 @@ static void handle_wl_compositor_destroy(struct wlf_listener *listener, void *da
 		wlf_container_of(listener, backend, listeners.display_destroy);
 	wlf_wl_compositor_destroy(backend->compositor);
 	backend->compositor = NULL;
+}
+
+static void handle_zxdg_output_manager_destory(struct wlf_listener *listener, void *data) {
+	struct wlf_backend_wayland *backend =
+		wlf_container_of(listener, backend, listeners.output_manager_destroy);
+	wlf_output_manager_destroy(backend->base.output_manager);
+	backend->base.output_manager = NULL;
 }
 
 static bool handle_wayland_backend_start(struct wlf_backend *backend) {
@@ -56,6 +68,41 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 	wayland->listeners.compositor_destroy.notify = handle_wl_compositor_destroy;
 	wlf_signal_add(&compositor_interface->events.destroy, &wayland->listeners.compositor_destroy);
 
+	struct wlf_wl_interface *output_manager_interface =
+		wlf_wl_display_find_interface(wayland->display, zxdg_output_manager_v1_interface.name);
+	if (output_manager_interface == NULL) {
+		wlf_log(WLF_ERROR, "Failed to find zxdg_output_manager_v1 interface in registry");
+		return false;
+	}
+
+	backend->output_manager = wlf_output_manager_create_from_wl_registry(
+		wayland->display->registry,
+		output_manager_interface->name,
+		output_manager_interface->version
+	);
+	if (backend->output_manager == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create Wayland zxdg_output_manager_v1 interface");
+		return false;
+	}
+
+	wayland->listeners.output_manager_destroy.notify = handle_zxdg_output_manager_destory;
+	wlf_signal_add(&output_manager_interface->events.destroy, &wayland->listeners.output_manager_destroy);
+
+	struct wlf_wl_interface *reg, *tmp;
+	wlf_linked_list_for_each_safe(reg, tmp, &wayland->display->interfaces, link) {
+		if (reg->interface == wl_output_interface.name) {
+			struct wlf_output *output = wlf_output_create_from_wl_registry(
+				wayland->display->registry,
+				reg->name,
+				reg->version
+			);
+			struct wlf_wl_output *wl_output = wlf_wl_output_from_backend(output);
+			struct wlf_wl_output_manager *wl_manager = wlf_wl_output_manager_from_backend(backend->output_manager);
+			wl_output->xdg_output = zxdg_output_manager_v1_get_xdg_output(wl_manager->manager, wl_output->output);
+			wlf_linked_list_insert(&backend->output_manager->outputs, &output->link);
+			wlf_signal_emit_mutable(&backend->output_manager->events.output_added, output);
+		}
+	}
 	wayland->started = true;
 	wlf_log(WLF_INFO, "Wayland backend started successfully");
 
@@ -86,6 +133,7 @@ static void handle_wayland_backend_destroy(struct wlf_backend *backend) {
 	handle_wayland_backend_stop(backend);
 	wlf_linked_list_remove(&wayland->listeners.display_destroy.link);
 	wlf_linked_list_remove(&wayland->listeners.compositor_destroy.link);
+	wlf_linked_list_remove(&wayland->listeners.output_manager_destroy.link);
 
 	if (wayland->display) {
 		wlf_wl_display_destroy(wayland->display);
