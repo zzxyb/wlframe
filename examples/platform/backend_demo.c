@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static void handle_backend_destroy(struct wlf_listener *listener, void *data) {
+static void backend_destroy(struct wlf_listener *listener, void *data) {
 	wlf_log(WLF_INFO, "Backend destroyed!");
 }
 
@@ -28,7 +28,7 @@ int main(int argc, char *argv[]) {
 	wlf_log(WLF_INFO, "Auto-created backend: %s", wlf_backend_type_name(wlf_backend_get_type(backend)));
 
 	struct wlf_listener destroy_listener;
-	destroy_listener.notify = handle_backend_destroy;
+	destroy_listener.notify = backend_destroy;
 	wlf_signal_add(&backend->events.destroy, &destroy_listener);
 	if (!wlf_backend_start(backend)) {
 		wlf_log(WLF_ERROR, "Failed to start backend");

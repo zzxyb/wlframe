@@ -8,7 +8,7 @@
 
 #include <wayland-client-protocol.h>
 
-static void display_handle_global(void *data, struct wl_registry *wl_registry,
+static void display_global(void *data, struct wl_registry *wl_registry,
 		uint32_t name, const char *interface, uint32_t version) {
 	wlf_log(WLF_DEBUG, "Wayland registry global: %s v%" PRIu32, interface, version);
 	struct wlf_wl_display *display = data;
@@ -22,7 +22,7 @@ static void display_handle_global(void *data, struct wl_registry *wl_registry,
 	wlf_signal_emit_mutable(&display->events.global_add, new_reg);
 }
 
-static void display_handle_global_remove(void *data,
+static void display_global_remove(void *data,
 		struct wl_registry *wl_registry, uint32_t name) {
 	struct wlf_wl_display *display = data;
 	struct wlf_wl_interface *reg, *tmp;
@@ -38,8 +38,8 @@ static void display_handle_global_remove(void *data,
 }
 
 static const struct wl_registry_listener wl_registry_listener = {
-	.global = display_handle_global,
-	.global_remove = display_handle_global_remove,
+	.global = display_global,
+	.global_remove = display_global_remove,
 };
 
 struct wlf_wl_display *wlf_wl_display_create(void) {
