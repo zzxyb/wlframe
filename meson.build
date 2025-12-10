@@ -99,6 +99,11 @@ if is_linux
 		fallback: 'wayland',
 		default_options: wayland_project_options,
 	)
+	wayland_protos = dependency('wayland-protocols',
+		version: '>=1.44',
+		fallback: 'wayland-protocols',
+		default_options: ['tests=false'],
+	)
 	libpng = dependency('libpng', required: true)
 	libturbojpeg = dependency('libjpeg', required: true)
 	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
@@ -122,6 +127,7 @@ elif is_linux
 	wlf_deps += [
 		rt,
 		wayland_client,
+		wayland_protos,
 		vulkan,
 	]
 else
@@ -131,6 +137,7 @@ subdir('include')
 subdir('utils')
 if is_linux
 	subdir('wayland')
+	subdir('protocols')
 endif
 subdir('image')
 subdir('math')
