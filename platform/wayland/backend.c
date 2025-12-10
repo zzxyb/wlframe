@@ -16,21 +16,21 @@
 
 #include <wayland-client-protocol.h>
 
-static void handle_wl_compositor_destroy(struct wlf_listener *listener, void *data) {
+static void wayland_compositor_destroy(struct wlf_listener *listener, void *data) {
 	struct wlf_backend_wayland *backend =
 		wlf_container_of(listener, backend, listeners.display_destroy);
 	wlf_wl_compositor_destroy(backend->compositor);
 	backend->compositor = NULL;
 }
 
-static void handle_zxdg_output_manager_destory(struct wlf_listener *listener, void *data) {
+static void zxdg_output_manager_destory(struct wlf_listener *listener, void *data) {
 	struct wlf_backend_wayland *backend =
 		wlf_container_of(listener, backend, listeners.output_manager_destroy);
 	wlf_output_manager_destroy(backend->base.output_manager);
 	backend->base.output_manager = NULL;
 }
 
-static bool handle_wayland_backend_start(struct wlf_backend *backend) {
+static bool wayland_backend_start(struct wlf_backend *backend) {
 	struct wlf_backend_wayland *wayland = (struct wlf_backend_wayland *)backend;
 
 	if (wayland->started) {
@@ -65,7 +65,7 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 		return false;
 	}
 
-	wayland->listeners.compositor_destroy.notify = handle_wl_compositor_destroy;
+	wayland->listeners.compositor_destroy.notify = wayland_compositor_destroy;
 	wlf_signal_add(&compositor_interface->events.destroy, &wayland->listeners.compositor_destroy);
 
 	struct wlf_wl_interface *output_manager_interface =
@@ -85,7 +85,7 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 		return false;
 	}
 
-	wayland->listeners.output_manager_destroy.notify = handle_zxdg_output_manager_destory;
+	wayland->listeners.output_manager_destroy.notify = zxdg_output_manager_destory;
 	wlf_signal_add(&output_manager_interface->events.destroy, &wayland->listeners.output_manager_destroy);
 
 	struct wlf_wl_interface *reg, *tmp;
@@ -109,7 +109,7 @@ static bool handle_wayland_backend_start(struct wlf_backend *backend) {
 	return true;
 }
 
-static void handle_wayland_backend_stop(struct wlf_backend *backend) {
+static void wayland_backend_stop(struct wlf_backend *backend) {
 	struct wlf_backend_wayland *wayland = (struct wlf_backend_wayland *)backend;
 
 	if (!wayland->started) {
@@ -126,11 +126,11 @@ static void handle_wayland_backend_stop(struct wlf_backend *backend) {
 	wayland->started = false;
 }
 
-static void handle_wayland_backend_destroy(struct wlf_backend *backend) {
+static void wayland_backend_destroy(struct wlf_backend *backend) {
 	struct wlf_backend_wayland *wayland = (struct wlf_backend_wayland *)backend;
 	wlf_log(WLF_DEBUG, "Destroying Wayland backend");
 
-	handle_wayland_backend_stop(backend);
+	wayland_backend_stop(backend);
 	wlf_linked_list_remove(&wayland->listeners.display_destroy.link);
 	wlf_linked_list_remove(&wayland->listeners.compositor_destroy.link);
 	wlf_linked_list_remove(&wayland->listeners.output_manager_destroy.link);
@@ -144,19 +144,19 @@ static void handle_wayland_backend_destroy(struct wlf_backend *backend) {
 }
 
 static const struct wlf_backend_impl wayland_backend_impl = {
-	.start = handle_wayland_backend_start,
-	.stop = handle_wayland_backend_stop,
-	.destroy = handle_wayland_backend_destroy,
+	.start = wayland_backend_start,
+	.stop = wayland_backend_stop,
+	.destroy = wayland_backend_destroy,
 };
 
-static void handle_display_destroy(struct wlf_listener *listener, void *data) {
+static void wayland_display_destroy(struct wlf_listener *listener, void *data) {
 	struct wlf_backend_wayland *backend =
 		wlf_container_of(listener, backend, listeners.display_destroy);
 	wlf_log(WLF_INFO, "Wayland display destroyed");
-	handle_wayland_backend_stop(&backend->base);
+	wayland_backend_stop(&backend->base);
 }
 
-static struct wlf_backend *handle_backend_create(void *args) {
+static struct wlf_backend *wayland_backend_create(void *args) {
 	struct wlf_backend_wayland *backend = calloc(1, sizeof(struct wlf_backend_wayland));
 	if (backend == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate Wayland backend");
@@ -184,7 +184,7 @@ static struct wlf_backend *handle_backend_create(void *args) {
 		wlf_log(WLF_DEBUG, "Created new Wayland display connection");
 	}
 
-	backend->listeners.display_destroy.notify = handle_display_destroy;
+	backend->listeners.display_destroy.notify = wayland_display_destroy;
 	wlf_signal_add(&backend->display->events.destroy, &backend->listeners.display_destroy);
 
 	backend->started = false;
@@ -193,7 +193,7 @@ static struct wlf_backend *handle_backend_create(void *args) {
 	return &backend->base;
 }
 
-static bool handle_backend_is_available(void) {
+static bool wayland_backend_is_available(void) {
 	const char *wayland_display = getenv("WAYLAND_DISPLAY");
 	if (wayland_display == NULL) {
 		wlf_log(WLF_ERROR, "WAYLAND_DISPLAY environment variable is not set");
@@ -215,8 +215,8 @@ static struct wlf_backend_registry_entry entry = {
 	.type = WLF_BACKEND_WAYLAND,
 	.name = "wayland",
 	.priority = 100,
-	.create = handle_backend_create,
-	.is_available = handle_backend_is_available,
+	.create = wayland_backend_create,
+	.is_available = wayland_backend_is_available,
 	.handle = NULL,
 };
 

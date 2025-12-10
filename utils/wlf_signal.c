@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 
-static void handle_noop(struct wlf_listener *listener, void *data) {
+static void noop(struct wlf_listener *listener, void *data) {
 	/* Do nothing */
 }
 
@@ -39,9 +39,9 @@ void wlf_signal_emit_mutable(struct wlf_signal *signal, void *data) {
 	struct wlf_listener end;
 
 	wlf_linked_list_insert(&signal->listener_list, &cursor.link);
-	cursor.notify = handle_noop;
+	cursor.notify = noop;
 	wlf_linked_list_insert(signal->listener_list.prev, &end.link);
-	end.notify = handle_noop;
+	end.notify = noop;
 
 	while (cursor.link.next != &end.link) {
 		struct wlf_linked_list *pos = cursor.link.next;
