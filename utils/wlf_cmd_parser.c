@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <errno.h>
 
-static bool handle_option(const struct wlf_cmd_option *option, char *value) {
+static bool process_option(const struct wlf_cmd_option *option, char *value) {
 	char* p;
 
 	switch (option->type) {
@@ -49,7 +49,7 @@ static bool long_option(const struct wlf_cmd_option *options, int count, char *a
 				return true;
 			}
 		} else if (arg[len+2] == '=') {
-			return handle_option(options + k, arg + len + 3);
+			return process_option(options + k, arg + len + 3);
 		}
 	}
 
@@ -70,7 +70,7 @@ static bool long_option_with_arg(const struct wlf_cmd_option *options, int count
 
 		assert(options[k].type != WLF_OPTION_BOOLEAN);
 
-		return handle_option(options + k, param);
+		return process_option(options + k, param);
 	}
 
 	return false;
@@ -93,7 +93,7 @@ static bool short_option(const struct wlf_cmd_option *options, int count, char *
 				return true;
 			}
 		} else if (arg[2]) {
-			return handle_option(options + k, arg + 2);
+			return process_option(options + k, arg + 2);
 		} else {
 			return false;
 		}
@@ -115,7 +115,7 @@ static bool short_option_with_arg(const struct wlf_cmd_option *options, int coun
 		if (options[k].type == WLF_OPTION_BOOLEAN)
 			continue;
 
-		return handle_option(options + k, param);
+		return process_option(options + k, param);
 	}
 
 	return false;
