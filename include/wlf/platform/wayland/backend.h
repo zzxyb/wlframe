@@ -16,39 +16,44 @@
 
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/utils/wlf_signal.h"
-#include "wlf/wayland/wlf_wl_display.h"
 
 #include <stdbool.h>
+
+#include <wayland-client-core.h>
 
 /**
  * @brief Wayland backend specific data
  */
 struct wlf_backend_wayland {
 	struct wlf_backend base;              /**< Base backend structure */
-	struct wlf_wl_display *display;       /**< Wayland display connection */
-	struct wlf_wl_compositor *compositor;  /**< Wayland compositor interface */
+
+	struct wl_display *display;         /**< Wayland display pointer */
+	struct wl_registry *registry;       /**< Wayland registry pointer */
+	struct wl_compositor *compositor;  /**< Wayland compositor interface */
+	struct wl_shm *shm;
+
+	struct wlf_linked_list interfaces;  /**< List of global interfaces */
 
 	struct {
-		struct wlf_listener display_destroy;  /**< Display destroy listener */
+		struct wlf_signal destroy;      /**< Signal emitted when display is destroyed */
+		struct wlf_signal global_add;   /**< Signal emitted when a global is added */
+		struct wlf_signal global_remove;/**< Signal emitted when a global is removed */
+	} events;
+
+	struct {
 		struct wlf_listener compositor_destroy; /**< wl_compositor destroy listener */
 		struct wlf_listener output_manager_destroy; /**< zxdg_output_manager_v1 destroy listener */
 	} listeners;
-
-	bool started;                         /**< Whether backend is started */
 };
 
-/**
- * @brief Register the Wayland backend
- * @return true on success, false on failure
- */
-bool wlf_backend_wayland_register(void);
+struct wlf_backend *wayland_backend_create(void);
 
 /**
  * @brief Check if a backend is a Wayland backend
  * @param backend Pointer to the backend to check
  * @return true if the backend is a Wayland backend, false otherwise
  */
-bool wlf_backend_is_wayland(struct wlf_backend *backend);
+bool wlf_backend_is_wayland(const struct wlf_backend *backend);
 
 /**
  * @brief Cast a generic backend to a Wayland backend

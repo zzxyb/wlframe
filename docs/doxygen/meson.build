@@ -37,7 +37,6 @@ src_files = files([
 		'../../include/wlf/math/wlf_vector3.h',
 		'../../include/wlf/math/wlf_vector4.h',
 
-		'../../include/wlf/platform/wlf_backend_builtin.h',
 		'../../include/wlf/platform/wlf_backend.h',
 
 		'../../include/wlf/renderer/wlf_renderer.h',
@@ -63,7 +62,7 @@ if is_linux
 			'../../include/wlf/renderer/vulkan/renderer.h',
 
 			'../../include/wlf/wayland/wlf_wl_compositor.h',
-			'../../include/wlf/wayland/wlf_wl_display.h',
+			'../../include/wlf/wayland/wlf_wl_interface.h',
 	])
 endif
 

@@ -3,12 +3,10 @@
  * @brief       Output device abstraction for wlframe.
  * @details     This file defines the structures, enumerations, and functions
  *              used to represent output devices (monitors), including geometry,
- *              physical properties, modes, transformations, events, and output
- *              management.
+ *              physical properties, modes, transformations, events
  *
  *              It provides a backend-independent representation of outputs
- *              similar to Wayland wl_output, and an output manager that tracks
- *              creation and destruction of outputs.
+ *              similar to Wayland wl_output.
  *
  * @author      YaoBing Xiao
  * @date        2025-12-10
@@ -132,44 +130,5 @@ void wlf_output_init(struct wlf_output *output,
  * @param output Output to destroy.
  */
 void wlf_output_destroy(struct wlf_output *output);
-
-struct wlf_output_manager;
-
-/**
- * @brief Backend implementation for wlf_output_manager.
- */
-struct wlf_output_manager_impl {
-	void (*destroy)(struct wlf_output_manager *manager); /**< Destroy callback */
-};
-
-/**
- * @brief Manages a list of outputs.
- * @details Emits signals when outputs are added or removed.
- */
-struct wlf_output_manager {
-	struct wlf_linked_list outputs; /**< All registered outputs */
-
-	const struct wlf_output_manager_impl *impl; /**< Backend implementation */
-
-	struct {
-		struct wlf_signal destroy;         /**< Manager destroyed */
-		struct wlf_signal output_added;    /**< Output added */
-		struct wlf_signal output_removed;  /**< Output removed */
-	} events;
-};
-
-/**
- * @brief Initializes an output manager.
- * @param manager Output manager.
- * @param impl Backend implementation.
- */
-void wlf_output_manager_init(struct wlf_output_manager *manager,
-	const struct wlf_output_manager_impl *impl);
-
-/**
- * @brief Destroys the output manager and all associated outputs.
- * @param manager Output manager.
- */
-void wlf_output_manager_destroy(struct wlf_output_manager *manager);
 
 #endif // TYPES_WLF_OUTPUT_H

@@ -1,12 +1,13 @@
 #include "wlf/platform/wayland/backend.h"
+#include "wlf/platform/wlf_backend.h"
 #include "wlf/types/wlf_output.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_signal.h"
 #include "wlf/wayland/wlf_wl_compositor.h"
 #include "wlf/utils/wlf_log.h"
-#include "protocols/xdg-output-unstable-v1-client-protocol.h"
-#include "wlf/wayland/wlf_wl_display.h"
 #include "wlf/wayland/wlf_wl_output.h"
+#include "wlf/wayland/wlf_wl_interface.h"
+#include "protocols/xdg-output-unstable-v1-client-protocol.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -14,223 +15,143 @@
 #include <assert.h>
 #include <string.h>
 
+#include <wayland-client-core.h>
 #include <wayland-client-protocol.h>
 
-static void wayland_compositor_destroy(struct wlf_listener *listener, void *data) {
-	struct wlf_backend_wayland *backend =
-		wlf_container_of(listener, backend, listeners.display_destroy);
-	wlf_wl_compositor_destroy(backend->compositor);
-	backend->compositor = NULL;
-}
+static void display_global_added(void *data, struct wl_registry *wl_registry,
+		uint32_t name, const char *interface, uint32_t version) {
+	wlf_log(WLF_DEBUG, "Wayland registry global: %s v%" PRIu32, interface, version);
+	struct wlf_backend_wayland *wayland = data;
 
-static void zxdg_output_manager_destory(struct wlf_listener *listener, void *data) {
-	struct wlf_backend_wayland *backend =
-		wlf_container_of(listener, backend, listeners.output_manager_destroy);
-	wlf_output_manager_destroy(backend->base.output_manager);
-	backend->base.output_manager = NULL;
-}
+	if (strcmp(interface, wl_compositor_interface.name) == 0) {
+		uint32_t bind_version = version;
+		if (version > (uint32_t)wl_compositor_interface.version) {
+			wlf_log(WLF_DEBUG, "Server compositor version %u is higher than client version %u, "
+					"using client version", version, (uint32_t)wl_compositor_interface.version);
+			bind_version = (uint32_t)wl_compositor_interface.version;
+		}
 
-static bool wayland_backend_start(struct wlf_backend *backend) {
-	struct wlf_backend_wayland *wayland = (struct wlf_backend_wayland *)backend;
+		wayland->compositor = wl_registry_bind(wl_registry,
+			name,
+			&wl_compositor_interface,
+			bind_version);
+		if (wayland->compositor == NULL) {
+			wlf_log(WLF_ERROR, "Failed to bind wl_compositor interface with name %u", name);
+			return;
+		} else {
+			wlf_log(WLF_DEBUG, "Successfully bound wl_compositor interface (name: %u, version: %u)",
+					name, bind_version);
+		}
+	} else if (strcmp(interface, wl_shm_interface.name) == 0) {
+		uint32_t bind_version = version;
+		if (version > (uint32_t)wl_shm_interface.version) {
+			wlf_log(WLF_DEBUG, "Server shm version %u is higher than client version %u, "
+					"using client version", version, (uint32_t)wl_shm_interface.version);
+			bind_version = (uint32_t)wl_shm_interface.version;
+		}
 
-	if (wayland->started) {
-		wlf_log(WLF_INFO, "Wayland backend already started");
-		return true;
-	}
-
-	if (wayland->display == NULL) {
-		wlf_log(WLF_ERROR, "No Wayland display connection");
-		return false;
-	}
-
-	if (!wlf_wl_display_init_registry(wayland->display)) {
-		wlf_log(WLF_ERROR, "Failed to initialize Wayland registry");
-		return false;
-	}
-
-	struct wlf_wl_interface *compositor_interface =
-		wlf_wl_display_find_interface(wayland->display, wl_compositor_interface.name);
-	if (compositor_interface == NULL) {
-		wlf_log(WLF_ERROR, "Failed to find compositor interface in registry");
-		return false;
-	}
-
-	wayland->compositor = wlf_wl_compositor_create(
-		wayland->display->registry,
-		compositor_interface->name,
-		compositor_interface->version
-	);
-	if (wayland->compositor == NULL) {
-		wlf_log(WLF_ERROR, "Failed to create Wayland compositor interface");
-		return false;
-	}
-
-	wayland->listeners.compositor_destroy.notify = wayland_compositor_destroy;
-	wlf_signal_add(&compositor_interface->events.destroy, &wayland->listeners.compositor_destroy);
-
-	struct wlf_wl_interface *output_manager_interface =
-		wlf_wl_display_find_interface(wayland->display, zxdg_output_manager_v1_interface.name);
-	if (output_manager_interface == NULL) {
-		wlf_log(WLF_ERROR, "Failed to find zxdg_output_manager_v1 interface in registry");
-		return false;
-	}
-
-	backend->output_manager = wlf_output_manager_create_from_wl_registry(
-		wayland->display->registry,
-		output_manager_interface->name,
-		output_manager_interface->version
-	);
-	if (backend->output_manager == NULL) {
-		wlf_log(WLF_ERROR, "Failed to create Wayland zxdg_output_manager_v1 interface");
-		return false;
-	}
-
-	wayland->listeners.output_manager_destroy.notify = zxdg_output_manager_destory;
-	wlf_signal_add(&output_manager_interface->events.destroy, &wayland->listeners.output_manager_destroy);
-
-	struct wlf_wl_interface *reg, *tmp;
-	wlf_linked_list_for_each_safe(reg, tmp, &wayland->display->interfaces, link) {
-		if (reg->interface == wl_output_interface.name) {
-			struct wlf_output *output = wlf_output_create_from_wl_registry(
-				wayland->display->registry,
-				reg->name,
-				reg->version
-			);
-			struct wlf_wl_output *wl_output = wlf_wl_output_from_backend(output);
-			struct wlf_wl_output_manager *wl_manager = wlf_wl_output_manager_from_backend(backend->output_manager);
-			wl_output->xdg_output = zxdg_output_manager_v1_get_xdg_output(wl_manager->manager, wl_output->output);
-			wlf_linked_list_insert(&backend->output_manager->outputs, &output->link);
-			wlf_signal_emit_mutable(&backend->output_manager->events.output_added, output);
+		wayland->shm = wl_registry_bind(wl_registry,
+			name,
+			&wl_shm_interface,
+			bind_version);
+		if (wayland->shm == NULL) {
+			wlf_log(WLF_ERROR, "Failed to bind wl_shm interface with name %u", name);
+			return;
+		} else {
+			wlf_log(WLF_DEBUG, "Successfully bound wl_shm interface (name: %u, version: %u)",
+					name, bind_version);
 		}
 	}
-	wayland->started = true;
-	wlf_log(WLF_INFO, "Wayland backend started successfully");
 
-	return true;
-}
-
-static void wayland_backend_stop(struct wlf_backend *backend) {
-	struct wlf_backend_wayland *wayland = (struct wlf_backend_wayland *)backend;
-
-	if (!wayland->started) {
+	struct wlf_wl_interface *new_reg = wlf_wl_interface_create(interface, version, name);
+	if (new_reg == NULL) {
 		return;
 	}
 
-	wlf_log(WLF_DEBUG, "Stopping Wayland backend");
-
-	if (wayland->compositor) {
-		wlf_wl_compositor_destroy(wayland->compositor);
-		wayland->compositor = NULL;
-	}
-
-	wayland->started = false;
+	wlf_linked_list_insert(&wayland->interfaces, &new_reg->link);
+	wlf_signal_emit_mutable(&wayland->events.global_add, new_reg);
 }
 
+static void display_global_remove(void *data,
+		struct wl_registry *wl_registry, uint32_t name) {
+	struct wlf_backend_wayland *wayland = data;
+	struct wlf_wl_interface *reg, *tmp;
+
+	wlf_linked_list_for_each_safe(reg, tmp, &wayland->interfaces, link) {
+		if (reg->name == name) {
+			wlf_log(WLF_DEBUG, "Interface %s removed", reg->interface);
+			wlf_signal_emit_mutable(&wayland->events.global_remove, reg);
+			wlf_wl_interface_destroy(reg);
+			break;
+		}
+	}
+}
+
+static const struct wl_registry_listener wl_base_registry_listener = {
+	.global = display_global_added,
+	.global_remove = display_global_remove,
+};
+
 static void wayland_backend_destroy(struct wlf_backend *backend) {
-	struct wlf_backend_wayland *wayland = (struct wlf_backend_wayland *)backend;
 	wlf_log(WLF_DEBUG, "Destroying Wayland backend");
 
-	wayland_backend_stop(backend);
-	wlf_linked_list_remove(&wayland->listeners.display_destroy.link);
+	struct wlf_backend_wayland *wayland = (struct wlf_backend_wayland *)backend;
+	wlf_linked_list_remove(&wayland->interfaces);
 	wlf_linked_list_remove(&wayland->listeners.compositor_destroy.link);
 	wlf_linked_list_remove(&wayland->listeners.output_manager_destroy.link);
 
 	if (wayland->display) {
-		wlf_wl_display_destroy(wayland->display);
-		wayland->display = NULL;
+		wl_display_disconnect(wayland->display);
 	}
 
 	free(wayland);
 }
 
 static const struct wlf_backend_impl wayland_backend_impl = {
-	.start = wayland_backend_start,
-	.stop = wayland_backend_stop,
 	.destroy = wayland_backend_destroy,
 };
 
-static void wayland_display_destroy(struct wlf_listener *listener, void *data) {
-	struct wlf_backend_wayland *backend =
-		wlf_container_of(listener, backend, listeners.display_destroy);
-	wlf_log(WLF_INFO, "Wayland display destroyed");
-	wayland_backend_stop(&backend->base);
-}
-
-static struct wlf_backend *wayland_backend_create(void *args) {
+struct wlf_backend *wayland_backend_create(void) {
 	struct wlf_backend_wayland *backend = calloc(1, sizeof(struct wlf_backend_wayland));
 	if (backend == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate Wayland backend");
 		return NULL;
 	}
 
-	backend->base.impl = &wayland_backend_impl;
-	backend->base.type = WLF_BACKEND_WAYLAND;
-	backend->base.data = backend;
-	wlf_signal_init(&backend->base.events.destroy);
-
-	const struct wlf_backend_create_args *create_args =
-		(const struct wlf_backend_create_args *)args;
-
-	if (create_args && create_args->wayland.display) {
-		backend->display = create_args->wayland.display;
-		wlf_log(WLF_DEBUG, "Using provided Wayland display");
-	} else {
-		backend->display = wlf_wl_display_create();
-		if (backend->display == NULL) {
-			wlf_log(WLF_ERROR, "Failed to connect to Wayland display");
-			free(backend);
-			return NULL;
-		}
-		wlf_log(WLF_DEBUG, "Created new Wayland display connection");
+	wlf_backend_init(&backend->base, &wayland_backend_impl);
+	wlf_linked_list_init(&backend->interfaces);
+	backend->display = wl_display_connect(NULL);
+	if (backend->display == NULL) {
+		wlf_log(WLF_ERROR, "No Wayland display connection");
+		goto failed;
 	}
 
-	backend->listeners.display_destroy.notify = wayland_display_destroy;
-	wlf_signal_add(&backend->display->events.destroy, &backend->listeners.display_destroy);
+	backend->registry = wl_display_get_registry(backend->display);
+	if (backend->registry == NULL) {
+		wlf_log(WLF_ERROR, "Failed to get Wayland registry");
+		goto failed;
+	}
 
-	backend->started = false;
+	wl_registry_add_listener(backend->registry, &wl_base_registry_listener, backend);
+	wl_display_roundtrip(backend->display);
 
-	wlf_log(WLF_INFO, "Created Wayland backend");
+	wlf_log(WLF_DEBUG, "Created Wayland backend");
+
 	return &backend->base;
+
+failed:
+	wlf_backend_destroy(&backend->base);
+
+	return NULL;
 }
 
-static bool wayland_backend_is_available(void) {
-	const char *wayland_display = getenv("WAYLAND_DISPLAY");
-	if (wayland_display == NULL) {
-		wlf_log(WLF_ERROR, "WAYLAND_DISPLAY environment variable is not set");
-		wayland_display = "wayland-0";
-	}
-
-	char socket_path[256];
-	const char *runtime_dir = getenv("XDG_RUNTIME_DIR");
-	if (!runtime_dir) {
-		wlf_log(WLF_ERROR, "XDG_RUNTIME_DIR environment variable is not set");
-		return false;
-	}
-
-	snprintf(socket_path, sizeof(socket_path), "%s/%s", runtime_dir, wayland_display);
-	return access(socket_path, F_OK) == 0;
-}
-
-static struct wlf_backend_registry_entry entry = {
-	.type = WLF_BACKEND_WAYLAND,
-	.name = "wayland",
-	.priority = 100,
-	.create = wayland_backend_create,
-	.is_available = wayland_backend_is_available,
-	.handle = NULL,
-};
-
-bool wlf_backend_wayland_register(void) {
-	return wlf_backend_register(&entry);
-}
-
-bool wlf_backend_is_wayland(struct wlf_backend *backend) {
-	return (backend && backend->impl == &wayland_backend_impl &&
-			backend->type == WLF_BACKEND_WAYLAND);
+bool wlf_backend_is_wayland(const struct wlf_backend *backend) {
+	return (backend && backend->impl == &wayland_backend_impl);
 }
 
 struct wlf_backend_wayland *wlf_backend_wayland_from_backend(struct wlf_backend *wlf_backend) {
 	assert(wlf_backend && wlf_backend->impl == &wayland_backend_impl);
+
 	struct wlf_backend_wayland *backend = wlf_container_of(wlf_backend, backend, base);
 
 	return backend;

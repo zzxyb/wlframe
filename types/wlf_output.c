@@ -39,32 +39,3 @@ void wlf_output_destroy(struct wlf_output *output) {
 		free(output);
 	}
 }
-
-void wlf_output_manager_init(struct wlf_output_manager *manager,
-		const struct wlf_output_manager_impl *impl) {
-	assert(impl->destroy);
-
-	*manager = (struct wlf_output_manager){
-		.impl = impl,
-	};
-
-	wlf_linked_list_init(&manager->outputs);
-
-	wlf_signal_init(&manager->events.destroy);
-	wlf_signal_init(&manager->events.output_added);
-	wlf_signal_init(&manager->events.output_removed);
-}
-
-void wlf_output_manager_destroy(struct wlf_output_manager *manager) {
-	if (!manager) {
-		return;
-	}
-
-	wlf_signal_emit_mutable(&manager->events.destroy, manager);
-
-	if (manager->impl && manager->impl->destroy) {
-		manager->impl->destroy(manager);
-	} else {
-		free(manager);
-	}
-}
