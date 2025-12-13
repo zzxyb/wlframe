@@ -14,8 +14,10 @@
 #ifndef UTILS_WLF_ENV_H
 #define UTILS_WLF_ENV_H
 
+#include "wlf/utils/wlf_compat.h"
+
 #include <stdbool.h>
-#include <unistd.h>
+#include <stddef.h>
 
 /**
  * @brief Gets the value of an environment variable.

@@ -1,0 +1,73 @@
+name: Build on Windows
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: debug
+  WLF_VCPKG_ROOT: ${{ github.workspace }}\vcpkg
+  VCPKG_TRIPLET: x64-windows
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.x"
+
+    - name: Install Meson and Ninja
+      run: python -m pip install meson ninja
+
+    - name: Setup MSVC toolchain
+      uses: ilammy/msvc-dev-cmd@v1
+
+    - name: Bootstrap vcpkg
+      run: |
+        if (!(Test-Path "$env:WLF_VCPKG_ROOT\.git")) {
+          git clone https://github.com/microsoft/vcpkg.git "$env:WLF_VCPKG_ROOT"
+        }
+        & "$env:WLF_VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
+
+    - name: Install dependencies
+      run: |
+        & "$env:WLF_VCPKG_ROOT\vcpkg.exe" install `
+          libpng `
+          libjpeg-turbo `
+          libwebp `
+          giflib `
+          pkgconf `
+          --triplet $env:VCPKG_TRIPLET
+
+    - name: Export build environment
+      run: |
+        $installed = "$env:WLF_VCPKG_ROOT\installed\$env:VCPKG_TRIPLET"
+        "PKG_CONFIG=$installed\tools\pkgconf\pkgconf.exe" >> $env:GITHUB_ENV
+        "PKG_CONFIG_PATH=$installed\lib\pkgconfig;$installed\share\pkgconfig" >> $env:GITHUB_ENV
+        "INCLUDE=$installed\include;$env:INCLUDE" >> $env:GITHUB_ENV
+        "LIB=$installed\lib;$env:LIB" >> $env:GITHUB_ENV
+        "$installed\tools\pkgconf" >> $env:GITHUB_PATH
+        "$installed\bin" >> $env:GITHUB_PATH
+
+    - name: Setup build
+      run: |
+        meson setup build-windows `
+          --buildtype=$env:BUILD_TYPE `
+          --fatal-meson-warnings `
+          --wrap-mode=nofallback `
+          --default-library=static
+
+    - name: Build
+      run: ninja -C build-windows -v
+
+    - name: Run tests
+      run: meson test -C build-windows --print-errorlogs
+      continue-on-error: true

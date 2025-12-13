@@ -32,7 +32,8 @@ static bool process_option(const struct wlf_cmd_option *option, char *value) {
 }
 
 static bool long_option(const struct wlf_cmd_option *options, int count, char *arg) {
-	int k, len;
+	int k;
+	size_t len;
 
 	for (k = 0; k < count; k++) {
 		if (options[k].name == NULL)
@@ -58,7 +59,8 @@ static bool long_option(const struct wlf_cmd_option *options, int count, char *a
 
 static bool long_option_with_arg(const struct wlf_cmd_option *options, int count,
 		const char *arg, char *param) {
-	int k, len;
+	int k;
+	size_t len;
 
 	for (k = 0; k < count; k++) {
 		if (!options[k].name)

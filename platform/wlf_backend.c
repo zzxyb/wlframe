@@ -10,9 +10,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <dlfcn.h>
-#include <unistd.h>
-#include <time.h>
 #include <assert.h>
 
 void wlf_backend_init(struct wlf_backend *backend,

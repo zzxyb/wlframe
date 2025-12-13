@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <limits.h>
 
 /**
  * @brief Skip whitespace and comments in PPM file.
@@ -154,8 +155,17 @@ static bool ppm_image_load(struct wlf_image *image, const char *filename, bool e
 		return false;
 	}
 
+	size_t width_u = (size_t)width;
+	size_t height_u = (size_t)height;
+	size_t stride = width_u * 3;
+	if (width_u > UINT32_MAX || height_u > UINT32_MAX || stride > UINT32_MAX) {
+		wlf_log(WLF_ERROR, "PPM dimensions are too large");
+		fclose(fp);
+		return false;
+	}
+
 	fgetc(fp);
-	size_t data_size = width * height * 3; // RGB format
+	size_t data_size = width_u * height_u * 3; // RGB format
 	image->data = malloc(data_size);
 	if (image->data == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate image data");
@@ -206,11 +216,11 @@ static bool ppm_image_load(struct wlf_image *image, const char *filename, bool e
 		}
 	}
 
-	image->width = width;
-	image->height = height;
+	image->width = (uint32_t)width;
+	image->height = (uint32_t)height;
 	image->format = WLF_COLOR_TYPE_RGB;
 	image->bit_depth = (max_val <= 255) ? WLF_IMAGE_BIT_DEPTH_8 : WLF_IMAGE_BIT_DEPTH_16;
-	image->stride = width * 3;
+	image->stride = (uint32_t)stride;
 	image->has_alpha_channel = false;
 	image->is_opaque = true;
 	image->image_type = WLF_IMAGE_TYPE_PPM;

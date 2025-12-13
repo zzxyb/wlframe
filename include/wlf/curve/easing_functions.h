@@ -28,6 +28,10 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#ifndef WLF_PI_F
+#define WLF_PI_F 3.14159265358979323846f
+#endif
+
 /**
  * @brief Quadratic ease-in function.
  * @details Accelerates from zero velocity with a quadratic curve (t²).
@@ -195,7 +199,7 @@ static inline float ease_in_out_quint(float t) {
  * @return Eased value.
  */
 static inline float ease_in_sine(float t) {
-	return -cosf(t * M_PI / 2.0f) + 1.0f;
+	return -cosf(t * WLF_PI_F / 2.0f) + 1.0f;
 }
 
 /**
@@ -206,7 +210,7 @@ static inline float ease_in_sine(float t) {
  * @return Eased value.
  */
 static inline float ease_out_sine(float t) {
-	return sinf(t * M_PI / 2.0f);
+	return sinf(t * WLF_PI_F / 2.0f);
 }
 
 /**
@@ -217,7 +221,7 @@ static inline float ease_out_sine(float t) {
  * @return Eased value.
  */
 static inline float ease_in_out_sine(float t) {
-	return -0.5f * (cosf(M_PI * t) - 1.0f);
+	return -0.5f * (cosf(WLF_PI_F * t) - 1.0f);
 }
 
 /**
@@ -332,12 +336,12 @@ static inline float ease_in_elastic(float t, float amplitude, float period) {
 		amplitude = 1.0f;
 		s = period / 4.0f;
 	} else {
-		s = period / (2.0f * M_PI) * asinf(1.0f / amplitude);
+		s = (float)(period / (2.0f * WLF_PI_F) * asinf(1.0f / amplitude));
 	}
 
 	t -= 1.0f;
 
-	return -(amplitude * powf(2.0f, 10.0f * t) * sinf((t - s) * (2.0f * M_PI) / period));
+	return -(amplitude * powf(2.0f, 10.0f * t) * sinf((t - s) * (2.0f * WLF_PI_F) / period));
 }
 
 /**
@@ -363,10 +367,10 @@ static inline float ease_out_elastic(float t, float amplitude, float period) {
 		amplitude = 1.0f;
 		s = period / 4.0f;
 	} else {
-		s = period / (2.0f * M_PI) * asinf(1.0f / amplitude);
+		s = (float)(period / (2.0f * WLF_PI_F) * asinf(1.0f / amplitude));
 	}
 
-	return amplitude * powf(2.0f, -10.0f * t) * sinf((t - s) * (2.0f * M_PI) / period) + 1.0f;
+	return amplitude * powf(2.0f, -10.0f * t) * sinf((t - s) * (2.0f * WLF_PI_F) / period) + 1.0f;
 }
 
 /**
@@ -393,17 +397,17 @@ static inline float ease_in_out_elastic(float t, float amplitude, float period) 
 		amplitude = 1.0f;
 		s = period / 4.0f;
 	} else {
-		s = period / (2.0f * M_PI) * asinf(1.0f / amplitude);
+		s = (float)(period / (2.0f * WLF_PI_F) * asinf(1.0f / amplitude));
 	}
 
 	if (t < 1.0f) {
 		t -= 1.0f;
 		return -0.5f * (amplitude * powf(2.0f, 10.0f * t) *
-			sinf((t - s) * (2.0f * M_PI) / period));
+			sinf((t - s) * (2.0f * WLF_PI_F) / period));
 	}
 	t -= 1.0f;
 	return amplitude * powf(2.0f, -10.0f * t) *
-		sinf((t - s) * (2.0f * M_PI) / period) * 0.5f + 1.0f;
+		sinf((t - s) * (2.0f * WLF_PI_F) / period) * 0.5f + 1.0f;
 }
 
 /**

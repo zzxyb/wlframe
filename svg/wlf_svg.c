@@ -29,6 +29,7 @@
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
+#define WLF_SVG_PI_F 3.14159265358979323846f
 
 // Length proportional to radius of a cubic bezier handle for 90deg arcs.
 #define WLF_SVG_KAPPA90 (0.5522847493f)
@@ -1389,7 +1390,7 @@ static unsigned int wlf_svg_parse_color_rgb(const char* str)
 			while (*str && (wlf_svg_isspace(*str))) str++; 	// skip leading spaces
 			if (*str == '+') str++;				// skip '+' (don't allow '-')
 			if (!*str) break;
-			rgbf[i] = wlf_svg_atof(str);
+			rgbf[i] = (float)wlf_svg_atof(str);
 
 			// Note 1: it would be great if wlf_svg_atof() returned how many
 			// bytes it consumed but it doesn't. We need to skip the number,
@@ -1411,9 +1412,9 @@ static unsigned int wlf_svg_parse_color_rgb(const char* str)
 			else break;
 		}
 		if (i == 3) {
-			rgbi[0] = roundf(rgbf[0] * 2.55f);
-			rgbi[1] = roundf(rgbf[1] * 2.55f);
-			rgbi[2] = roundf(rgbf[2] * 2.55f);
+			rgbi[0] = (unsigned int)roundf(rgbf[0] * 2.55f);
+			rgbi[1] = (unsigned int)roundf(rgbf[1] * 2.55f);
+			rgbi[2] = (unsigned int)roundf(rgbf[2] * 2.55f);
 		} else {
 			rgbi[0] = rgbi[1] = rgbi[2] = 128;
 		}
@@ -1439,7 +1440,7 @@ static unsigned int wlf_svg_parse_color(const char* str)
 
 static float wlf_svg_parse_opacity(const char* str)
 {
-	float val = wlf_svg_atof(str);
+	float val = (float)wlf_svg_atof(str);
 	if (val < 0.0f) val = 0.0f;
 	if (val > 1.0f) val = 1.0f;
 	return val;
@@ -1447,7 +1448,7 @@ static float wlf_svg_parse_opacity(const char* str)
 
 static float wlf_svg_parse_miter_limit(const char* str)
 {
-	float val = wlf_svg_atof(str);
+	float val = (float)wlf_svg_atof(str);
 	if (val < 0.0f) val = 0.0f;
 	return val;
 }
@@ -1489,7 +1490,7 @@ static struct wlf_svg_coordinate wlf_svg_parse_coordinate_raw(const char* str)
 	struct wlf_svg_coordinate coord = {0, WLF_SVG_UNITS_USER};
 	char buf[64];
 	coord.units = wlf_svg_parse_units(wlf_svg_parse_number(str, buf, 64));
-	coord.value = wlf_svg_atof(buf);
+	coord.value = (float)wlf_svg_atof(buf);
 	return coord;
 }
 
@@ -1575,7 +1576,7 @@ static int wlf_svg_parse_skew_x(float* xform, const char* str)
 	int na = 0;
 	float t[6];
 	int len = wlf_svg_parse_transform_args(str, args, 1, &na);
-	wlf_svg_xform_set_skew_x(t, args[0]/180.0f*M_PI);
+	wlf_svg_xform_set_skew_x(t, args[0] / 180.0f * WLF_SVG_PI_F);
 	memcpy(xform, t, sizeof(float)*6);
 	return len;
 }
@@ -1586,7 +1587,7 @@ static int wlf_svg_parse_skew_y(float* xform, const char* str)
 	int na = 0;
 	float t[6];
 	int len = wlf_svg_parse_transform_args(str, args, 1, &na);
-	wlf_svg_xform_set_skew_y(t, args[0]/180.0f*M_PI);
+	wlf_svg_xform_set_skew_y(t, args[0] / 180.0f * WLF_SVG_PI_F);
 	memcpy(xform, t, sizeof(float)*6);
 	return len;
 }
@@ -1607,7 +1608,7 @@ static int wlf_svg_parse_rotate(float* xform, const char* str)
 		wlf_svg_xform_multiply(m, t);
 	}
 
-	wlf_svg_xform_set_rotation(t, args[0]/180.0f*M_PI);
+	wlf_svg_xform_set_rotation(t, args[0] / 180.0f * WLF_SVG_PI_F);
 	wlf_svg_xform_multiply(m, t);
 
 	if (na > 1) {
@@ -2306,7 +2307,7 @@ static void wlf_svg_path_arc_to(struct wlf_svg_parser *p, float* cpx, float* cpy
 
 	rx = fabsf(args[0]);				// y radius
 	ry = fabsf(args[1]);				// x radius
-	rotx = args[2] / 180.0f * M_PI;		// x rotation angle
+	rotx = args[2] / 180.0f * WLF_SVG_PI_F;		// x rotation angle
 	fa = fabsf(args[3]) > 1e-6 ? 1 : 0;	// Large arc
 	fs = fabsf(args[4]) > 1e-6 ? 1 : 0;	// Sweep direction
 	x1 = *cpx;							// start point
@@ -2372,9 +2373,9 @@ static void wlf_svg_path_arc_to(struct wlf_svg_parser *p, float* cpx, float* cpy
 //	if (vecrat(ux,uy,vx,vy) >= 1.0f) da = 0;
 
 	if (fs == 0 && da > 0)
-		da -= 2 * M_PI;
+		da -= 2.0f * WLF_SVG_PI_F;
 	else if (fs == 1 && da < 0)
-		da += 2 * M_PI;
+		da += 2.0f * WLF_SVG_PI_F;
 
 	// Approximate the arc using cubic spline segments.
 	t[0] = cosrx; t[1] = sinrx;
@@ -2383,7 +2384,7 @@ static void wlf_svg_path_arc_to(struct wlf_svg_parser *p, float* cpx, float* cpy
 
 	// Split arc into max 90 degree segments.
 	// The loop assumes an iteration per end point (including start and end), this +1.
-	ndivs = (int)(fabsf(da) / (M_PI*0.5f) + 1.0f);
+	ndivs = (int)(fabsf(da) / (WLF_SVG_PI_F * 0.5f) + 1.0f);
 	hda = (da / (float)ndivs) / 2.0f;
 	// Fix for ticket #179: division by 0: avoid cotangens around 0 (infinite)
 	if ((hda < 1e-3f) && (hda > -1e-3f))
@@ -2898,19 +2899,19 @@ static void wlf_svg_parse_svg(struct wlf_svg_parser *p, const char** attr)
 					sizeof(p->image->view_box) - 1);
 				p->image->view_box[sizeof(p->image->view_box) - 1] = '\0';
 				s = wlf_svg_parse_number(s, buf, 64);
-				p->viewMinx = wlf_svg_atof(buf);
+				p->viewMinx = (float)wlf_svg_atof(buf);
 				while (*s && (wlf_svg_isspace(*s) || *s == '%' || *s == ',')) s++;
 				if (!*s) return;
 				s = wlf_svg_parse_number(s, buf, 64);
-				p->viewMiny = wlf_svg_atof(buf);
+				p->viewMiny = (float)wlf_svg_atof(buf);
 				while (*s && (wlf_svg_isspace(*s) || *s == '%' || *s == ',')) s++;
 				if (!*s) return;
 				s = wlf_svg_parse_number(s, buf, 64);
-				p->viewWidth = wlf_svg_atof(buf);
+				p->viewWidth = (float)wlf_svg_atof(buf);
 				while (*s && (wlf_svg_isspace(*s) || *s == '%' || *s == ',')) s++;
 				if (!*s) return;
 				s = wlf_svg_parse_number(s, buf, 64);
-				p->viewHeight = wlf_svg_atof(buf);
+				p->viewHeight = (float)wlf_svg_atof(buf);
 				break;
 			}
 			case WLF_SVG_ROOT_ATTR_PRESERVE_ASPECT_RATIO:
@@ -4374,4 +4375,3 @@ unsigned int wlf_svg_parse_color_name(const char* str)
 
 	return WLF_SVG_RGB(128, 128, 128);
 }
-

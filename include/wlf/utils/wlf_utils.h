@@ -15,6 +15,8 @@
 #ifndef UTILS_WLF_UTILS_H
 #define UTILS_WLF_UTILS_H
 
+#include "wlf/utils/wlf_compat.h"
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/types.h>
@@ -38,7 +40,7 @@ bool is_utf8(const char *string);
  * @param[out] out The output buffer to store the generated token. Must be at least TOKEN_SIZE bytes long.
  * @return true on success, false on failure.
  */
-bool generate_token(char out[static TOKEN_SIZE]);
+bool generate_token(char out[TOKEN_SIZE]);
 
 /**
  * @brief Add a target value to the set.

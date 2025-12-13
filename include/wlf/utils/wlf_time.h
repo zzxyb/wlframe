@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <time.h>
 
+void wlf_get_monotonic_time(struct timespec *ts);
+
 /**
  * @brief Gets the current time in milliseconds.
  * @return The current time in milliseconds since the epoch.

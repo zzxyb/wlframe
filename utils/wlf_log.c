@@ -1,11 +1,10 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_time.h"
+#include "wlf/utils/wlf_compat.h"
 
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
-#include <unistd.h>
 #include <signal.h>
 
 static bool colored = true;
@@ -31,7 +30,7 @@ static void init_start_time(void) {
 	if (start_time.tv_sec >= 0) {
 		return;
 	}
-	clock_gettime(CLOCK_MONOTONIC, &start_time);
+	wlf_get_monotonic_time(&start_time);
 }
 
 static void log_stderr(enum wlf_log_importance verbosity, const char *fmt,
@@ -43,7 +42,7 @@ static void log_stderr(enum wlf_log_importance verbosity, const char *fmt,
 	}
 
 	struct timespec ts = {0};
-	clock_gettime(CLOCK_MONOTONIC, &ts);
+	wlf_get_monotonic_time(&ts);
 	timespec_sub(&ts, &ts, &start_time);
 
 	fprintf(stderr, "%02d:%02d:%02d.%03ld ", (int)(ts.tv_sec / 60 / 60),

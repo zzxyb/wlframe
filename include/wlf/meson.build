@@ -36,16 +36,3 @@ if is_linux
 	]
 endif
 
-foreach subdir : subdirs
-	if fs.is_dir(subdir)
-		header_files = run_command(
-			'find', subdir, '-maxdepth', '1', '-name', '*.h', '-type', 'f',
-			check: true
-		).stdout().strip().split('\n')
-
-		install_headers(
-			files(header_files),
-			subdir: versioned_name / 'wlf' / subdir
-		)
-	endif
-endforeach

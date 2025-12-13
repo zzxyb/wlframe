@@ -1,11 +1,11 @@
 #include "wlf/image/wlf_png_image.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/utils/wlf_compat.h"
 
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include <strings.h>
 
 #include <png.h>
 #include <time.h>
@@ -157,7 +157,13 @@ static bool png_image_load(struct wlf_image *image, const char *filename, bool e
 	image->width = width;
 	image->height = height;
 	image->bit_depth = bit_depth;
-	image->stride = rowbytes;
+	if (rowbytes > UINT32_MAX) {
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		fclose(fp);
+		wlf_log(WLF_ERROR, "PNG row stride exceeds uint32_t range");
+		return false;
+	}
+	image->stride = (uint32_t)rowbytes;
 
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 	fclose(fp);

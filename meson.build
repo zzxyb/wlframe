@@ -20,7 +20,6 @@ little_endian = target_machine.endian() == 'little'
 big_endian = target_machine.endian() == 'big'
 
 add_project_arguments([
-	'-D_POSIX_C_SOURCE=200809L',
 	'-DWLF_LITTLE_ENDIAN=@0@'.format(little_endian.to_int()),
 	'-DWLF_BIG_ENDIAN=@0@'.format(big_endian.to_int()),
 ], language: 'c')
@@ -56,12 +55,27 @@ macos_c_args = cc.get_supported_arguments([
 	'-Wno-unused-command-line-argument',
 ])
 
+windows_msvc_c_args = cc.get_supported_arguments([
+	'/sdl',
+	'/GS',
+	'/guard:cf',
+	'/D_CRT_SECURE_NO_WARNINGS',
+	'/Dstrdup=_strdup',
+	'/Dstrcasecmp=_stricmp',
+	'/Dstrncasecmp=_strnicmp',
+])
+
 is_linux = host_machine.system() == 'linux'
 is_macos = host_machine.system() == 'darwin'
+is_windows = host_machine.system() == 'windows'
 if is_linux
+	add_project_arguments(['-D_POSIX_C_SOURCE=200809L'], language: 'c')
 	add_project_arguments(common_c_args + linux_c_args, language: 'c')
 elif is_macos
+	add_project_arguments(['-D_POSIX_C_SOURCE=200809L'], language: 'c')
 	add_project_arguments(common_c_args + macos_c_args, language: 'c')
+elif is_windows
+	add_project_arguments(windows_msvc_c_args, language: 'c')
 else
 	error('Unsupported platform: ' + host_machine.system())
 endif
@@ -88,12 +102,13 @@ features = {
 	'pixman-render': true,
 	'macos_platform': is_macos,
 	'linux_platform': is_linux,
+	'windows_platform': is_windows,
 }
 
-math = cc.find_library('m')
 if is_linux
 	message('Building for Linux')
 
+	math = cc.find_library('m')
 	rt = cc.find_library('rt')
 	wayland_project_options = ['tests=false', 'documentation=false']
 
@@ -130,6 +145,8 @@ if is_linux
 	egl = dependency('egl', version: '>= 1.5', required: true)
 elif is_macos
 	message('Building for macOS')
+
+	math = cc.find_library('m')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
 	libturbojpeg = dependency('libturbojpeg', required: true, method: 'pkg-config')
 	libwebp = dependency('libwebp', required: true, method: 'pkg-config')
@@ -163,13 +180,30 @@ elif is_macos
 	if not giflib.found()
 		error('giflib not found on macOS. Install giflib (for example: brew install giflib).')
 	endif
+elif is_windows
+	message('Building for Windows')
+	libpng = dependency('libpng', required: true)
+	libturbojpeg = dependency('libjpeg', required: true)
+	libwebp = dependency('libwebp', required: true)
+	libwebpdemux = dependency('libwebpdemux', required: true)
+	libwebpmux = dependency('libwebpmux', required: true)
+	giflib = dependency('giflib', required: false)
+	if not giflib.found()
+		giflib_lib = cc.find_library('gif', required: true)
+		if not cc.has_header('gif_lib.h')
+			error('gif_lib.h not found')
+		endif
+
+		giflib = declare_dependency(
+			dependencies: giflib_lib,
+		)
+	endif
 else
 	error('Unsupported platform')
 endif
 
 wlf_files = []
 wlf_deps = [
-	math,
 	libpng,
 	libturbojpeg,
 	libwebp,
@@ -179,8 +213,12 @@ wlf_deps = [
 ]
 
 if is_macos
+	wlf_deps += [
+		math,
+	]
 elif is_linux
 	wlf_deps += [
+		math,
 		rt,
 		wayland_client,
 		wayland_protos,
@@ -192,6 +230,7 @@ elif is_linux
 		wayland_egl,
 		egl,
 	]
+elif is_windows
 else
 endif
 
@@ -237,6 +276,22 @@ elif is_macos
         include_directories: [wlf_inc],
         install: true,
     )
+elif is_windows
+    if get_option('default_library') == 'static'
+        lib_wlf = static_library(
+            versioned_name, wlf_files,
+            dependencies: wlf_deps,
+            include_directories: [wlf_inc],
+            install: true,
+        )
+    else
+        lib_wlf = shared_library(
+            versioned_name, wlf_files,
+            dependencies: wlf_deps,
+            include_directories: [wlf_inc],
+            install: true,
+        )
+    endif
 endif
 
 wlf_vars = {}
@@ -253,7 +308,9 @@ wlframe = declare_dependency(
 
 meson.override_dependency(versioned_name, wlframe)
 
-subdir('examples')
+if get_option('examples')
+	subdir('examples')
+endif
 
 if get_option('documentation').enabled()
 	subdir('docs')

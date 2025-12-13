@@ -92,22 +92,22 @@ struct wlf_size wlf_fsize_to_size(const struct wlf_fsize *size) {
 
 struct wlf_size wlf_fsize_round(const struct wlf_fsize *size) {
 	return (struct wlf_size){
-		.width = round(size->width),
-		.height = round(size->height),
+		.width = (int)round(size->width),
+		.height = (int)round(size->height),
 	};
 }
 
 struct wlf_size wlf_fsize_floor(const struct wlf_fsize *size) {
 	return (struct wlf_size){
-		.width = floor(size->width),
-		.height = floor(size->height),
+		.width = (int)floor(size->width),
+		.height = (int)floor(size->height),
 	};
 }
 
 struct wlf_size wlf_fsize_ceil(const struct wlf_fsize *size) {
 	return (struct wlf_size){
-		.width = ceil(size->width),
-		.height = ceil(size->height),
+		.width = (int)ceil(size->width),
+		.height = (int)ceil(size->height),
 	};
 }
 
