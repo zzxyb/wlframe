@@ -63,7 +63,7 @@ if is_linux
 			'../../include/wlf/renderer/vulkan/renderer.h',
 
 			'../../include/wlf/wayland/wlf_wl_compositor.h',
-			'../../include/wlf/wayland/wlf_wl_display.h',
+			'../../include/wlf/wayland/wlf_wl_interface.h',
 	])
 endif
 
