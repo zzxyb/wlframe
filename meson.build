@@ -54,12 +54,22 @@ macos_c_args = cc.get_supported_arguments([
 	'-Wno-unused-command-line-argument',
 ])
 
+windows_msvc_c_args = cc.get_supported_arguments([
+	'/W4',
+	'/sdl',
+	'/GS',
+	'/guard:cf',
+])
+
 is_linux = host_machine.system() == 'linux'
 is_macos = host_machine.system() == 'darwin'
+is_windows = host_machine.system() == 'windows'
 if is_linux
 	add_project_arguments(common_c_args + linux_c_args, language: 'c')
 elif is_macos
 	add_project_arguments(common_c_args + macos_c_args, language: 'c')
+elif is_windows
+	add_project_arguments(windows_msvc_c_args, language: 'c')
 else
 	error('Unsupported platform: ' + host_machine.system())
 endif
@@ -87,10 +97,10 @@ features = {
 	'linux_platform': is_linux,
 }
 
-math = cc.find_library('m')
 if is_linux
 	message('Building for Linux')
 
+	math = cc.find_library('m')
 	rt = cc.find_library('rt')
 	wayland_project_options = ['tests=false', 'documentation=false']
 
@@ -109,27 +119,37 @@ if is_linux
 	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
 elif is_macos
 	message('Building for macOS')
+
+	math = cc.find_library('m')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
 	libturbojpeg = dependency('libturbojpeg', required: true, method: 'pkg-config')
+elif is_windows
+	message('Building for Windows')
+	libpng = dependency('libpng', required: true, method: 'cmake')
+	libturbojpeg = dependency('libturbojpeg', required: true, method: 'cmake')
 else
 	error('Unsupported platform')
 endif
 
 wlf_files = []
 wlf_deps = [
-	math,
 	libpng,
 	libturbojpeg,
 ]
 
 if is_macos
+	wlf_deps += [
+		math,
+	]
 elif is_linux
 	wlf_deps += [
+		math,
 		rt,
 		wayland_client,
 		wayland_protos,
 		vulkan,
 	]
+elif is_windows
 else
 endif
 
