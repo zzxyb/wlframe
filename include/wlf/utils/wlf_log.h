@@ -68,6 +68,14 @@ enum wlf_log_importance wlf_log_get_verbosity(void);
 #define _WLF_ATTRIB_PRINTF(start, end) // No attributes for non-GCC compilers
 #endif
 
+#if defined(__GNUC__) || defined(__clang__)
+#define _WLF_FUNCTION_NAME __PRETTY_FUNCTION__
+#elif defined(_MSC_VER)
+#define _WLF_FUNCTION_NAME __FUNCTION__
+#else
+#define _WLF_FUNCTION_NAME __func__
+#endif
+
 /**
  * @brief Logs messages with variable arguments.
  * @param verbosity The verbosity level for the log message.
@@ -150,6 +158,6 @@ bool _wlf_assert(bool condition, const char* format, ...) _WLF_ATTRIB_PRINTF(2, 
  * @param ... Additional arguments for the format string.
  */
 #define wlf_assert(COND, FMT, ...) \
-	_wlf_assert(COND, "[%s:%d] %s:" FMT, _WLF_FILENAME, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__)
+	_wlf_assert(COND, "[%s:%d] %s:" FMT, _WLF_FILENAME, __LINE__, _WLF_FUNCTION_NAME, ##__VA_ARGS__)
 
 #endif // UTILS_WLF_LOG_H

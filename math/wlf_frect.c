@@ -96,15 +96,30 @@ struct wlf_rect wlf_frect_to_rect(const struct wlf_frect *rect) {
 }
 
 struct wlf_rect wlf_frect_round(const struct wlf_frect *rect) {
-	return wlf_rect_make(round(rect->x), round(rect->y), round(rect->width), round(rect->height));
+	return wlf_rect_make(
+		(int)round(rect->x),
+		(int)round(rect->y),
+		(int)round(rect->width),
+		(int)round(rect->height)
+	);
 }
 
 struct wlf_rect wlf_frect_floor(const struct wlf_frect *rect) {
-	return wlf_rect_make(floor(rect->x), floor(rect->y), floor(rect->width), floor(rect->height));
+	return wlf_rect_make(
+		(int)floor(rect->x),
+		(int)floor(rect->y),
+		(int)floor(rect->width),
+		(int)floor(rect->height)
+	);
 }
 
 struct wlf_rect wlf_frect_ceil(const struct wlf_frect *rect) {
-	return wlf_rect_make(ceil(rect->x), ceil(rect->y), ceil(rect->width), ceil(rect->height));
+	return wlf_rect_make(
+		(int)ceil(rect->x),
+		(int)ceil(rect->y),
+		(int)ceil(rect->width),
+		(int)ceil(rect->height)
+	);
 }
 
 bool wlf_frect_from_str(const char *str, struct wlf_frect *rect) {

@@ -1,4 +1,5 @@
 #include "wlf/utils/wlf_env.h"
+#include "wlf/config.h"
 #include "wlf/utils/wlf_log.h"
 
 #include <stdlib.h>
@@ -9,11 +10,19 @@ const char* wlf_get_env(const char *name) {
 }
 
 bool wlf_set_env(const char *name, const char *value) {
+#if WLF_HAS_WINDOWS_PLATFORM
+	return _putenv_s(name, value) == 0;
+#else
 	return setenv(name, value, 1) == 0;
+#endif
 }
 
 bool wlf_unset_env(const char *name) {
+#if WLF_HAS_WINDOWS_PLATFORM
+	return _putenv_s(name, "") == 0;
+#else
 	return unsetenv(name) == 0;
+#endif
 }
 
 bool wlf_env_parse_bool(const char *option) {
@@ -40,7 +49,7 @@ size_t wlf_env_parse_switch(const char *option, const char **switches) {
 		return 0;
 	}
 
-	for (ssize_t i = 0; switches[i]; i++) {
+	for (size_t i = 0; switches[i]; i++) {
 		if (strcmp(env, switches[i]) == 0) {
 			return i;
 		}

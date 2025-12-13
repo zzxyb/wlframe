@@ -1,6 +1,7 @@
 #include "wlf/image/wlf_xpm_image.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_compat.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -9,7 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 struct wlf_xpm_color {
 	char *key;
@@ -435,7 +435,7 @@ static void free_string_list(char **arr, size_t count) {
 }
 
 static bool parse_color_line(const char *line, int cpp, struct wlf_xpm_color *out) {
-	if ((int)strlen(line) < cpp) {
+	if (strlen(line) < (size_t)cpp) {
 		return false;
 	}
 
@@ -570,7 +570,7 @@ static bool xpm_image_load(struct wlf_image *image, const char *filename, bool e
 
 	for (int y = 0; y < height; y++) {
 		const char *px = lines[1 + color_count + y];
-		if ((int)strlen(px) < width * cpp) {
+		if (strlen(px) < (size_t)width * (size_t)cpp) {
 			free(data);
 			for (int i = 0; i < color_count; i++) {
 				free(colors[i].key);

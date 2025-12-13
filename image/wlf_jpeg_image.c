@@ -1,13 +1,14 @@
 #include "wlf/image/wlf_jpeg_image.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/utils/wlf_compat.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include <strings.h>
 #include <setjmp.h>
+#include <limits.h>
 
 #include <jpeglib.h>
 #include <jerror.h>
@@ -279,15 +280,29 @@ static bool jpeg_image_load(struct wlf_image *image, const char *filename, bool 
 
 	jpeg_image->is_progressive = (cinfo.progressive_mode != 0);
 	jpeg_start_decompress(&cinfo);
-	image->width = cinfo.output_width;
-	image->height = cinfo.output_height;
+	if (cinfo.output_width > UINT32_MAX || cinfo.output_height > UINT32_MAX) {
+		wlf_log(WLF_ERROR, "JPEG dimensions are too large");
+		jpeg_destroy_decompress(&cinfo);
+		fclose(fp);
+		return false;
+	}
+
+	image->width = (uint32_t)cinfo.output_width;
+	image->height = (uint32_t)cinfo.output_height;
 	image->bit_depth = WLF_IMAGE_BIT_DEPTH_8;
 	image->has_alpha_channel = false;
 	image->is_opaque = true;
 
-	int row_stride = cinfo.output_width * cinfo.output_components;
-	image->stride = row_stride;
-	image->data = malloc(image->height * row_stride);
+	size_t row_stride = (size_t)cinfo.output_width * (size_t)cinfo.output_components;
+	if (row_stride > UINT32_MAX) {
+		wlf_log(WLF_ERROR, "JPEG row stride is too large");
+		jpeg_destroy_decompress(&cinfo);
+		fclose(fp);
+		return false;
+	}
+
+	image->stride = (uint32_t)row_stride;
+	image->data = malloc((size_t)image->height * row_stride);
 	if (image->data == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate image data");
 		jpeg_destroy_decompress(&cinfo);
@@ -295,11 +310,12 @@ static bool jpeg_image_load(struct wlf_image *image, const char *filename, bool 
 		return false;
 	}
 
-	JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo, JPOOL_IMAGE, row_stride, 1);
+	JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)(
+		(j_common_ptr)&cinfo, JPOOL_IMAGE, (JDIMENSION)row_stride, 1);
 
 	while (cinfo.output_scanline < cinfo.output_height) {
 		jpeg_read_scanlines(&cinfo, buffer, 1);
-		memcpy(image->data + (cinfo.output_scanline - 1) * row_stride,
+		memcpy(image->data + (size_t)(cinfo.output_scanline - 1) * row_stride,
 		       buffer[0], row_stride);
 	}
 
@@ -307,7 +323,7 @@ static bool jpeg_image_load(struct wlf_image *image, const char *filename, bool 
 	jpeg_destroy_decompress(&cinfo);
 	fclose(fp);
 
-	wlf_log(WLF_DEBUG, "JPEG Info: %dx%d, Format: %d, Bit Depth: %d, Stride: %d, Progressive: %s",
+	wlf_log(WLF_DEBUG, "JPEG Info: %ux%u, Format: %d, Bit Depth: %d, Stride: %u, Progressive: %s",
 		image->width, image->height, image->format, image->bit_depth, image->stride,
 		jpeg_image->is_progressive ? "Yes" : "No");
 

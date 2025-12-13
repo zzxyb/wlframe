@@ -295,7 +295,7 @@ void wlf_scene_node_update(struct wlf_scene_node *node, struct wlf_region *damag
 }
 
 void wlf_scene_node_bounds(struct wlf_scene_node *node,
-		int x, int y, struct wlf_region *visible) {
+		double x, double y, struct wlf_region *visible) {
 	if (node->impl->bounds == NULL) {
 		if (!node->state.enabled) {
 			return;

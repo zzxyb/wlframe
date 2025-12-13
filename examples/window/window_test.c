@@ -3,7 +3,6 @@
 #include "wlf/utils/wlf_log.h"
 
 #include <stdlib.h>
-#include <unistd.h>
 
 int main(int argc, char *argv[]) {
 	wlf_log_init(WLF_DEBUG, NULL);

@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <limits.h>
 
 // BMP file header structure (14 bytes)
 #pragma pack(push, 1)
@@ -203,9 +204,18 @@ static bool bmp_image_load(struct wlf_image *image, const char *filename, bool e
 	bool top_down = (height < 0);
 	uint32_t abs_height = abs(height);
 	uint32_t row_size = calculate_row_size(width, bits_per_pixel);
+	size_t width_u = (size_t)width;
+	size_t abs_height_u = (size_t)abs_height;
+	size_t stride = width_u * 3;
+
+	if (stride > UINT32_MAX || width_u > UINT32_MAX || abs_height_u > UINT32_MAX) {
+		wlf_log(WLF_ERROR, "BMP dimensions are too large");
+		fclose(fp);
+		return false;
+	}
 
 	// Allocate memory for pixel data
-	size_t data_size = width * abs_height * 3; // RGB format
+	size_t data_size = width_u * abs_height_u * 3; // RGB format
 	image->data = malloc(data_size);
 	if (image->data == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate image data");
@@ -251,11 +261,11 @@ static bool bmp_image_load(struct wlf_image *image, const char *filename, bool e
 	free(row_buffer);
 
 	// Set image properties
-	image->width = width;
+	image->width = (uint32_t)width;
 	image->height = abs_height;
 	image->format = WLF_COLOR_TYPE_RGB;
 	image->bit_depth = WLF_IMAGE_BIT_DEPTH_8;
-	image->stride = width * 3;
+	image->stride = (uint32_t)stride;
 	image->has_alpha_channel = false;
 	image->is_opaque = true;
 	image->image_type = WLF_IMAGE_TYPE_BMP;

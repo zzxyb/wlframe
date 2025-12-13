@@ -129,22 +129,22 @@ bool wlf_fpoint_in_circle(const struct wlf_fpoint *p, const struct wlf_fpoint *c
 
 struct wlf_point wlf_fpoint_round(const struct wlf_fpoint *p) {
 	return (struct wlf_point){
-		.x = round(p->x),
-		.y = round(p->y),
+		.x = (int)round(p->x),
+		.y = (int)round(p->y),
 	};
 }
 
 struct wlf_point wlf_fpoint_floor(const struct wlf_fpoint *p) {
 	return (struct wlf_point){
-		.x = floor(p->x),
-		.y = floor(p->y),
+		.x = (int)floor(p->x),
+		.y = (int)floor(p->y),
 	};
 }
 
 struct wlf_point wlf_fpoint_ceil(const struct wlf_fpoint *p) {
 	return (struct wlf_point){
-		.x = ceil(p->x),
-		.y = ceil(p->y),
+		.x = (int)ceil(p->x),
+		.y = (int)ceil(p->y),
 	};
 }
 

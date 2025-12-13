@@ -5,6 +5,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include <gif_lib.h>
 
@@ -566,6 +567,13 @@ static bool image_load(struct wlf_image *image, const char *filename, bool enabl
 	}
 
 	struct wlf_gif_image *gif_image = wlf_gif_image_from_image(image);
+	if (gif_file->ImageCount > INT_MAX || gif_file->ImageCount < 0 ||
+		gif_file->SWidth > INT_MAX || gif_file->SHeight > INT_MAX) {
+		wlf_log(WLF_ERROR, "GIF metadata is too large");
+		gif_close_read(gif_file);
+		return false;
+	}
+
 	gif_image->frame_count = (uint32_t)gif_file->ImageCount;
 	gif_image->frames = calloc(gif_image->frame_count, sizeof(*gif_image->frames));
 	if (gif_image->frames == NULL) {
@@ -618,9 +626,23 @@ static bool image_load(struct wlf_image *image, const char *filename, bool enabl
 		wlf_blend_saved_image_to_canvas(canvas, gif_file, frame, &gcb);
 
 		struct wlf_gif_frame *out = &gif_image->frames[i];
+		if ((size_t)gif_file->SWidth * 4 > UINT32_MAX) {
+			wlf_log(WLF_ERROR, "GIF row stride is too large");
+			for (int j = 0; j < i; j++) {
+				free(gif_image->frames[j].pixels);
+			}
+			free(gif_image->frames);
+			gif_image->frames = NULL;
+			gif_image->frame_count = 0;
+			free(canvas);
+			free(previous_canvas);
+			gif_close_read(gif_file);
+			return false;
+		}
+
 		out->width = (uint32_t)gif_file->SWidth;
 		out->height = (uint32_t)gif_file->SHeight;
-		out->stride = (uint32_t)gif_file->SWidth * 4;
+		out->stride = (uint32_t)((size_t)gif_file->SWidth * 4);
 		out->delay_ms = (uint32_t)gcb.DelayTime * 10;
 		out->disposal_method = (uint8_t)gcb.DisposalMode;
 		out->pixels = malloc(canvas_size);
@@ -657,7 +679,7 @@ static bool image_load(struct wlf_image *image, const char *filename, bool enabl
 	image->height = (uint32_t)gif_file->SHeight;
 	image->format = WLF_COLOR_TYPE_RGBA;
 	image->bit_depth = WLF_IMAGE_BIT_DEPTH_8;
-	image->stride = (uint32_t)gif_file->SWidth * 4;
+	image->stride = (uint32_t)((size_t)gif_file->SWidth * 4);
 	image->has_alpha_channel = has_alpha;
 	image->is_opaque = !has_alpha;
 	image->data = gif_image->frames[0].pixels;

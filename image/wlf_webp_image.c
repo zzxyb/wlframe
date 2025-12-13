@@ -6,6 +6,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>
+#include <limits.h>
 
 #include <webp/decode.h>
 #include <webp/demux.h>
@@ -295,6 +296,11 @@ static bool image_load(struct wlf_image *image, const char *filename, bool enabl
 			wlf_log(WLF_ERROR, "Failed to allocate wlf_webp_animation_info");
 			goto anim_out;
 		}
+		if (info.canvas_width > INT_MAX || info.canvas_height > INT_MAX || info.frame_count > INT_MAX) {
+			wlf_log(WLF_ERROR, "WebP animation metadata is too large");
+			goto anim_out;
+		}
+
 		anim->canvas_w = (int)info.canvas_width;
 		anim->canvas_h = (int)info.canvas_height;
 		anim->loop_count = (int)info.loop_count;
@@ -353,6 +359,11 @@ static bool image_load(struct wlf_image *image, const char *filename, bool enabl
 			anim->frame_count++;
 		}
 
+		if ((size_t)anim->canvas_w * 4 > UINT32_MAX) {
+			wlf_log(WLF_ERROR, "WebP animation stride is too large");
+			goto anim_out;
+		}
+
 		image->width = (uint32_t)anim->canvas_w;
 		image->height = (uint32_t)anim->canvas_h;
 		image->bit_depth = WLF_IMAGE_BIT_DEPTH_8;
@@ -383,6 +394,11 @@ anim_out:
 	int channels = features.has_alpha ? 4 : 3;
 	size_t stride = (size_t)width * (size_t)channels;
 	size_t buf_size = stride * (size_t)height;
+	if ((size_t)width > UINT32_MAX || (size_t)height > UINT32_MAX || stride > UINT32_MAX) {
+		wlf_log(WLF_ERROR, "WebP dimensions are too large");
+		free(file_data);
+		return false;
+	}
 
 	image->data = malloc(buf_size);
 	if (image->data == NULL) {

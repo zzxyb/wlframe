@@ -170,7 +170,7 @@ struct wlf_scene_node_impl {
 	 * @param visible Pointer to an existing region structure.
 	 */
 	void (*bounds)(struct wlf_scene_node *node,
-		int x, int y, struct wlf_region *visible);
+		double x, double y, struct wlf_region *visible);
 
 	/**
 	 * @brief Iterates over child nodes or sub-elements intersecting a bounding box.
@@ -435,7 +435,7 @@ void wlf_scene_node_update(struct wlf_scene_node *node, struct wlf_region *damag
  *                 this region remains unmodified.
  */
 void wlf_scene_node_bounds(struct wlf_scene_node *node,
-	int x, int y, struct wlf_region *visible);
+	double x, double y, struct wlf_region *visible);
 
 /**
  * @brief Traverses and evaluates scene graph elements within a specified bounding box.

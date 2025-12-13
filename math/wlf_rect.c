@@ -42,8 +42,8 @@ struct wlf_rect wlf_rect_from_point_size(const struct wlf_point *pos, const stru
 }
 
 struct wlf_rect wlf_rect_from_points(const struct wlf_point *p1, const struct wlf_point *p2) {
-	int x = fmin(p1->x, p2->x);
-	int y = fmin(p1->y, p2->y);
+	int x = (int)fmin(p1->x, p2->x);
+	int y = (int)fmin(p1->y, p2->y);
 	int width = abs(p1->x - p2->x);
 	int height = abs(p1->y - p2->y);
 
@@ -150,19 +150,19 @@ struct wlf_rect wlf_rect_intersection(const struct wlf_rect *a, const struct wlf
 		};
 	}
 
-	int x1 = fmax(a->x, b->x);
-	int y1 = fmax(a->y, b->y);
-	int x2 = fmin(a->x + a->width, b->x + b->width);
-	int y2 = fmin(a->y + a->height, b->y + b->height);
+	int x1 = (int)fmax(a->x, b->x);
+	int y1 = (int)fmax(a->y, b->y);
+	int x2 = (int)fmin(a->x + a->width, b->x + b->width);
+	int y2 = (int)fmin(a->y + a->height, b->y + b->height);
 
 	return wlf_rect_make(x1, y1, x2 - x1, y2 - y1);
 }
 
 struct wlf_rect wlf_rect_union(const struct wlf_rect *a, const struct wlf_rect *b) {
-	int x1 = fmin(a->x, b->x);
-	int y1 = fmin(a->y, b->y);
-	int x2 = fmax(a->x + a->width, b->x + b->width);
-	int y2 = fmax(a->y + a->height, b->y + b->height);
+	int x1 = (int)fmin(a->x, b->x);
+	int y1 = (int)fmin(a->y, b->y);
+	int x2 = (int)fmax(a->x + a->width, b->x + b->width);
+	int y2 = (int)fmax(a->y + a->height, b->y + b->height);
 
 	return wlf_rect_make(x1, y1, x2 - x1, y2 - y1);
 }

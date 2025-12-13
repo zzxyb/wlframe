@@ -61,4 +61,7 @@ build/
 #vscode
 *.vscode/
 
+# Visual Studio
+.vs/
+
 .cache/

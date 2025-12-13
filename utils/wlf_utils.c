@@ -1,4 +1,5 @@
 #include "wlf/utils/wlf_utils.h"
+#include "wlf/config.h"
 #include "wlf/utils/wlf_log.h"
 
 #include <fcntl.h>
@@ -8,9 +9,30 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
-bool generate_token(char out[static TOKEN_SIZE]) {
+#if !WLF_HAS_WINDOWS_PLATFORM
+#include <unistd.h>
+#endif
+
+bool generate_token(char out[TOKEN_SIZE]) {
+#if WLF_HAS_WINDOWS_PLATFORM
+	unsigned int data[4];
+
+	for (size_t i = 0; i < sizeof(data) / sizeof(data[0]); ++i) {
+		if (rand_s(&data[i]) != 0) {
+			wlf_log(WLF_ERROR, "Failed to generate random token");
+			return false;
+		}
+	}
+
+	if (snprintf(out, TOKEN_SIZE, "%08x%08x%08x%08x",
+			data[0], data[1], data[2], data[3]) != TOKEN_SIZE - 1) {
+		wlf_log(WLF_ERROR, "Failed to format hex string token");
+		return false;
+	}
+
+	return true;
+#else
 	static FILE *urandom = NULL;
 	uint64_t data[2];
 
@@ -34,6 +56,7 @@ bool generate_token(char out[static TOKEN_SIZE]) {
 		return false;
 	}
 	return true;
+#endif
 }
 
 static bool in_range(char x, uint8_t low, uint8_t high) {

@@ -6,10 +6,10 @@
 #include "wlf/image/wlf_webp_image.h"
 #include "wlf/image/wlf_xpm_image.h"
 #include "wlf/image/wlf_gif_image.h"
+#include "wlf/utils/wlf_compat.h"
 
 #include <assert.h>
 #include <string.h>
-#include <strings.h>
 
 void wlf_image_init(struct wlf_image *image,
 		const struct wlf_image_impl *impl, uint32_t width, uint32_t height, uint32_t format) {
