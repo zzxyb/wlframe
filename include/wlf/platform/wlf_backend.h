@@ -130,12 +130,6 @@ struct wlf_backend_registry_entry {
  */
 struct wlf_backend_create_args {
 	enum wlf_backend_type type;
-
-	union {
-		struct {
-			struct wlf_wl_display *display;  /**< Wayland display (optional) */
-		} wayland;
-	};
 };
 
 /**

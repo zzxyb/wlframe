@@ -16,17 +16,28 @@
 
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/utils/wlf_signal.h"
-#include "wlf/wayland/wlf_wl_display.h"
 
 #include <stdbool.h>
+
+#include <wayland-client-core.h>
 
 /**
  * @brief Wayland backend specific data
  */
 struct wlf_backend_wayland {
 	struct wlf_backend base;              /**< Base backend structure */
-	struct wlf_wl_display *display;       /**< Wayland display connection */
 	struct wlf_wl_compositor *compositor;  /**< Wayland compositor interface */
+
+	struct wl_display *display;         /**< Wayland display pointer */
+	struct wl_registry *registry;       /**< Wayland registry pointer */
+
+	struct wlf_linked_list interfaces;  /**< List of global interfaces */
+
+	struct {
+		struct wlf_signal destroy;      /**< Signal emitted when display is destroyed */
+		struct wlf_signal global_add;   /**< Signal emitted when a global is added */
+		struct wlf_signal global_remove;/**< Signal emitted when a global is removed */
+	} events;
 
 	struct {
 		struct wlf_listener display_destroy;  /**< Display destroy listener */

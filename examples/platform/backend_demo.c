@@ -42,9 +42,6 @@ int main(int argc, char *argv[]) {
 	wlf_log(WLF_INFO, "=== Create Wayland backend ===");
 	struct wlf_backend_create_args args = {
 		.type = WLF_BACKEND_WAYLAND,
-		.wayland = {
-			.display = NULL,
-		}
 	};
 
 	struct wlf_backend *wayland = wlf_backend_create(&args);
