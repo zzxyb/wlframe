@@ -41,6 +41,8 @@ jobs:
           libxslt \
           xmlto \
           libxml2 \
+          mesa \
+          libdrm \
 
     - name: Build with GCC
       run: |
