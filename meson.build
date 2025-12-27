@@ -107,6 +107,15 @@ if is_linux
 	libpng = dependency('libpng', required: true)
 	libturbojpeg = dependency('libjpeg', required: true)
 	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
+	gbm = dependency('gbm', required: true)
+	drm = dependency('libdrm',
+		version: '>=2.4.122',
+		fallback: 'libdrm',
+		default_options: [
+			'auto_features=disabled',
+			'tests=false',
+		],
+	)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -129,6 +138,8 @@ elif is_linux
 		wayland_client,
 		wayland_protos,
 		vulkan,
+		gbm,
+		drm,
 	]
 else
 endif
@@ -138,6 +149,7 @@ subdir('utils')
 if is_linux
 	subdir('wayland')
 	subdir('protocols')
+	subdir('dmabuf')
 endif
 subdir('image')
 subdir('math')
