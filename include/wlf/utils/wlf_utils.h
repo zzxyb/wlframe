@@ -74,6 +74,17 @@ ssize_t set_remove(uint32_t values[], size_t *len, size_t cap, uint32_t target);
 #define WLF_UNUSED(x) (void)x;
 
 /**
+ * @brief Allocates a POSIX shared memory file descriptor.
+ *
+ * Creates an anonymous shared memory file of the specified size using
+ * memfd_create or shm_open as a fallback.
+ *
+ * @param size Size of the shared memory region in bytes.
+ * @return File descriptor on success, -1 on failure.
+ */
+int wlf_allocate_shm_file(size_t size);
+
+/**
  * @brief Converts a string to an integer safely.
  *
  * Parses a base-10 number from the given string. Checks that the

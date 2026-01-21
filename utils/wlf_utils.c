@@ -8,7 +8,14 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <unistd.h>
+#include <time.h>
+
+#ifdef __linux__
+#include <linux/memfd.h>
+#include <sys/syscall.h>
+#endif
 
 bool generate_token(char out[static TOKEN_SIZE]) {
 	static FILE *urandom = NULL;
@@ -122,4 +129,45 @@ ssize_t set_remove(uint32_t values[], size_t *len, size_t cap, uint32_t target) 
 		}
 	}
 	return -1;
+}
+
+int wlf_allocate_shm_file(size_t size) {
+	int fd = -1;
+
+#ifdef __linux__
+	// Try memfd_create first (Linux 3.17+)
+	fd = syscall(SYS_memfd_create, "wlframe-shm", MFD_CLOEXEC);
+	if (fd >= 0) {
+		// memfd_create succeeded
+		if (ftruncate(fd, size) < 0) {
+			close(fd);
+			return -1;
+		}
+		return fd;
+	}
+#endif
+
+	// Fallback to shm_open
+	char name[64];
+	struct timespec ts;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	snprintf(name, sizeof(name), "/wlframe-shm-%ld-%ld",
+		(long)ts.tv_sec, (long)ts.tv_nsec);
+
+	fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
+	if (fd < 0) {
+		wlf_log_errno(WLF_ERROR, "shm_open failed");
+		return -1;
+	}
+
+	// Immediately unlink so it's cleaned up when closed
+	shm_unlink(name);
+
+	if (ftruncate(fd, size) < 0) {
+		wlf_log_errno(WLF_ERROR, "ftruncate failed");
+		close(fd);
+		return -1;
+	}
+
+	return fd;
 }
