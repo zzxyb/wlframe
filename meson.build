@@ -144,6 +144,7 @@ subdir('math')
 subdir('platform')
 subdir('renderer')
 subdir('types')
+subdir('touch')
 
 wlf_inc = include_directories('include')
 
