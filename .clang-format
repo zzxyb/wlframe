@@ -1,0 +1,43 @@
+BasedOnStyle: LLVM
+
+# Tabs & indentation
+UseTab: Always
+TabWidth: 8
+IndentWidth: 8
+ContinuationIndentWidth: 8
+
+# Line length
+ColumnLimit: 80
+
+# Alignment (very important)
+AlignAfterOpenBracket: DontAlign
+AlignOperands: false
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignEscapedNewlines: DontAlign
+
+# Braces (K&R)
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: None
+
+# Function calls / parameters
+BinPackArguments: true
+BinPackParameters: true
+
+# Spaces
+SpaceBeforeParens: ControlStatements
+SpacesInParentheses: false
+SpacesInAngles: false
+
+# Pointer alignment (kernel / wlroots style)
+PointerAlignment: Right
+
+# Switch / case
+IndentCaseLabels: false
+
+# Misc
+SortIncludes: false
+ReflowComments: false
+
