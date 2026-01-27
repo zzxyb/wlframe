@@ -116,6 +116,16 @@ if is_linux
 			'tests=false',
 		],
 	)
+	xkbcommon = dependency('xkbcommon',
+		version: '>=1.8.0',
+		fallback: 'libxkbcommon',
+		default_options: [
+			'enable-tools=false',
+			'enable-x11=false',
+			'enable-docs=false',
+			'enable-xkbregistry=false',
+		],
+	)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -140,6 +150,7 @@ elif is_linux
 		vulkan,
 		gbm,
 		drm,
+		xkbcommon,
 	]
 else
 endif
