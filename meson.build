@@ -157,6 +157,7 @@ subdir('platform')
 subdir('renderer')
 subdir('types')
 subdir('buffer')
+subdir('animator')
 
 wlf_inc = include_directories('include')
 
