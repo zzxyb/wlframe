@@ -7,4 +7,11 @@ wlf_files += files(
 	'wlf_list.c',
 	'wlf_env.c',
 	'wlf_cmd_parser.c',
+	'wlf_standard_paths.c',
 )
+
+if is_linux
+	wlf_files += files('wlf_standard_paths_linux.c')
+elif is_macos
+	wlf_files += files('wlf_standard_paths_macos.m')
+endif

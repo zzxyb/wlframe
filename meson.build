@@ -1,6 +1,6 @@
 project(
 	'wlframe',
-	'c',
+	'c', 'objc',
 	version: '0.0.1-dev',
 	license: 'MIT',
 	meson_version: '>=1.3',
@@ -120,6 +120,8 @@ elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
 	libturbojpeg = dependency('libturbojpeg', required: true, method: 'pkg-config')
+	metal = dependency('appleframeworks', modules: ['Metal'], required: true)
+	foundation = dependency('appleframeworks', modules: ['Foundation'], required: true)
 else
 	error('Unsupported platform')
 endif
@@ -132,6 +134,10 @@ wlf_deps = [
 ]
 
 if is_macos
+	wlf_deps += [
+		metal,
+		foundation,
+	]
 elif is_linux
 	wlf_deps += [
 		rt,
