@@ -1,6 +1,6 @@
 project(
 	'wlframe',
-	'c',
+	'c', 'objc',
 	version: '0.0.1-dev',
 	license: 'MIT',
 	meson_version: '>=1.3',
@@ -83,6 +83,7 @@ features = {
 	'wayland-backend': false,
 	'x11-backend': false,
 	'vulkan-render': false,
+	'metal-render': false,
 	'macos_platform': is_macos,
 	'linux_platform': is_linux,
 }
@@ -120,6 +121,7 @@ elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
 	libturbojpeg = dependency('libturbojpeg', required: true, method: 'pkg-config')
+	metal = dependency('appleframeworks', modules: ['Foundation', 'Metal'], required: true)
 else
 	error('Unsupported platform')
 endif
@@ -132,6 +134,9 @@ wlf_deps = [
 ]
 
 if is_macos
+	wlf_deps += [
+		metal,
+	]
 elif is_linux
 	wlf_deps += [
 		rt,

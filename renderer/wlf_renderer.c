@@ -6,6 +6,9 @@
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/vulkan/renderer.h"
 #endif
+#if WLF_HAS_MACOS_PLATFORM
+#include "wlf/renderer/metal/renderer.h"
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -25,6 +28,22 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		render = wlf_vk_renderer_create_from_backend(backend);
 		if (render == NULL) {
 			wlf_log(WLF_ERROR, "Failed to create Vulkan render");
+			return NULL;
+		}
+	}
+#elif WLF_HAS_MACOS_PLATFORM
+	const char *render_options[] = {
+		"auto",
+		"metal",
+		NULL
+	};
+	const char *render_name = render_options[wlf_env_parse_switch("WLF_RENDERER",
+		render_options)];
+	bool is_auto = strcmp(render_name, "auto") == 0;
+	if (is_auto || strcmp(render_name, "metal") == 0) {
+		render = wlf_mtl_renderer_create_from_backend(backend);
+		if (render == NULL) {
+			wlf_log(WLF_ERROR, "Failed to create Metal render");
 			return NULL;
 		}
 	}

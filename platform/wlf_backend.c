@@ -22,6 +22,7 @@ static struct {
 static const char *backend_type_names[] = {
 	[WLF_BACKEND_AUTOCREATE] = "autocreate",
 	[WLF_BACKEND_WAYLAND] = "wayland",
+	[WLF_BACKEND_MACOS] = "macos",
 };
 
 /**
