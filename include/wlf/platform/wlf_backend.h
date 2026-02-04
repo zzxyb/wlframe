@@ -46,6 +46,7 @@ typedef void (*wlf_backend_plugin_cleanup_func_t)(void);
 enum wlf_backend_type {
 	WLF_BACKEND_AUTOCREATE = 0,  /**< Auto-detect and create the best backend */
 	WLF_BACKEND_WAYLAND,         /**< Wayland client backend */
+	WLF_BACKEND_MACOS,           /**< macOS backend */
 };
 
 struct wlf_backend;

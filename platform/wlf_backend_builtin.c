@@ -6,6 +6,9 @@
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
 #endif
+#if WLF_HAS_MACOS_PLATFORM
+#include "wlf/platform/macos/backend.h"
+#endif
 
 bool wlf_backend_builtin_init(void) {
 	wlf_backend_init();
@@ -19,6 +22,13 @@ bool wlf_backend_builtin_init(void) {
 			wlf_log(WLF_ERROR, "Failed to register Wayland backend");
 			success = false;
 		}
+	}
+#elif WLF_HAS_MACOS_PLATFORM
+	wlf_log(WLF_INFO, "Create macOS backend");
+	success = wlf_backend_macos_register();
+	if (!success) {
+		wlf_log(WLF_ERROR, "Failed to register macOS backend");
+		success = false;
 	}
 #endif
 
