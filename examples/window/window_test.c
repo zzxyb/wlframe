@@ -20,6 +20,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	wlf_log(WLF_INFO, "Backend started successfully");
+	wlf_backend_exe(backend);
 	wlf_backend_destroy(backend);
 
 	return EXIT_SUCCESS;

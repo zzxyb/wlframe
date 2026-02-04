@@ -24,6 +24,7 @@
 #include "wlf/utils/wlf_linked_list.h"
 
 struct wlf_output;
+struct wlf_output_manager;
 
 /**
  * @brief Output transform types.
@@ -68,6 +69,13 @@ enum wlf_output_type {
 struct wlf_output_impl {
 	enum wlf_output_type type;                   /**< Output type */
 	void (*destroy)(struct wlf_output *output);  /**< Implementation destroy callback */
+};
+
+/**
+ * @brief Backend-specific output manager implementation.
+ */
+struct wlf_output_manager_impl {
+	void (*destroy)(struct wlf_output_manager *manager);
 };
 
 /**
@@ -118,6 +126,21 @@ struct wlf_output {
 };
 
 /**
+ * @brief Tracks a collection of outputs for a backend/platform.
+ */
+struct wlf_output_manager {
+	const struct wlf_output_manager_impl *impl;
+
+	struct {
+		struct wlf_signal destroy;
+		struct wlf_signal output_added;
+		struct wlf_signal output_removed;
+	} events;
+
+	struct wlf_linked_list outputs;
+};
+
+/**
  * @brief Initializes an output structure.
  * @param output Output to initialize.
  * @param impl Backend-specific implementation.
@@ -130,5 +153,19 @@ void wlf_output_init(struct wlf_output *output,
  * @param output Output to destroy.
  */
 void wlf_output_destroy(struct wlf_output *output);
+
+/**
+ * @brief Initializes an output manager structure.
+ * @param manager Manager to initialize.
+ * @param impl Backend-specific implementation.
+ */
+void wlf_output_manager_init(struct wlf_output_manager *manager,
+	const struct wlf_output_manager_impl *impl);
+
+/**
+ * @brief Destroys an output manager and emits destroy signal.
+ * @param manager Manager to destroy.
+ */
+void wlf_output_manager_destroy(struct wlf_output_manager *manager);
 
 #endif // TYPES_WLF_OUTPUT_H
