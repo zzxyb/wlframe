@@ -43,6 +43,8 @@ jobs:
           libxml2 \
           mesa \
           libdrm \
+          libvncserver \
+          pipewire \
 
     - name: Build with GCC
       run: |

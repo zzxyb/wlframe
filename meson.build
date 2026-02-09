@@ -116,10 +116,15 @@ if is_linux
 			'tests=false',
 		],
 	)
+	libvncserver = dependency('libvncserver', required: true)
+	libvncclient = dependency('libvncclient', required: true)
+	pipewire = dependency('libpipewire-0.3', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
 	libturbojpeg = dependency('libturbojpeg', required: true, method: 'pkg-config')
+	libvncserver = dependency('libvncserver', required: true, method: 'pkg-config')
+	libvncclient = dependency('libvncclient', required: true, method: 'pkg-config')
 else
 	error('Unsupported platform')
 endif
@@ -132,6 +137,10 @@ wlf_deps = [
 ]
 
 if is_macos
+	wlf_deps += [
+		libvncserver,
+		libvncclient,
+	]
 elif is_linux
 	wlf_deps += [
 		rt,
@@ -140,6 +149,9 @@ elif is_linux
 		vulkan,
 		gbm,
 		drm,
+		libvncserver,
+		libvncclient,
+		pipewire,
 	]
 else
 endif
@@ -158,6 +170,7 @@ subdir('renderer')
 subdir('types')
 subdir('buffer')
 subdir('animator')
+subdir('ra')
 
 wlf_inc = include_directories('include')
 
