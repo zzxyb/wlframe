@@ -41,6 +41,7 @@ jobs:
           libxslt \
           xmlto \
           libxml2 \
+          libvncserver \
 
     - name: Setup build
       run: |
