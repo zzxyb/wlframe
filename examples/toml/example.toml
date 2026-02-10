@@ -1,0 +1,73 @@
+# Example TOML Configuration File
+# This file demonstrates various TOML features
+
+# Root-level key-value pairs
+title = "WLFrame Configuration Example"
+description = "This is an example configuration file for demonstrating the wlf_toml parser"
+
+# Numeric values
+count = 42
+port = 8080
+pi = 3.14159
+temperature = 23.5
+
+# Boolean values
+enabled = true
+debug = false
+
+# String values
+author = "WLFrame Team"
+version = "1.0.0"
+
+# Multi-line string (using triple quotes)
+long_description = """
+This is a multi-line string.
+It can span multiple lines.
+Very useful for longer text content."""
+
+# Server configuration table
+[server]
+host = "localhost"
+port = 8080
+timeout = 30
+max_connections = 100
+ssl_enabled = true
+
+# Database configuration table
+[database]
+type = "postgresql"
+host = "db.example.com"
+port = 5432
+name = "wlframe_db"
+user = "admin"
+password = "secret123"
+pool_size = 10
+
+# Client configuration
+[client]
+retry_attempts = 3
+retry_delay = 1.5
+user_agent = "WLFrame/1.0"
+compression = true
+
+# Logging configuration
+[logging]
+level = "info"
+format = "json"
+output = "/var/log/wlframe.log"
+rotate = true
+max_size_mb = 100
+
+# Graphics settings
+[graphics]
+width = 1920
+height = 1080
+fullscreen = false
+vsync = true
+fps_limit = 60
+
+# Window settings (nested table)
+[graphics.window]
+title = "WLFrame Application"
+resizable = true
+borderless = false

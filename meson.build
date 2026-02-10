@@ -158,6 +158,7 @@ subdir('renderer')
 subdir('types')
 subdir('buffer')
 subdir('animator')
+subdir('toml')
 
 wlf_inc = include_directories('include')
 
