@@ -22,27 +22,15 @@
 #include "wlf/animator/wlf_animator_curve.h"
 
 /**
- * @brief Back curve type enumeration.
- *
- * Specifies the type of back easing curve.
- */
-enum wlf_animator_curve_back_type {
-	WLF_ANIMATOR_CURVE_BACK_IN,      /**< Ease-in back curve */
-	WLF_ANIMATOR_CURVE_BACK_OUT,     /**< Ease-out back curve */
-	WLF_ANIMATOR_CURVE_BACK_IN_OUT,  /**< Ease-in-out back curve */
-	WLF_ANIMATOR_CURVE_BACK_OUT_IN,  /**< Ease-out-in back curve */
-};
-
-/**
  * @brief Back easing curves with configurable overshoot.
  *
  * This structure provides back easing animation curves that create an overshoot effect.
  * The base member must be the first field to enable safe casting from wlf_animator_curve.
  */
 struct wlf_animator_curve_back {
-	struct wlf_animator_curve base;              /**< Base curve structure */
-	enum wlf_animator_curve_back_type type;      /**< Type of back curve */
-	float overshoot;                             /**< Overshoot parameter controlling the magnitude of back/overshoot effect */
+	struct wlf_animator_curve base;         /**< Base curve structure */
+	enum wlf_animator_curve_type type;      /**< Type of back curve */
+	float overshoot;                        /**< Overshoot parameter controlling the magnitude of back/overshoot effect */
 };
 
 /**

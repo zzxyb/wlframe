@@ -68,7 +68,7 @@ struct wlf_animator_curve *wlf_animator_curve_in_back_create(float overshoot) {
 	}
 
 	wlf_animator_curve_init(&curve->base, &in_back_impl);
-	curve->type = WLF_ANIMATOR_CURVE_BACK_IN;
+	curve->type = WLF_ANIMATOR_CURVE_IN;
 	curve->overshoot = overshoot;
 
 	return &curve->base;
@@ -82,7 +82,7 @@ struct wlf_animator_curve *wlf_animator_curve_out_back_create(float overshoot) {
 	}
 
 	wlf_animator_curve_init(&curve->base, &out_back_impl);
-	curve->type = WLF_ANIMATOR_CURVE_BACK_OUT;
+	curve->type = WLF_ANIMATOR_CURVE_OUT;
 	curve->overshoot = overshoot;
 
 	return &curve->base;
@@ -96,7 +96,7 @@ struct wlf_animator_curve *wlf_animator_curve_in_out_back_create(float overshoot
 	}
 
 	wlf_animator_curve_init(&curve->base, &in_out_back_impl);
-	curve->type = WLF_ANIMATOR_CURVE_BACK_IN_OUT;
+	curve->type = WLF_ANIMATOR_CURVE_IN_OUT;
 	curve->overshoot = overshoot;
 
 	return &curve->base;
@@ -110,7 +110,7 @@ struct wlf_animator_curve *wlf_animator_curve_out_in_back_create(float overshoot
 	}
 
 	wlf_animator_curve_init(&curve->base, &out_in_back_impl);
-	curve->type = WLF_ANIMATOR_CURVE_BACK_OUT_IN;
+	curve->type = WLF_ANIMATOR_CURVE_OUT_IN;
 	curve->overshoot = overshoot;
 
 	return &curve->base;

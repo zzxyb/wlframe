@@ -21,6 +21,18 @@
 struct wlf_animator_curve;
 
 /**
+ * @brief curve type enumeration.
+ *
+ * Specifies the type of easing curve.
+ */
+enum wlf_animator_curve_type {
+	WLF_ANIMATOR_CURVE_IN,      /**< Ease-in curve */
+	WLF_ANIMATOR_CURVE_OUT,     /**< Ease-out curve */
+	WLF_ANIMATOR_CURVE_IN_OUT,  /**< Ease-in-out curve */
+	WLF_ANIMATOR_CURVE_OUT_IN,  /**< Ease-out-in curve */
+};
+
+/**
  * @brief Virtual methods for animator curve operations.
  *
  * This structure defines the interface that curve implementations must provide.
