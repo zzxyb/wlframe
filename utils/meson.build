@@ -7,4 +7,6 @@ wlf_files += files(
 	'wlf_list.c',
 	'wlf_env.c',
 	'wlf_cmd_parser.c',
+	'wlf_map.c',
+	'wlf_hash.c',
 )
