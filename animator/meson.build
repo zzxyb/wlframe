@@ -7,4 +7,5 @@ wlf_files += files(
 	'wlf_curve_elastic.c',
 	'wlf_curve_expo.c',
 	'wlf_curve_linear.c',
+	'wlf_curve_quad.c',
 )
