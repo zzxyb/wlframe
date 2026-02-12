@@ -31,9 +31,9 @@
  */
 struct wlf_curve_elastic {
 	struct wlf_curve base;         /**< Base curve structure */
-	enum wlf_curve_type type;	    /**< Type of elastic curve */
-	float amplitude;                        /**< Amplitude of oscillation (controls overshoot intensity) */
-	float period;                           /**< Period of oscillation (controls oscillation frequency) */
+	enum wlf_curve_type type;      /**< Type of elastic curve */
+	float amplitude;               /**< Amplitude of oscillation (controls overshoot intensity) */
+	float period;                  /**< Period of oscillation (controls oscillation frequency) */
 };
 
 /**
