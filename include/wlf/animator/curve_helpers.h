@@ -1,7 +1,7 @@
 /**
  * @file        curve_helpers.h
- * @brief       Helper utilities for animation curve calculations.
- * @details     This file provides common mathematical utilities for animation curves,
+ * @brief       Helper utilities for curve calculations in wlframe.
+ * @details     This file provides common mathematical utilities for curves,
  *              including clamping functions and mathematical constants.
  * @author      YaoBing Xiao
  * @date        2026-02-02
@@ -28,7 +28,7 @@
 /**
  * @brief Clamps a time parameter to the range [0.0, 1.0].
  *
- * This function restricts the input value to be within the valid animation
+ * This function restricts the input value to be within the normalized
  * time range, where 0.0 represents the start and 1.0 represents the end.
  *
  * @param t The time parameter to clamp.
