@@ -124,7 +124,7 @@ bool wlf_frect_from_str(const char *str, struct wlf_frect *rect) {
 		return false;
 	}
 
-	char *end_ptr = strchr(str, ')');
+	const char *end_ptr = strchr(str, ')');
 	if (end_ptr == NULL) {
 		return false;
 	}

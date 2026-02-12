@@ -186,12 +186,12 @@ bool wlf_rect_from_str(const char *str, struct wlf_rect *rect) {
 		return false;
 	}
 
-	char *end_ptr = strchr(str, ')');
+	const char *end_ptr = strchr(str, ')');
 	if (end_ptr == NULL) {
 		return false;
 	}
 
-	char *check_ptr = end_ptr - 1;
+	const char *check_ptr = end_ptr - 1;
 	while (check_ptr > str && (*check_ptr == ' ' || *check_ptr == '\t')) {
 		check_ptr--;
 	}
