@@ -1,9 +1,9 @@
 /**
  * @file        easing_functions.h
- * @brief       Easing functions for smooth animation transitions.
- * @details     This file provides a comprehensive collection of easing functions commonly used
- *              in animations and transitions. Each function takes a normalized time parameter
- *              (0.0 to 1.0) and returns a modified value that creates different motion effects.
+ * @brief       Easing functions for smooth transitions in wlframe.
+ * @details     This file provides a comprehensive collection of easing functions.
+ *              Each function takes a normalized time parameter (0.0 to 1.0) and returns
+ *              a modified value that creates different motion effects.
  *              Includes quadratic, cubic, quartic, quintic, sine, exponential, circular,
  *              elastic, back, and bounce easing variations.
  * @author      YaoBing Xiao
