@@ -2,6 +2,7 @@
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_env.h"
+#include "wlf/utils/wlf_linked_list.h"
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/vulkan/renderer.h"
@@ -9,6 +10,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 	struct wlf_renderer *render = NULL;
@@ -40,9 +42,21 @@ void wlf_renderer_destroy(struct wlf_renderer *render) {
 
 	wlf_signal_emit_mutable(&render->events.destroy, render);
 
+	assert(wlf_linked_list_empty(&render->events.destroy.listener_list));
+
 	if (render->impl && render->impl->destroy) {
 		render->impl->destroy(render);
 	} else {
 		free(render);
 	}
+}
+
+void wlf_renderer_init(struct wlf_renderer *render,
+		const struct wlf_renderer_impl *impl) {
+	assert(impl);
+	assert(impl->destroy);
+
+	render->impl = impl;
+
+	wlf_signal_init(&render->events.destroy);
 }

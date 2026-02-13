@@ -1,11 +1,14 @@
 #include "wlf/renderer/vulkan/renderer.h"
 #include "wlf/renderer/vulkan/device.h"
 #include "wlf/renderer/vulkan/instance.h"
+#include "wlf/renderer/wlf_renderer.h"
 #include "wlf/utils/wlf_env.h"
 
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
+
 #include <vulkan/vulkan_core.h>
 
 struct wlf_renderer *wlf_vk_renderer_create_from_backend(
@@ -13,7 +16,7 @@ struct wlf_renderer *wlf_vk_renderer_create_from_backend(
 	wlf_log(WLF_INFO, "Run with VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation "
 		"to enable the validation layer");
 	struct wlf_vk_instance *ini = wlf_vk_instance_create(
-		wlf_env_parse_bool("WLF_RENDER_DEBUG)"));
+		wlf_env_parse_bool("WLF_RENDER_DEBUG"));
 	if (ini == NULL) {
 		wlf_log(WLF_ERROR, "creating vulkan instance for render failed");
 		return NULL;
@@ -31,15 +34,11 @@ struct wlf_renderer *wlf_vk_renderer_create_from_backend(
 		goto cleanup;
 	}
 
-	return wlr_vk_render_create_for_device(device);
+	return wlf_vk_render_create_for_device(device);
 
 cleanup:
 	wlf_vk_instance_destroy(ini);
 	return NULL;
-}
-
-void wlf_vk_renderer_destroy(struct wlf_vk_renderer *vk_render) {
-
 }
 
 bool check_extension(const VkExtensionProperties *avail,
@@ -53,16 +52,64 @@ bool check_extension(const VkExtensionProperties *avail,
 	return false;
 }
 
-struct wlf_renderer *wlr_vk_render_create_for_device(struct wlf_vk_device *device) {
+static void vk_renderer_destroy(struct wlf_renderer *render) {
+	struct wlf_vk_renderer *vk_render =
+		wlf_vk_renderer_from_renderer(render);
+	if (vk_render == NULL) {
+		return;
+	}
+
+	struct wlf_vk_device *dev = vk_render->dev;
+	if (!dev) {
+		free(vk_render);
+		return;
+	}
+
+	VkResult res = vkDeviceWaitIdle(vk_render->dev->base);
+	if (res != VK_SUCCESS) {
+		wlf_vk_error("vkDeviceWaitIdle", res);
+	}
+
+	vkDestroyCommandPool(vk_render->dev->base, vk_render->command_pool, NULL);
+	vkDestroySemaphore(vk_render->dev->base, vk_render->timeline_semaphore, NULL);
+
+	wlf_vk_device_destroy(dev);
+	free(vk_render);
+}
+
+static const struct wlf_renderer_impl vk_renderer_impl = {
+	.destroy = vk_renderer_destroy,
+};
+
+bool wlf_renderer_is_vk(const struct wlf_renderer *wlf_renderer) {
+	if (wlf_renderer == NULL) {
+		return false;
+	}
+
+	return wlf_renderer->impl == &vk_renderer_impl;
+}
+
+struct wlf_vk_renderer *wlf_vk_renderer_from_renderer(struct wlf_renderer *renderer) {
+	if (!wlf_renderer_is_vk(renderer)) {
+		return NULL;
+	}
+
+	struct wlf_vk_renderer *vk_renderer = wlf_container_of(renderer, vk_renderer, base);
+
+	return vk_renderer;
+}
+
+struct wlf_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *device) {
 	VkResult res;
 	struct wlf_vk_renderer *render = calloc(1, sizeof(*render));
 	if (render == NULL) {
-		wlf_log_errno(WLF_ERROR, "failed to allocate wlr_vk_render");
+		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_vk_renderer");
 		wlf_vk_device_destroy(device);
 		return NULL;
 	}
 
 	render->dev = device;
+	wlf_renderer_init(&render->base, &vk_renderer_impl);
 	VkPhysicalDeviceProperties phdev_props;
 	vkGetPhysicalDeviceProperties(device->phdev, &phdev_props);
 	if (phdev_props.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) {
@@ -102,7 +149,7 @@ struct wlf_renderer *wlr_vk_render_create_for_device(struct wlf_vk_device *devic
 	return &render->base;
 
 error:
-	wlf_vk_renderer_destroy(render);
+	vk_renderer_destroy(&render->base);
 	return NULL;
 }
 

@@ -75,9 +75,21 @@ struct wlf_renderer {
 struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend);
 
 /**
- * @brief Destroy a render
- * @param render Pointer to the render to destroy
+ * @brief Destroys a renderer instance.
+ * @param render Pointer to the renderer to destroy
  */
 void wlf_renderer_destroy(struct wlf_renderer *render);
+
+/**
+ * @brief Initializes a renderer instance with the given implementation.
+ *
+ * This function initializes a renderer structure with backend-specific
+ * implementation callbacks and sets up its internal state.
+ *
+ * @param render Pointer to the renderer to initialize.
+ * @param impl Pointer to the renderer implementation interface.
+ */
+void wlf_renderer_init(struct wlf_renderer *render,
+	const struct wlf_renderer_impl *impl);
 
 #endif // RENDERER_WLF_RENDERER_H
