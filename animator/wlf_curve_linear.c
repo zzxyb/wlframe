@@ -2,6 +2,7 @@
 #include "wlf/animator/curve_helpers.h"
 #include "wlf/utils/wlf_utils.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_linked_list.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -49,5 +50,7 @@ struct wlf_curve_linear *wlf_curve_linear_from_curve(
 		return NULL;
 	}
 
-	return (struct wlf_curve_linear *)curve;
+	struct wlf_curve_linear *curve_linear = wlf_container_of(curve, curve_linear, base);
+
+	return curve_linear;
 }
