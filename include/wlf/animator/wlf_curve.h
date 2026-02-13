@@ -17,6 +17,8 @@
 #ifndef ANIMATOR_WLF_CURVE_H
 #define ANIMATOR_WLF_CURVE_H
 
+#include "wlf/utils/wlf_signal.h"
+
 struct wlf_curve;
 
 /**
@@ -59,6 +61,10 @@ struct wlf_curve_impl {
  */
 struct wlf_curve {
 	const struct wlf_curve_impl *impl;  /**< Virtual method table */
+
+	struct {
+		struct wlf_signal destroy;  /**< Signal emitted when the curve is destroyed. */
+	} events;
 };
 
 /**
