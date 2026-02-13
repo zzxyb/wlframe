@@ -259,12 +259,12 @@ void wlf_vk_device_destroy(struct wlf_vk_device *device) {
 		return;
 	}
 
-	if (device->instance) {
-		wlf_vk_instance_destroy(device->instance);
-	}
-
 	if (device->base) {
 		vkDestroyDevice(device->base, NULL);
+	}
+
+	if (device->instance) {
+		wlf_vk_instance_destroy(device->instance);
 	}
 
 	free(device);

@@ -60,22 +60,12 @@ struct wlf_renderer *wlf_vk_renderer_create_from_backend(
 	struct wlf_backend *backend);
 
 /**
- * @brief Destroys a Vulkan renderer instance.
- *
- * Releases Vulkan resources including command pools, semaphores, and device handles.
- * Should be called when the Vulkan renderer is no longer needed.
- *
- * @param vk_render Pointer to the Vulkan renderer instance.
- */
-void wlf_vk_renderer_destroy(struct wlf_vk_renderer *vk_render);
-
-/**
  * @brief Checks whether a renderer is a Vulkan renderer.
  *
- * @param wlf_renderer Pointer to a generic renderer instance.
+ * @param renderer Pointer to a generic renderer instance.
  * @return true if the renderer uses Vulkan as backend, false otherwise.
  */
-bool wlf_renderer_is_vk(struct wlf_renderer *wlf_renderer);
+bool wlf_renderer_is_vk(const struct wlf_renderer *renderer);
 
 /**
  * @brief Converts a generic renderer pointer to a Vulkan renderer pointer.
@@ -83,10 +73,10 @@ bool wlf_renderer_is_vk(struct wlf_renderer *wlf_renderer);
  * This function safely casts a `wlf_renderer` to its derived `wlf_vk_renderer`
  * type if the renderer is Vulkan-based.
  *
- * @param wlf_renderer Pointer to a generic renderer.
+ * @param renderer Pointer to a generic renderer.
  * @return Pointer to the Vulkan renderer, or NULL if not Vulkan-based.
  */
-struct wlf_vk_renderer *wlf_vk_renderer_from_render(struct wlf_renderer *wlf_renderer);
+struct wlf_vk_renderer *wlf_vk_renderer_from_renderer(struct wlf_renderer *renderer);
 
 /**
  * @brief Checks if a Vulkan extension is available.
@@ -111,7 +101,7 @@ bool check_extension(const VkExtensionProperties *avail,
  * @param device Pointer to a Vulkan device wrapper.
  * @return Pointer to the created `wlf_renderer`, or NULL on failure.
  */
-struct wlf_renderer *wlr_vk_render_create_for_device(struct wlf_vk_device *device);
+struct wlf_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *device);
 
 /**
  * @brief Returns a human-readable Vulkan error string.
