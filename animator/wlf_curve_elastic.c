@@ -2,6 +2,7 @@
 #include "wlf/animator/curve_helpers.h"
 #include "wlf/animator/easing_functions.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_linked_list.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -139,5 +140,7 @@ struct wlf_curve_elastic *wlf_curve_elastic_from_curve(
 		return NULL;
 	}
 
-	return (struct wlf_curve_elastic *)curve;
+	struct wlf_curve_elastic *curve_elastic = wlf_container_of(curve, curve_elastic, base);
+
+	return curve_elastic;
 }

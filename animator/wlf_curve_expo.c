@@ -3,6 +3,7 @@
 #include "wlf/animator/easing_functions.h"
 #include "wlf/utils/wlf_utils.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_linked_list.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -129,5 +130,7 @@ struct wlf_curve_expo *wlf_curve_expo_from_curve(
 		return NULL;
 	}
 
-	return (struct wlf_curve_expo *)curve;
+	struct wlf_curve_expo *curve_expo = wlf_container_of(curve, curve_expo, base);
+
+	return curve_expo;
 }

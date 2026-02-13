@@ -3,6 +3,7 @@
 #include "wlf/animator/easing_functions.h"
 #include "wlf/utils/wlf_utils.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_linked_list.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -130,5 +131,7 @@ struct wlf_curve_sine *wlf_curve_sine_from_curve(
 		return NULL;
 	}
 
-	return (struct wlf_curve_sine *)curve;
+	struct wlf_curve_sine *curve_sine = wlf_container_of(curve, curve_sine, base);
+
+	return curve_sine;
 }
