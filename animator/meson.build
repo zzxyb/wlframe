@@ -11,4 +11,5 @@ wlf_files += files(
 	'wlf_curve_quart.c',
 	'wlf_curve_sine.c',
 	'wlf_curve_quint.c',
+	'wlf_animator.c',
 )
