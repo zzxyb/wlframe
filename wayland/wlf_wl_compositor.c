@@ -1,6 +1,5 @@
 #include "wlf/wayland/wlf_wl_compositor.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <stdlib.h>

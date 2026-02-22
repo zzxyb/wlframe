@@ -354,7 +354,7 @@ struct wlf_jpeg_image *wlf_jpeg_image_from_image(struct wlf_image *wlf_image) {
 	return image;
 }
 
-bool wlf_image_is_jpeg(struct wlf_image *image) {
+bool wlf_image_is_jpeg(const struct wlf_image *image) {
 	if (image == NULL) {
 		return false;
 	}
@@ -363,7 +363,7 @@ bool wlf_image_is_jpeg(struct wlf_image *image) {
 			image->image_type == WLF_IMAGE_TYPE_JPEG);
 }
 
-enum wlf_jpeg_colorspace wlf_color_type_to_jpeg_colorspace(struct wlf_image *image) {
+enum wlf_jpeg_colorspace wlf_color_type_to_jpeg_colorspace(const struct wlf_image *image) {
 	if (image == NULL) {
 		return WLF_JPEG_COLORSPACE_UNKNOWN;
 	}

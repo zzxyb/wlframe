@@ -54,7 +54,7 @@ static bool ppm_image_save(struct wlf_image *image, const char *filename) {
 		return false;
 	}
 
-	struct wlf_ppm_image *ppm_image = wlf_ppm_image_from_image(image);
+	const struct wlf_ppm_image *ppm_image = wlf_ppm_image_from_image(image);
 	assert(ppm_image != NULL);
 
 	if (image->format != WLF_COLOR_TYPE_RGB) {
@@ -249,7 +249,7 @@ struct wlf_ppm_image *wlf_ppm_image_create(void) {
 	return image;
 }
 
-bool wlf_image_is_ppm(struct wlf_image *image) {
+bool wlf_image_is_ppm(const struct wlf_image *image) {
 	if (image == NULL) {
 		return false;
 	}

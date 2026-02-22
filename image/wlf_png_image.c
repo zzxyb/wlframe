@@ -189,7 +189,7 @@ struct wlf_png_image *wlf_png_image_create(void) {
 	return image;
 };
 
-bool wlf_image_is_png(struct wlf_image *image) {
+bool wlf_image_is_png(const struct wlf_image *image) {
 	if (image == NULL) {
 		return false;
 	}
