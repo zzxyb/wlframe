@@ -67,7 +67,7 @@ bool wlf_dmabuf_check_sync_file_import_export(void) {
 		}
 	}
 
-	char *rel = strtok(utsname.release, ".");
+	const char *rel = strtok(utsname.release, ".");
 	int major = atoi(rel);
 
 	int minor = 0;

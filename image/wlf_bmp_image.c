@@ -301,7 +301,7 @@ struct wlf_bmp_image *wlf_bmp_image_create(void) {
 	return image;
 }
 
-bool wlf_image_is_bmp(struct wlf_image *image) {
+bool wlf_image_is_bmp(const struct wlf_image *image) {
 	if (image == NULL) {
 		return false;
 	}

@@ -22,7 +22,7 @@ void wlf_linked_list_remove(struct wlf_linked_list *elm) {
 }
 
 int wlf_linked_list_length(const struct wlf_linked_list *list) {
-	struct wlf_linked_list *e;
+	const struct wlf_linked_list *e;
 	int count;
 
 	count = 0;

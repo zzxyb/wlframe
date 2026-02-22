@@ -5,7 +5,6 @@
 #include "wlf/image/wlf_ppm_image.h"
 
 #include <assert.h>
-#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
