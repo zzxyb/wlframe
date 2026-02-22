@@ -92,7 +92,7 @@ int wlf_list_seq_find(struct wlf_list *list,
  * @param item Pointer to the item to find.
  * @return Index of the found item, or -1 if not found.
  */
-int wlf_list_find(struct wlf_list *list, const void *item);
+int wlf_list_find(const struct wlf_list *list, const void *item);
 
 /**
  * @brief Performs a stable sort on the items in the list using the specified comparison function.

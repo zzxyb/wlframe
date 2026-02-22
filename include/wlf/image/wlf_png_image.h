@@ -54,7 +54,7 @@ struct wlf_png_image *wlf_png_image_create(void);
  *       if the image is a PNG. It's useful for type checking before
  *       calling PNG-specific functions.
  */
-bool wlf_image_is_png(struct wlf_image *image);
+bool wlf_image_is_png(const struct wlf_image *image);
 
 /**
  * @brief Convert a wlf_image pointer to a wlf_png_image pointer.

@@ -56,8 +56,8 @@ static bool long_option(const struct wlf_cmd_option *options, int count, char *a
 	return false;
 }
 
-static bool long_option_with_arg(const struct wlf_cmd_option *options, int count, char *arg,
-	char *param) {
+static bool long_option_with_arg(const struct wlf_cmd_option *options, int count,
+		const char *arg, char *param) {
 	int k, len;
 
 	for (k = 0; k < count; k++) {
@@ -102,7 +102,8 @@ static bool short_option(const struct wlf_cmd_option *options, int count, char *
 	return false;
 }
 
-static bool short_option_with_arg(const struct wlf_cmd_option *options, int count, char *arg, char *param) {
+static bool short_option_with_arg(const struct wlf_cmd_option *options, int count,
+		const char *arg, char *param) {
 	int k;
 
 	if (!arg[1])
@@ -228,7 +229,7 @@ int wlf_cmd_config_section_get_int(struct wlf_cmd_config_section *section, const
 int wlf_cmd_config_section_get_uint(struct wlf_cmd_config_section *section, const char *key,
 	uint32_t *value, uint32_t default_value) {
 	long int ret;
-	struct wlf_cmd_config_entry *entry;
+	const struct wlf_cmd_config_entry *entry;
 	char *end;
 
 	entry = config_section_get_entry(section, key);
@@ -258,8 +259,8 @@ int wlf_cmd_config_section_get_uint(struct wlf_cmd_config_section *section, cons
 }
 
 int wlf_cmd_config_section_get_double( struct wlf_cmd_config_section *section, const char *key,
-	double *value, double default_value) {
-	struct wlf_cmd_config_entry *entry;
+		double *value, double default_value) {
+	const struct wlf_cmd_config_entry *entry;
 	char *end;
 
 	entry = config_section_get_entry(section, key);
@@ -280,8 +281,8 @@ int wlf_cmd_config_section_get_double( struct wlf_cmd_config_section *section, c
 }
 
 int wlf_cmd_config_section_get_string(struct wlf_cmd_config_section *section, const char *key,
-	char **value, const char *default_value) {
-	struct wlf_cmd_config_entry *entry;
+		char **value, const char *default_value) {
+	const struct wlf_cmd_config_entry *entry;
 
 	entry = config_section_get_entry(section, key);
 	if (entry == NULL) {
@@ -299,8 +300,8 @@ int wlf_cmd_config_section_get_string(struct wlf_cmd_config_section *section, co
 }
 
 int wlf_cmd_config_section_get_bool(struct wlf_cmd_config_section *section,
-	const char *key, bool *value, bool default_value) {
-	struct wlf_cmd_config_entry *entry;
+		const char *key, bool *value, bool default_value) {
+	const struct wlf_cmd_config_entry *entry;
 
 	entry = config_section_get_entry(section, key);
 	if (entry == NULL) {

@@ -60,7 +60,7 @@ struct wlf_bmp_image *wlf_bmp_image_create(void);
  *       if the image is a BMP. It's useful for type checking before
  *       calling BMP-specific functions.
  */
-bool wlf_image_is_bmp(struct wlf_image *image);
+bool wlf_image_is_bmp(const struct wlf_image *image);
 
 /**
  * @brief Convert a wlf_image pointer to a wlf_bmp_image pointer.

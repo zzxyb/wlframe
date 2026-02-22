@@ -224,7 +224,7 @@ bool wlf_backend_wayland_register(void) {
 	return wlf_backend_register(&entry);
 }
 
-bool wlf_backend_is_wayland(struct wlf_backend *backend) {
+bool wlf_backend_is_wayland(const struct wlf_backend *backend) {
 	return (backend && backend->impl == &wayland_backend_impl &&
 			backend->type == WLF_BACKEND_WAYLAND);
 }
