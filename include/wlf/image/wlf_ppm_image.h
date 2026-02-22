@@ -55,7 +55,7 @@ struct wlf_ppm_image *wlf_ppm_image_create(void);
  *       if the image is a PPM. It's useful for type checking before
  *       calling PPM-specific functions.
  */
-bool wlf_image_is_ppm(struct wlf_image *image);
+bool wlf_image_is_ppm(const struct wlf_image *image);
 
 /**
  * @brief Convert a wlf_image pointer to a wlf_ppm_image pointer.

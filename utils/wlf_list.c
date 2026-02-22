@@ -1,7 +1,6 @@
 #include "wlf/utils/wlf_list.h"
 #include "wlf/utils/wlf_log.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -65,8 +64,8 @@ void wlf_list_qsort(struct wlf_list *list, int compare(const void *left, const v
 int wlf_list_seq_find(struct wlf_list *list,
 		int compare(const void *item, const void *data), const void *data) {
 	for (int i = 0; i < list->length; i++) {
-		void *item = list->items[i];
-		if (compare(item, data) == 0) {
+		void *current = list->items[i];
+		if (compare(current, data) == 0) {
 			return i;
 		}
 	}
@@ -74,7 +73,7 @@ int wlf_list_seq_find(struct wlf_list *list,
 	return -1;
 }
 
-int wlf_list_find(struct wlf_list *list, const void *item) {
+int wlf_list_find(const struct wlf_list *list, const void *item) {
 	for (int i = 0; i < list->length; i++) {
 		if (list->items[i] == item) {
 			return i;

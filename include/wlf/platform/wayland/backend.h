@@ -48,7 +48,7 @@ bool wlf_backend_wayland_register(void);
  * @param backend Pointer to the backend to check
  * @return true if the backend is a Wayland backend, false otherwise
  */
-bool wlf_backend_is_wayland(struct wlf_backend *backend);
+bool wlf_backend_is_wayland(const struct wlf_backend *backend);
 
 /**
  * @brief Cast a generic backend to a Wayland backend

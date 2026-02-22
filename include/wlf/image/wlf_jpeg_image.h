@@ -107,7 +107,7 @@ struct wlf_jpeg_image *wlf_jpeg_image_from_image(struct wlf_image *wlf_image);
  *       if the image is a JPEG. It's useful for type checking before
  *       calling JPEG-specific functions.
  */
-bool wlf_image_is_jpeg(struct wlf_image *image);
+bool wlf_image_is_jpeg(const struct wlf_image *image);
 
 /**
  * @brief Convert a wlf_image color type to JPEG colorspace.
@@ -117,7 +117,7 @@ bool wlf_image_is_jpeg(struct wlf_image *image);
  *       RGBA and GRAY_ALPHA formats will be mapped to their non-alpha
  *       equivalents since JPEG doesn't support transparency.
  */
-enum wlf_jpeg_colorspace wlf_color_type_to_jpeg_colorspace(struct wlf_image *image);
+enum wlf_jpeg_colorspace wlf_color_type_to_jpeg_colorspace(const struct wlf_image *image);
 
 /**
  * @brief Set JPEG quality for an image.
