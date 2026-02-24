@@ -15,4 +15,5 @@ wlf_files += files(
 	'wlf_x_animator.c',
 	'wlf_y_animator.c',
 	'wlf_width_animator.c',
+	'wlf_height_animator.c',
 )
