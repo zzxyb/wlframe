@@ -13,4 +13,5 @@ wlf_files += files(
 	'wlf_curve_quint.c',
 	'wlf_animator.c',
 	'wlf_x_animator.c',
+	'wlf_y_animator.c',
 )
