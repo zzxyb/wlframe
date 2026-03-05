@@ -43,17 +43,17 @@ char* wlf_ray2_to_str(const struct wlf_ray2 *ray) {
 
 struct wlf_vector2 wlf_ray2_point_at_parameter(const struct wlf_ray2 *ray, double t) {
 	return (struct wlf_vector2) {
-			.u = ray->origin.u + t * ray->direction.u,
-			.v = ray->origin.v + t * ray->direction.v,
-		};
+		.u = ray->origin.u + t * ray->direction.u,
+		.v = ray->origin.v + t * ray->direction.v,
+	};
 }
 
 bool wlf_ray2_equal(const struct wlf_ray2 *a, const struct wlf_ray2 *b) {
 	return wlf_vector2_equal(&a->origin, &b->origin) &&
-			wlf_vector2_equal(&a->direction, &b->direction);
+		wlf_vector2_equal(&a->direction, &b->direction);
 }
 
 bool wlf_ray2_nearly_equal(const struct wlf_ray2 *a, const struct wlf_ray2 *b, double epsilon) {
 	return wlf_vector2_nearly_equal(&a->origin, &b->origin, epsilon) &&
-			wlf_vector2_nearly_equal(&a->direction, &b->direction, epsilon);
+		wlf_vector2_nearly_equal(&a->direction, &b->direction, epsilon);
 }

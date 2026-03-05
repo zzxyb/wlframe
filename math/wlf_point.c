@@ -33,15 +33,24 @@ bool wlf_point_is_zero(const struct wlf_point *p) {
 }
 
 struct wlf_point wlf_point_add(const struct wlf_point *a, const struct wlf_point *b) {
-	return (struct wlf_point){.x = a->x + b->x, .y = a->y + b->y};
+	return (struct wlf_point){
+		.x = a->x + b->x,
+		.y = a->y + b->y,
+	};
 }
 
 struct wlf_point wlf_point_subtract(const struct wlf_point *a, const struct wlf_point *b) {
-	return (struct wlf_point){.x = a->x - b->x, .y = a->y - b->y};
+	return (struct wlf_point){
+		.x = a->x - b->x,
+		.y = a->y - b->y,
+	};
 }
 
 struct wlf_point wlf_point_multiply(const struct wlf_point *p, double scalar) {
-	return (struct wlf_point){.x = (int)round(p->x * scalar), .y = (int)round(p->y * scalar)};
+	return (struct wlf_point){
+		.x = (int)round(p->x * scalar),
+		.y = (int)round(p->y * scalar),
+	};
 }
 
 int wlf_point_manhattan_distance(const struct wlf_point *p1, const struct wlf_point *p2) {

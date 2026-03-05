@@ -37,20 +37,33 @@ char *wlf_vector2_to_str_prec(const struct wlf_vector2 *vector, uint8_t precisio
 }
 
 struct wlf_vector2 wlf_vector2_add(const struct wlf_vector2 *a, const struct wlf_vector2 *b) {
-	return (struct wlf_vector2) {.u = a->u + b->u, .v = a->v + b->v};
+	return (struct wlf_vector2) {
+		.u = a->u + b->u,
+		.v = a->v + b->v,
+	};
 }
 
 struct wlf_vector2 wlf_vector2_subtract(const struct wlf_vector2 *a, const struct wlf_vector2 *b) {
-	return (struct wlf_vector2) {.u = a->u - b->u, .v = a->v - b->v};
+	return (struct wlf_vector2) {
+		.u = a->u - b->u,
+		.v = a->v - b->v,
+	};
 }
 
 struct wlf_vector2 wlf_vector2_multiply(const struct wlf_vector2 *vec, double scalar) {
-	return (struct wlf_vector2) {.u = vec->u * scalar, .v = vec->v * scalar};
+	return (struct wlf_vector2) {
+		.u = vec->u * scalar,
+		.v = vec->v * scalar,
+	};
 }
 
 struct wlf_vector2 wlf_vector2_divide(const struct wlf_vector2 *vec, double scalar) {
 	assert(scalar != 0.0);
-	return (struct wlf_vector2) {.u = vec->u / scalar, .v = vec->v / scalar};
+
+	return (struct wlf_vector2) {
+		.u = vec->u / scalar,
+		.v = vec->v / scalar,
+	};
 }
 
 double wlf_vector2_dot(const struct wlf_vector2 *a, const struct wlf_vector2 *b) {
@@ -67,7 +80,10 @@ struct wlf_vector2 wlf_vector2_normalize(const struct wlf_vector2 *vec) {
 		return WLF_VECTOR2_ZERO;
 	}
 
-	return (struct wlf_vector2) {.u = vec->u / mag, .v = vec->v / mag};
+	return (struct wlf_vector2) {
+		.u = vec->u / mag,
+		.v = vec->v / mag,
+	};
 }
 
 bool wlf_vector2_equal(const struct wlf_vector2 *a, const struct wlf_vector2 *b) {

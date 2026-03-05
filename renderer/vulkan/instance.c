@@ -37,8 +37,7 @@ static VKAPI_ATTR VkBool32 debug_callback(
 		break;
 	}
 
-	wlf_log(importance, "%s (%s)", debug_data->pMessage,
-		debug_data->pMessageIdName);
+	wlf_log(importance, "%s (%s)", debug_data->pMessage, debug_data->pMessageIdName);
 	if (debug_data->queueLabelCount > 0) {
 		const char *name = debug_data->pQueueLabels[0].pLabelName;
 		if (name) {

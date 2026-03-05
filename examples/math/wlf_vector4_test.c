@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
 		bool tiny_equal = wlf_vector4_nearly_equal(&base, &tiny_diff, eps);
 		bool big_equal = wlf_vector4_nearly_equal(&base, &big_diff, eps);
 		wlf_log(WLF_INFO, "ε=%.0e: tiny_diff=%s, big_diff=%s", eps,
-				tiny_equal ? "true" : "false", big_equal ? "true" : "false");
+			tiny_equal ? "true" : "false", big_equal ? "true" : "false");
 	}
 
 	// Test Vector Algebra Properties

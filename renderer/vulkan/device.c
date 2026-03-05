@@ -378,8 +378,8 @@ VkPhysicalDevice wlf_vk_find_phdev(struct wlf_vk_instance *instance) {
 		}
 
 		if (found) {
-			wlf_log(WLF_INFO, "Found matching Vulkan physical device: %s",
-				phdev_props.deviceName);
+			wlf_log(WLF_INFO, "Found matching Vulkan physical device: %s", phdev_props.deviceName);
+
 			return phdev;
 		}
 	}

@@ -360,7 +360,7 @@ bool wlf_image_is_jpeg(const struct wlf_image *image) {
 	}
 
 	return (image->impl == &jpeg_image_impl &&
-			image->image_type == WLF_IMAGE_TYPE_JPEG);
+		image->image_type == WLF_IMAGE_TYPE_JPEG);
 }
 
 enum wlf_jpeg_colorspace wlf_color_type_to_jpeg_colorspace(const struct wlf_image *image) {

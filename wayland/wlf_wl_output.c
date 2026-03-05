@@ -78,7 +78,7 @@ struct wlf_output *wlf_output_create_from_wl_registry(
 	uint32_t bind_version = version;
 	if (version > (uint32_t)wl_output_interface.version) {
 		wlf_log(WLF_DEBUG, "Server wl_output version %u is higher than client version %u, "
-				"using client version", version, (uint32_t)wl_output_interface.version);
+			"using client version", version, (uint32_t)wl_output_interface.version);
 		bind_version = (uint32_t)wl_output_interface.version;
 	}
 
@@ -91,7 +91,7 @@ struct wlf_output *wlf_output_create_from_wl_registry(
 	wl_output_add_listener(output->output, &wl_output_listener, output);
 	wlf_output_init(&output->base, &wlf_wl_output_impl);
 	wlf_log(WLF_DEBUG, "Successfully bound wl_output interface (name: %u, version: %u)",
-			name, bind_version);
+		name, bind_version);
 
 	return &output->base;
 }
@@ -134,7 +134,7 @@ struct wlf_output_manager *wlf_output_manager_create_from_wl_registry(
 	uint32_t bind_version = version;
 	if (version > (uint32_t)zxdg_output_manager_v1_interface.version) {
 		wlf_log(WLF_DEBUG, "Server zxdg_output_manager_v1 version %u is higher than client version %u, "
-				"using client version", version, (uint32_t)zxdg_output_manager_v1_interface.version);
+			"using client version", version, (uint32_t)zxdg_output_manager_v1_interface.version);
 		bind_version = (uint32_t)zxdg_output_manager_v1_interface.version;
 	}
 
@@ -147,7 +147,7 @@ struct wlf_output_manager *wlf_output_manager_create_from_wl_registry(
 
 	wlf_output_manager_init(&manager->base, &wlf_wl_output_manager_impl);
 	wlf_log(WLF_DEBUG, "Successfully bound zxdg_output_manager_v1 interface (name: %u, version: %u)",
-			name, bind_version);
+		name, bind_version);
 
 	return &manager->base;
 }

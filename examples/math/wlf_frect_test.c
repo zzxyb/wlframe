@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
 		bool tiny_equal = wlf_frect_nearly_equal(&base, &tiny_diff, eps);
 		bool big_equal = wlf_frect_nearly_equal(&base, &big_diff, eps);
 		wlf_log(WLF_INFO, "ε=%.0e: tiny_diff=%s, big_diff=%s", eps,
-				tiny_equal ? "true" : "false", big_equal ? "true" : "false");
+			tiny_equal ? "true" : "false", big_equal ? "true" : "false");
 	}
 
 	// Test Zero and Unit Rectangle Properties
@@ -246,9 +246,9 @@ int main(int argc, char *argv[]) {
 	wlf_log(WLF_INFO, "Zero frect to rect: %s", zero_conv_str);
 	wlf_log(WLF_INFO, "Unit frect to rect: %s", unit_conv_str);
 	wlf_log(WLF_INFO, "Zero conversion matches WLF_RECT_ZERO: %s",
-			wlf_rect_equal(&zero_converted, &WLF_RECT_ZERO) ? "true" : "false");
+		wlf_rect_equal(&zero_converted, &WLF_RECT_ZERO) ? "true" : "false");
 	wlf_log(WLF_INFO, "Unit conversion matches WLF_RECT_UNIT: %s",
-			wlf_rect_equal(&unit_converted, &WLF_RECT_UNIT) ? "true" : "false");
+		wlf_rect_equal(&unit_converted, &WLF_RECT_UNIT) ? "true" : "false");
 
 	free(zero_conv_str); free(unit_conv_str);
 
@@ -262,17 +262,17 @@ int main(int argc, char *argv[]) {
 	struct wlf_frect zero_height = wlf_frect_make(10.0, 20.0, 30.5, 0.0);
 
 	wlf_log(WLF_INFO, "Valid rect (10.0,20.0,30.5,40.8) is valid: %s",
-			wlf_frect_is_valid(&valid_rect) ? "true" : "false");
+		wlf_frect_is_valid(&valid_rect) ? "true" : "false");
 	wlf_log(WLF_INFO, "Invalid width rect is valid: %s",
-			wlf_frect_is_valid(&invalid_width) ? "true" : "false");
+		wlf_frect_is_valid(&invalid_width) ? "true" : "false");
 	wlf_log(WLF_INFO, "Invalid height rect is valid: %s",
-			wlf_frect_is_valid(&invalid_height) ? "true" : "false");
+		wlf_frect_is_valid(&invalid_height) ? "true" : "false");
 	wlf_log(WLF_INFO, "Zero width rect is valid: %s",
-			wlf_frect_is_valid(&zero_width) ? "true" : "false");
+		wlf_frect_is_valid(&zero_width) ? "true" : "false");
 	wlf_log(WLF_INFO, "Zero height rect is valid: %s",
-			wlf_frect_is_valid(&zero_height) ? "true" : "false");
+		wlf_frect_is_valid(&zero_height) ? "true" : "false");
 	wlf_log(WLF_INFO, "NULL pointer is valid: %s",
-			wlf_frect_is_valid(NULL) ? "true" : "false");
+		wlf_frect_is_valid(NULL) ? "true" : "false");
 
 	// Test String Parsing
 	wlf_log(WLF_INFO, "\n--- Testing String Parsing ---");

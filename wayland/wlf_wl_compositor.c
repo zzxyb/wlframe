@@ -23,7 +23,7 @@ struct wlf_wl_compositor *wlf_wl_compositor_create(
 	uint32_t bind_version = version;
 	if (version > (uint32_t)wl_compositor_interface.version) {
 		wlf_log(WLF_DEBUG, "Server compositor version %u is higher than client version %u, "
-				"using client version", version, (uint32_t)wl_compositor_interface.version);
+			"using client version", version, (uint32_t)wl_compositor_interface.version);
 		bind_version = (uint32_t)wl_compositor_interface.version;
 	}
 
@@ -35,7 +35,7 @@ struct wlf_wl_compositor *wlf_wl_compositor_create(
 	}
 
 	wlf_log(WLF_DEBUG, "Successfully bound wl_compositor interface (name: %u, version: %u)",
-			name, bind_version);
+		name, bind_version);
 
 	return compositor;
 }

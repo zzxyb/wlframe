@@ -10,7 +10,11 @@
 #define WLF_VECTOR3_STRLEN 192
 
 struct wlf_vector3 wlf_vector3_make(double x, double y, double z) {
-	return (struct wlf_vector3) {.x = x, .y = y, .z = z};
+	return (struct wlf_vector3) {
+		.x = x,
+		.y = y,
+		.z = z,
+	};
 }
 
 char* wlf_vector3_to_str(const struct wlf_vector3 *vector) {
@@ -63,9 +67,9 @@ double wlf_vector3_dot(const struct wlf_vector3 *a, const struct wlf_vector3 *b)
 
 struct wlf_vector3 wlf_vector3_cross(const struct wlf_vector3 *a, const struct wlf_vector3 *b) {
 	return wlf_vector3_make(
-			a->y * b->z - a->z * b->y,
-			a->z * b->x - a->x * b->z,
-			a->x * b->y - a->y * b->x
+		a->y * b->z - a->z * b->y,
+		a->z * b->x - a->x * b->z,
+		a->x * b->y - a->y * b->x
 	);
 }
 

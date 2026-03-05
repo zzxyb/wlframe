@@ -65,7 +65,7 @@ bool wlf_frect_equal(const struct wlf_frect *a, const struct wlf_frect *b) {
 
 bool wlf_frect_nearly_equal(const struct wlf_frect *a, const struct wlf_frect *b, double epsilon) {
 	return (fabs(a->x - b->x) < epsilon) && (fabs(a->y - b->y) < epsilon) &&
-			(fabs(a->width - b->width) < epsilon) && (fabs(a->height - b->height) < epsilon);
+		(fabs(a->width - b->width) < epsilon) && (fabs(a->height - b->height) < epsilon);
 }
 
 struct wlf_frect wlf_rect_to_frect(const struct wlf_rect *rect) {

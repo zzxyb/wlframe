@@ -403,7 +403,7 @@ static inline float ease_in_out_elastic(float t, float amplitude, float period) 
 	}
 	t -= 1.0f;
 	return amplitude * powf(2.0f, -10.0f * t) *
-			sinf((t - s) * (2.0f * M_PI) / period) * 0.5f + 1.0f;
+		sinf((t - s) * (2.0f * M_PI) / period) * 0.5f + 1.0f;
 }
 
 /**

@@ -143,7 +143,7 @@ bool client_interface_version_is_higher(const char *interface,
 		uint32_t client_version, uint32_t remote_version) {
 	if (client_version > remote_version) {
 		wlf_log(WLF_ERROR, "interface name: %s, Client protocol version: v%" PRIu32 " is higher than Compositor protocol: v%" PRIu32,
-				interface, client_version, remote_version);
+			interface, client_version, remote_version);
 		wlf_log(WLF_ERROR, "using Compositor protocol version instead Client protocol");
 
 		return true;

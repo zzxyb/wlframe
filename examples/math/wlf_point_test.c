@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
 	int self_manhattan = wlf_point_manhattan_distance(&p1, &p1);
 	double self_euclidean = wlf_point_euclidean_distance(&p1, &p1);
 	wlf_log(WLF_INFO, "Distance from point to itself: Manhattan=%d, Euclidean=%.3f",
-			self_manhattan, self_euclidean);
+		self_manhattan, self_euclidean);
 
 	// Operations with negative numbers
 	struct wlf_point neg1 = (struct wlf_point){.x = -5, .y = -3};
@@ -145,28 +145,28 @@ int main(int argc, char *argv[]) {
 	parse_success = wlf_point_from_str("(10, 20)", &parsed_point);
 	char *parsed_str = wlf_point_to_str(&parsed_point);
 	wlf_log(WLF_INFO, "Parse \"(10, 20)\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// Negative numbers
 	parse_success = wlf_point_from_str("(-5, 15)", &parsed_point);
 	parsed_str = wlf_point_to_str(&parsed_point);
 	wlf_log(WLF_INFO, "Parse \"(-5, 15)\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// With spaces
 	parse_success = wlf_point_from_str("( 100 , -200 )", &parsed_point);
 	parsed_str = wlf_point_to_str(&parsed_point);
 	wlf_log(WLF_INFO, "Parse \"( 100 , -200 )\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// Zero values
 	parse_success = wlf_point_from_str("(0, 0)", &parsed_point);
 	parsed_str = wlf_point_to_str(&parsed_point);
 	wlf_log(WLF_INFO, "Parse \"(0, 0)\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// Test invalid string parsing
@@ -175,37 +175,37 @@ int main(int argc, char *argv[]) {
 	// Missing opening bracket
 	parse_success = wlf_point_from_str("10, 20)", &parsed_point);
 	wlf_log(WLF_INFO, "Parse \"10, 20)\": %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Missing closing bracket
 	parse_success = wlf_point_from_str("(10, 20", &parsed_point);
 	wlf_log(WLF_INFO, "Parse \"(10, 20\": %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Missing comma
 	parse_success = wlf_point_from_str("(10 20)", &parsed_point);
 	wlf_log(WLF_INFO, "Parse \"(10 20)\": %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Invalid characters
 	parse_success = wlf_point_from_str("(abc, def)", &parsed_point);
 	wlf_log(WLF_INFO, "Parse \"(abc, def)\": %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// NULL string
 	parse_success = wlf_point_from_str(NULL, &parsed_point);
 	wlf_log(WLF_INFO, "Parse NULL string: %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// NULL point
 	parse_success = wlf_point_from_str("(10, 20)", NULL);
 	wlf_log(WLF_INFO, "Parse to NULL point: %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Empty string
 	parse_success = wlf_point_from_str("", &parsed_point);
 	wlf_log(WLF_INFO, "Parse empty string: %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Test round-trip conversion
 	wlf_log(WLF_INFO, "\n--- Testing Round-trip Conversion ---");
