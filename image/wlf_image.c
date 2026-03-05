@@ -128,9 +128,9 @@ struct wlf_image *wlf_image_load(const char *filename) {
 		if (png_image) {
 			png_image->base.image_type = WLF_IMAGE_TYPE_PNG;
 			if (png_image->base.impl->load(&png_image->base, filename, false)) {
-				return (struct wlf_image *)png_image;
+				return &png_image->base;
 			} else {
-				png_image->base.impl->destroy((struct wlf_image *)png_image);
+				png_image->base.impl->destroy(&png_image->base);
 				return NULL;
 			}
 		} else {
@@ -141,9 +141,9 @@ struct wlf_image *wlf_image_load(const char *filename) {
 		if (jpeg_image) {
 			jpeg_image->base.image_type = WLF_IMAGE_TYPE_JPEG;
 			if (jpeg_image->base.impl->load(&jpeg_image->base, filename, false)) {
-				return (struct wlf_image *)jpeg_image;
+				return &jpeg_image->base;
 			} else {
-				jpeg_image->base.impl->destroy((struct wlf_image *)jpeg_image);
+				jpeg_image->base.impl->destroy(&jpeg_image->base);
 				return NULL;
 			}
 		} else {
@@ -154,9 +154,9 @@ struct wlf_image *wlf_image_load(const char *filename) {
 		if (bmp_image) {
 			bmp_image->base.image_type = WLF_IMAGE_TYPE_BMP;
 			if (bmp_image->base.impl->load(&bmp_image->base, filename, false)) {
-				return (struct wlf_image *)bmp_image;
+				return &bmp_image->base;
 			} else {
-				bmp_image->base.impl->destroy((struct wlf_image *)bmp_image);
+				bmp_image->base.impl->destroy(&bmp_image->base);
 				return NULL;
 			}
 		} else {
@@ -167,9 +167,9 @@ struct wlf_image *wlf_image_load(const char *filename) {
 		if (ppm_image) {
 			ppm_image->base.image_type = WLF_IMAGE_TYPE_PPM;
 			if (ppm_image->base.impl->load(&ppm_image->base, filename, false)) {
-				return (struct wlf_image *)ppm_image;
+				return &ppm_image->base;
 			} else {
-				ppm_image->base.impl->destroy((struct wlf_image *)ppm_image);
+				ppm_image->base.impl->destroy(&ppm_image->base);
 				return NULL;
 			}
 		} else {
