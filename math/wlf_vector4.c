@@ -83,5 +83,5 @@ bool wlf_vector4_equal(const struct wlf_vector4 *a, const struct wlf_vector4 *b)
 
 bool wlf_vector4_nearly_equal(const struct wlf_vector4 *a, const struct wlf_vector4 *b, double epsilon) {
 	return (fabs(a->x - b->x) < epsilon) && (fabs(a->y - b->y) < epsilon) &&
-			(fabs(a->z - b->z) < epsilon) && (fabs(a->w - b->w) < epsilon);
+		(fabs(a->z - b->z) < epsilon) && (fabs(a->w - b->w) < epsilon);
 }

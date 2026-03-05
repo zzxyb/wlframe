@@ -49,24 +49,40 @@ bool wlf_fpoint_is_zero(const struct wlf_fpoint *p) {
 }
 
 struct wlf_fpoint wlf_fpoint_add(const struct wlf_fpoint *a, const struct wlf_fpoint *b) {
-	return (struct wlf_fpoint){.x = a->x + b->x, .y = a->y + b->y};
+	return (struct wlf_fpoint){
+		.x = a->x + b->x,
+		.y = a->y + b->y,
+	};
 }
 
 struct wlf_fpoint wlf_fpoint_subtract(const struct wlf_fpoint *a, const struct wlf_fpoint *b) {
-	return (struct wlf_fpoint){.x = a->x - b->x, .y = a->y - b->y};
+	return (struct wlf_fpoint){
+		.x = a->x - b->x,
+		.y = a->y - b->y,
+	};
 }
 
 struct wlf_fpoint wlf_fpoint_multiply(const struct wlf_fpoint *p, double scalar) {
-	return (struct wlf_fpoint){.x = p->x * scalar, .y = p->y * scalar};
+	return (struct wlf_fpoint){
+		.x = p->x * scalar,
+		.y = p->y * scalar,
+	};
 }
 
 struct wlf_fpoint wlf_fpoint_divide(const struct wlf_fpoint *p, double scalar) {
 	assert(scalar != 0.0);
-	return (struct wlf_fpoint){.x = p->x / scalar, .y = p->y / scalar};
+
+	return (struct wlf_fpoint){
+		.x = p->x / scalar,
+		.y = p->y / scalar,
+	};
 }
 
 struct wlf_fpoint wlf_fpoint_negate(const struct wlf_fpoint *p) {
-	return (struct wlf_fpoint){.x = -p->x, .y = -p->y};
+	return (struct wlf_fpoint){
+		.x = -p->x,
+		.y = -p->y,
+	};
 }
 
 double wlf_fpoint_manhattan_distance(const struct wlf_fpoint *p1, const struct wlf_fpoint *p2) {
@@ -92,10 +108,11 @@ double wlf_fpoint_angle_between(const struct wlf_fpoint *a, const struct wlf_fpo
 struct wlf_fpoint wlf_fpoint_rotate(const struct wlf_fpoint *p, double angle_radians) {
 	double cos_angle = cos(angle_radians);
 	double sin_angle = sin(angle_radians);
+
 	return (struct wlf_fpoint){
-			.x = p->x * cos_angle - p->y * sin_angle,
-			.y = p->x * sin_angle + p->y * cos_angle
-		};
+		.x = p->x * cos_angle - p->y * sin_angle,
+		.y = p->x * sin_angle + p->y * cos_angle
+	};
 }
 
 double wlf_fpoint_length(const struct wlf_fpoint *p) {
@@ -111,43 +128,70 @@ bool wlf_fpoint_in_circle(const struct wlf_fpoint *p, const struct wlf_fpoint *c
 }
 
 struct wlf_point wlf_fpoint_round(const struct wlf_fpoint *p) {
-	return (struct wlf_point){.x = round(p->x), .y = round(p->y)};
+	return (struct wlf_point){
+		.x = round(p->x),
+		.y = round(p->y),
+	};
 }
 
 struct wlf_point wlf_fpoint_floor(const struct wlf_fpoint *p) {
-	return (struct wlf_point){.x = floor(p->x), .y = floor(p->y)};
+	return (struct wlf_point){
+		.x = floor(p->x),
+		.y = floor(p->y),
+	};
 }
 
 struct wlf_point wlf_fpoint_ceil(const struct wlf_fpoint *p) {
-	return (struct wlf_point){.x = ceil(p->x), .y = ceil(p->y)};
+	return (struct wlf_point){
+		.x = ceil(p->x),
+		.y = ceil(p->y),
+	};
 }
 
 struct wlf_fpoint wlf_fpoint_normalize(const struct wlf_fpoint *p) {
 	double length = wlf_fpoint_length(p);
 	if (length == 0) {
-		return (struct wlf_fpoint){.x = 0, .y = 0};
+		return (struct wlf_fpoint){
+			.x = 0,
+			.y = 0,
+		};
 	}
 
-	return (struct wlf_fpoint){.x = p->x / length, .y = p->y / length};
+	return (struct wlf_fpoint){
+		.x = p->x / length,
+		.y = p->y / length,
+	};
 }
 
 struct wlf_fpoint wlf_fpoint_lerp(const struct wlf_fpoint *a, const struct wlf_fpoint *b, double t) {
-	return (struct wlf_fpoint){.x = a->x + (b->x - a->x) * t, .y = a->y + (b->y - a->y) * t};
+	return (struct wlf_fpoint){
+		.x = a->x + (b->x - a->x) * t,
+		.y = a->y + (b->y - a->y) * t,
+	};
 }
 
 struct wlf_fpoint wlf_fpoint_bezier(const struct wlf_fpoint *p0, const struct wlf_fpoint *p1,
 		const struct wlf_fpoint *p2, double t) {
 	double u = 1 - t;
-	return (struct wlf_fpoint){.x = u * u * p0->x + 2 * u * t * p1->x + t * t * p2->x,
-								.y = u * u * p0->y + 2 * u * t * p1->y + t * t * p2->y};
+
+	return (struct wlf_fpoint){
+		.x = u * u * p0->x + 2 * u * t * p1->x + t * t * p2->x,
+		.y = u * u * p0->y + 2 * u * t * p1->y + t * t * p2->y,
+	};
 }
 
 struct wlf_fpoint wlf_point_to_fpoint(const struct wlf_point *p) {
-	return (struct wlf_fpoint){.x = (double)p->x, .y = (double)p->y};
+	return (struct wlf_fpoint){
+		.x = (double)p->x,
+		.y = (double)p->y,
+	};
 }
 
 struct wlf_point wlf_fpoint_to_point(const struct wlf_fpoint *p) {
-	return (struct wlf_point){.x = (int)p->x, .y = (int)p->y};
+	return (struct wlf_point){
+		.x = (int)p->x,
+		.y = (int)p->y,
+	};
 }
 
 bool wlf_fpoint_from_str(const char *str, struct wlf_fpoint *point) {

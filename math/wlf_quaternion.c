@@ -53,10 +53,10 @@ struct wlf_quaternion wlf_quaternion_subtract(const struct wlf_quaternion *a, co
 
 struct wlf_quaternion wlf_quaternion_multiply(const struct wlf_quaternion *a, const struct wlf_quaternion *b) {
 	return wlf_quaternion_make(
-				a->w * b->w - a->x * b->x - a->y * b->y - a->z * b->z,
-				a->w * b->x + a->x * b->w + a->y * b->z - a->z * b->y,
-				a->w * b->y - a->x * b->z + a->y * b->w + a->z * b->x,
-				a->w * b->z + a->x * b->y - a->y * b->x + a->z * b->w
+		a->w * b->w - a->x * b->x - a->y * b->y - a->z * b->z,
+		a->w * b->x + a->x * b->w + a->y * b->z - a->z * b->y,
+		a->w * b->y - a->x * b->z + a->y * b->w + a->z * b->x,
+		a->w * b->z + a->x * b->y - a->y * b->x + a->z * b->w
 	);
 }
 
@@ -87,7 +87,7 @@ struct wlf_quaternion wlf_quaternion_inverse(const struct wlf_quaternion *q) {
 	double norm_squared = norm * norm;
 	struct wlf_quaternion conjugate = wlf_quaternion_conjugate(q);
 	return wlf_quaternion_make(conjugate.w / norm_squared, conjugate.x / norm_squared,
-				conjugate.y / norm_squared, conjugate.z / norm_squared);
+		conjugate.y / norm_squared, conjugate.z / norm_squared);
 }
 
 bool wlf_quaternion_equal(const struct wlf_quaternion *a, const struct wlf_quaternion *b) {
@@ -96,5 +96,5 @@ bool wlf_quaternion_equal(const struct wlf_quaternion *a, const struct wlf_quate
 
 bool wlf_quaternion_nearly_equal(const struct wlf_quaternion *a, const struct wlf_quaternion *b, double epsilon) {
 	return (fabs(a->w - b->w) < epsilon) && (fabs(a->x - b->x) < epsilon) &&
-			(fabs(a->y - b->y) < epsilon) && (fabs(a->z - b->z) < epsilon);
+		(fabs(a->y - b->y) < epsilon) && (fabs(a->z - b->z) < epsilon);
 }

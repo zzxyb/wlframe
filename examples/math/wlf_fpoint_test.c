@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
 	wlf_log(WLF_INFO, "Angle of fp1: %.3f radians (%.1f degrees)", fp1_angle, fp1_angle * 180.0 / M_PI);
 	wlf_log(WLF_INFO, "Angle of fp2: %.3f radians (%.1f degrees)", fp2_angle, fp2_angle * 180.0 / M_PI);
 	wlf_log(WLF_INFO, "Angle between fp1 and fp2: %.3f radians (%.1f degrees)",
-			angle_between, angle_between * 180.0 / M_PI);
+		angle_between, angle_between * 180.0 / M_PI);
 
 	// Test rotation
 	wlf_log(WLF_INFO, "\n--- Testing Rotation ---");
@@ -173,9 +173,9 @@ int main(int argc, char *argv[]) {
 	char *center_str = wlf_fpoint_to_str(&circle_center);
 
 	wlf_log(WLF_INFO, "Point %s in circle (center=%s, radius=%.1f): %s",
-			inside_str, center_str, radius, inside ? "true" : "false");
+		inside_str, center_str, radius, inside ? "true" : "false");
 	wlf_log(WLF_INFO, "Point %s in circle (center=%s, radius=%.1f): %s",
-			outside_str, center_str, radius, outside ? "true" : "false");
+		outside_str, center_str, radius, outside ? "true" : "false");
 
 	free(inside_str);
 	free(outside_str);
@@ -274,42 +274,42 @@ int main(int argc, char *argv[]) {
 	parse_success = wlf_fpoint_from_str("(10.5, 20.75)", &parsed_fpoint);
 	char *parsed_str = wlf_fpoint_to_str(&parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"(10.5, 20.75)\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// Negative floating point numbers
 	parse_success = wlf_fpoint_from_str("(-5.25, 15.0)", &parsed_fpoint);
 	parsed_str = wlf_fpoint_to_str(&parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"(-5.25, 15.0)\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// With spaces
 	parse_success = wlf_fpoint_from_str("( 100.125 , -200.875 )", &parsed_fpoint);
 	parsed_str = wlf_fpoint_to_str(&parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"( 100.125 , -200.875 )\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// Zero values
 	parse_success = wlf_fpoint_from_str("(0.0, 0.0)", &parsed_fpoint);
 	parsed_str = wlf_fpoint_to_str(&parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"(0.0, 0.0)\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// Scientific notation
 	parse_success = wlf_fpoint_from_str("(1.5e2, -3.14e-1)", &parsed_fpoint);
 	parsed_str = wlf_fpoint_to_str(&parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"(1.5e2, -3.14e-1)\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// Integer values (should work for floating point)
 	parse_success = wlf_fpoint_from_str("(42, -17)", &parsed_fpoint);
 	parsed_str = wlf_fpoint_to_str(&parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"(42, -17)\": %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", parsed_str);
+		parse_success ? "SUCCESS" : "FAILED", parsed_str);
 	free(parsed_str);
 
 	// Test invalid string parsing
@@ -318,37 +318,37 @@ int main(int argc, char *argv[]) {
 	// Missing opening bracket
 	parse_success = wlf_fpoint_from_str("10.5, 20.75)", &parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"10.5, 20.75)\": %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Missing closing bracket
 	parse_success = wlf_fpoint_from_str("(10.5, 20.75", &parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"(10.5, 20.75\": %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Missing comma
 	parse_success = wlf_fpoint_from_str("(10.5 20.75)", &parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"(10.5 20.75)\": %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Invalid characters
 	parse_success = wlf_fpoint_from_str("(abc.def, xyz)", &parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse \"(abc.def, xyz)\": %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// NULL string
 	parse_success = wlf_fpoint_from_str(NULL, &parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse NULL string: %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// NULL point
 	parse_success = wlf_fpoint_from_str("(10.5, 20.75)", NULL);
 	wlf_log(WLF_INFO, "Parse to NULL point: %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Empty string
 	parse_success = wlf_fpoint_from_str("", &parsed_fpoint);
 	wlf_log(WLF_INFO, "Parse empty string: %s (expected: FAILED)",
-			parse_success ? "SUCCESS" : "FAILED");
+		parse_success ? "SUCCESS" : "FAILED");
 
 	// Test round-trip conversion
 	wlf_log(WLF_INFO, "\n--- Testing Floating Point Round-trip Conversion ---");
@@ -370,7 +370,7 @@ int main(int argc, char *argv[]) {
 	parse_success = wlf_fpoint_from_str("(3.141592653589793, 2.718281828459045)", &parsed_fpoint);
 	char *high_prec_str = wlf_fpoint_to_str_prec(&parsed_fpoint, 10);
 	wlf_log(WLF_INFO, "High precision parse: %s -> %s",
-			parse_success ? "SUCCESS" : "FAILED", high_prec_str);
+		parse_success ? "SUCCESS" : "FAILED", high_prec_str);
 	free(high_prec_str);
 
 	// Normalization of zero vector

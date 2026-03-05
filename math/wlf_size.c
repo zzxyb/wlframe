@@ -34,20 +34,33 @@ bool wlf_size_is_empty(const struct wlf_size *size) {
 }
 
 struct wlf_size wlf_size_add(const struct wlf_size *a, const struct wlf_size *b) {
-	return (struct wlf_size){.width = a->width + b->width, .height = a->height + b->height};
+	return (struct wlf_size){
+		.width = a->width + b->width,
+		.height = a->height + b->height,
+	};
 }
 
 struct wlf_size wlf_size_subtract(const struct wlf_size *a, const struct wlf_size *b) {
-	return (struct wlf_size){.width = a->width - b->width, .height = a->height - b->height};
+	return (struct wlf_size){
+		.width = a->width - b->width,
+		.height = a->height - b->height,
+	};
 }
 
 struct wlf_size wlf_size_multiply(const struct wlf_size *size, double scalar) {
-	return (struct wlf_size){.width = (int)round(size->width * scalar), .height = (int)round(size->height * scalar)};
+	return (struct wlf_size){
+		.width = (int)round(size->width * scalar),
+		.height = (int)round(size->height * scalar),
+	};
 }
 
 struct wlf_size wlf_size_divide(const struct wlf_size *size, double scalar) {
 	assert(scalar != 0.0);
-	return (struct wlf_size){.width = (int)round(size->width / scalar), .height = (int)round(size->height / scalar)};
+
+	return (struct wlf_size){
+		.width = (int)round(size->width / scalar),
+		.height = (int)round(size->height / scalar),
+	};
 }
 
 int wlf_size_area(const struct wlf_size *size) {

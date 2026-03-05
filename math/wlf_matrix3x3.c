@@ -112,8 +112,8 @@ struct wlf_matrix3x3 wlf_matrix3x3_transpose(const struct wlf_matrix3x3 *matrix)
 
 double wlf_matrix3x3_determinant(const struct wlf_matrix3x3 *matrix) {
 	return matrix->elements[0][0] * (matrix->elements[1][1] * matrix->elements[2][2] - matrix->elements[1][2] * matrix->elements[2][1]) -
-			matrix->elements[0][1] * (matrix->elements[1][0] * matrix->elements[2][2] - matrix->elements[1][2] * matrix->elements[2][0]) +
-			matrix->elements[0][2] * (matrix->elements[1][0] * matrix->elements[2][1] - matrix->elements[1][1] * matrix->elements[2][0]);
+		matrix->elements[0][1] * (matrix->elements[1][0] * matrix->elements[2][2] - matrix->elements[1][2] * matrix->elements[2][0]) +
+		matrix->elements[0][2] * (matrix->elements[1][0] * matrix->elements[2][1] - matrix->elements[1][1] * matrix->elements[2][0]);
 }
 
 struct wlf_matrix3x3 wlf_matrix3x3_inverse(const struct wlf_matrix3x3 *matrix) {

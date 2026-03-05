@@ -163,6 +163,7 @@ static bool png_image_load(struct wlf_image *image, const char *filename, bool e
 	fclose(fp);
 	wlf_log(WLF_DEBUG, "PNG Info: %dx%d, Format: %d, Bit Depth: %d\n, Stride: %d",
 		image->width, image->height, image->format, image->bit_depth, image->stride);
+
 	return true;
 };
 
@@ -195,7 +196,7 @@ bool wlf_image_is_png(const struct wlf_image *image) {
 	}
 
 	return (image->impl == &png_image_impl &&
-			image->image_type == WLF_IMAGE_TYPE_PNG);
+		image->image_type == WLF_IMAGE_TYPE_PNG);
 }
 
 struct wlf_png_image *wlf_png_image_from_image(struct wlf_image *wlf_image) {

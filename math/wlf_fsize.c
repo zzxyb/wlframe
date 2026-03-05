@@ -45,20 +45,33 @@ bool wlf_fsize_nearly_equal(const struct wlf_fsize *a, const struct wlf_fsize *b
 }
 
 struct wlf_fsize wlf_fsize_add(const struct wlf_fsize *a, const struct wlf_fsize *b) {
-	return (struct wlf_fsize){.width = a->width + b->width, .height = a->height + b->height};
+	return (struct wlf_fsize){
+		.width = a->width + b->width,
+		.height = a->height + b->height,
+	};
 }
 
 struct wlf_fsize wlf_fsize_subtract(const struct wlf_fsize *a, const struct wlf_fsize *b) {
-	return (struct wlf_fsize){.width = a->width - b->width, .height = a->height - b->height};
+	return (struct wlf_fsize){
+		.width = a->width - b->width,
+		.height = a->height - b->height,
+	};
 }
 
 struct wlf_fsize wlf_fsize_multiply(const struct wlf_fsize *size, double scalar) {
-	return (struct wlf_fsize){.width = size->width * scalar, .height = size->height * scalar};
+	return (struct wlf_fsize){
+		.width = size->width * scalar,
+		.height = size->height * scalar,
+	};
 }
 
 struct wlf_fsize wlf_fsize_divide(const struct wlf_fsize *size, double scalar) {
 	assert(scalar != 0.0);
-	return (struct wlf_fsize){.width = size->width / scalar, .height = size->height / scalar};
+
+	return (struct wlf_fsize){
+		.width = size->width / scalar,
+		.height = size->height / scalar,
+	};
 }
 
 double wlf_fsize_area(const struct wlf_fsize *size) {
@@ -67,24 +80,35 @@ double wlf_fsize_area(const struct wlf_fsize *size) {
 
 struct wlf_fsize wlf_size_to_fsize(const struct wlf_size *size) {
 	struct wlf_fsize fsize = {(double)size->width, (double)size->height};
+
 	return fsize;
 }
 
 struct wlf_size wlf_fsize_to_size(const struct wlf_fsize *size) {
 	struct wlf_size isize = {(int)size->width, (int)size->height};
+
 	return isize;
 }
 
 struct wlf_size wlf_fsize_round(const struct wlf_fsize *size) {
-	return (struct wlf_size){.width = round(size->width), .height = round(size->height)};
+	return (struct wlf_size){
+		.width = round(size->width),
+		.height = round(size->height),
+	};
 }
 
 struct wlf_size wlf_fsize_floor(const struct wlf_fsize *size) {
-	return (struct wlf_size){.width = floor(size->width), .height = floor(size->height)};
+	return (struct wlf_size){
+		.width = floor(size->width),
+		.height = floor(size->height),
+	};
 }
 
 struct wlf_size wlf_fsize_ceil(const struct wlf_fsize *size) {
-	return (struct wlf_size){.width = ceil(size->width), .height = ceil(size->height)};
+	return (struct wlf_size){
+		.width = ceil(size->width),
+		.height = ceil(size->height),
+	};
 }
 
 bool wlf_fsize_from_str(const char *str, struct wlf_fsize *size) {
