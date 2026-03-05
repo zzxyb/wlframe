@@ -114,12 +114,10 @@ struct wlf_curve *wlf_curve_out_in_quint_create(void) {
 }
 
 bool wlf_curve_is_quint(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
-	return curve->impl == &in_quint_impl || curve->impl == &out_quint_impl ||
-		curve->impl == &in_out_quint_impl || curve->impl == &out_in_quint_impl;
+	return curve->impl == &in_quint_impl ||
+		curve->impl == &out_quint_impl ||
+		curve->impl == &in_out_quint_impl ||
+		curve->impl == &out_in_quint_impl;
 }
 
 struct wlf_curve_quint *wlf_curve_quint_from_curve(

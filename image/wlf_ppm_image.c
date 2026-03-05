@@ -250,12 +250,7 @@ struct wlf_ppm_image *wlf_ppm_image_create(void) {
 }
 
 bool wlf_image_is_ppm(const struct wlf_image *image) {
-	if (image == NULL) {
-		return false;
-	}
-
-	return (image->impl == &ppm_image_impl &&
-		image->image_type == WLF_IMAGE_TYPE_PPM);
+	return image->impl == &ppm_image_impl;
 }
 
 struct wlf_ppm_image *wlf_ppm_image_from_image(struct wlf_image *wlf_image) {

@@ -114,10 +114,6 @@ struct wlf_curve *wlf_curve_out_in_circ_create(void) {
 }
 
 bool wlf_curve_is_circ(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
 	return curve->impl == &in_circ_impl ||
 		curve->impl == &out_circ_impl ||
 		curve->impl == &in_out_circ_impl ||

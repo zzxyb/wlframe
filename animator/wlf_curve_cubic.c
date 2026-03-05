@@ -114,10 +114,6 @@ struct wlf_curve *wlf_curve_out_in_cubic_create(void) {
 }
 
 bool wlf_curve_is_cubic(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
 	return curve->impl == &in_cubic_impl ||
 		curve->impl == &out_cubic_impl ||
 		curve->impl == &in_out_cubic_impl ||

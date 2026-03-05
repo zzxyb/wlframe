@@ -114,10 +114,6 @@ struct wlf_curve *wlf_curve_out_in_expo_create(void) {
 }
 
 bool wlf_curve_is_expo(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
 	return curve->impl == &in_expo_impl ||
 		curve->impl == &out_expo_impl ||
 		curve->impl == &in_out_expo_impl ||

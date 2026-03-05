@@ -191,12 +191,7 @@ struct wlf_png_image *wlf_png_image_create(void) {
 };
 
 bool wlf_image_is_png(const struct wlf_image *image) {
-	if (image == NULL) {
-		return false;
-	}
-
-	return (image->impl == &png_image_impl &&
-		image->image_type == WLF_IMAGE_TYPE_PNG);
+	return image->impl == &png_image_impl;
 }
 
 struct wlf_png_image *wlf_png_image_from_image(struct wlf_image *wlf_image) {

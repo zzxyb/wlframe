@@ -124,10 +124,6 @@ struct wlf_curve *wlf_curve_out_in_elastic_create(float amplitude, float period)
 }
 
 bool wlf_curve_is_elastic(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
 	return curve->impl == &in_elastic_impl ||
 		curve->impl == &out_elastic_impl ||
 		curve->impl == &in_out_elastic_impl ||
