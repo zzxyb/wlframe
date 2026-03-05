@@ -37,10 +37,6 @@ struct wlf_curve *wlf_curve_linear_create(void) {
 }
 
 bool wlf_curve_is_linear(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
 	return curve->impl == &linear_impl;
 }
 

@@ -114,10 +114,6 @@ struct wlf_curve *wlf_curve_out_in_quart_create(void) {
 }
 
 bool wlf_curve_is_quart(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
 	return curve->impl == &in_quart_impl ||
 		curve->impl == &out_quart_impl ||
 		curve->impl == &in_out_quart_impl ||

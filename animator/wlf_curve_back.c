@@ -119,10 +119,6 @@ struct wlf_curve *wlf_curve_out_in_back_create(float overshoot) {
 }
 
 bool wlf_curve_is_back(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
 	return curve->impl == &in_back_impl ||
 		curve->impl == &out_back_impl ||
 		curve->impl == &in_out_back_impl ||

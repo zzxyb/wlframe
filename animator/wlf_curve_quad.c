@@ -114,12 +114,10 @@ struct wlf_curve *wlf_curve_out_in_quad_create(void) {
 }
 
 bool wlf_curve_is_quad(const struct wlf_curve *curve) {
-	if (curve == NULL || curve->impl == NULL) {
-		return false;
-	}
-
-	return curve->impl == &in_quad_impl || curve->impl == &out_quad_impl ||
-		curve->impl == &in_out_quad_impl || curve->impl == &out_in_quad_impl;
+	return curve->impl == &in_quad_impl ||
+		curve->impl == &out_quad_impl ||
+		curve->impl == &in_out_quad_impl ||
+		curve->impl == &out_in_quad_impl;
 }
 
 struct wlf_curve_quad *wlf_curve_quad_from_curve(
