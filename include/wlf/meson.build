@@ -27,7 +27,13 @@ install_headers(conf_h, ver_h, subdir: versioned_name / 'wlf')
 subdirs = ['image', 'math', 'platform', 'utils', 'renderer', 'buffer']
 
 if is_linux
-	subdirs += ['wayland', 'platform/wayland', 'renderer/vulkan', 'dmabuf']
+	subdirs += [
+		'wayland',
+		'platform/wayland',
+		'renderer/vulkan',
+		'dmabuf',
+		'renderer/pixman'
+	]
 endif
 
 foreach subdir : subdirs

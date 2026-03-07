@@ -43,6 +43,7 @@ jobs:
           libxml2 \
           mesa \
           libdrm \
+          pixman \
 
     - name: Build with GCC
       run: |

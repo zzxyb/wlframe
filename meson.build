@@ -83,6 +83,7 @@ features = {
 	'wayland-backend': false,
 	'x11-backend': false,
 	'vulkan-render': false,
+	'pixman-render': true,
 	'macos_platform': is_macos,
 	'linux_platform': is_linux,
 }
@@ -106,6 +107,7 @@ if is_linux
 	)
 	libpng = dependency('libpng', required: true)
 	libturbojpeg = dependency('libjpeg', required: true)
+	pixman = dependency('pixman-1', version: '>=0.42', required: true)
 	vulkan = dependency('vulkan', version: '>=1.2.182', required: true)
 	gbm = dependency('gbm', required: true)
 	drm = dependency('libdrm',
@@ -140,6 +142,7 @@ elif is_linux
 		vulkan,
 		gbm,
 		drm,
+		pixman,
 	]
 else
 endif
