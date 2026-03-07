@@ -6,6 +6,7 @@
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/vulkan/renderer.h"
+#include "wlf/renderer/pixman/renderer.h"
 #endif
 
 #include <stdlib.h>
@@ -18,6 +19,7 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 	const char *render_options[] = {
 		"auto",
 		"vulkan",
+		"pixman",
 		NULL
 	};
 	const char *render_name = render_options[wlf_env_parse_switch("WLF_RENDERER",
@@ -25,8 +27,15 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 	bool is_auto = strcmp(render_name, "auto") == 0;
 	if (is_auto || strcmp(render_name, "vulkan") == 0) {
 		render = wlf_vk_renderer_create_from_backend(backend);
+		if (render == NULL && is_auto) {
+			wlf_log(WLF_INFO, "Vulkan renderer unavailable, falling back to Pixman");
+		}
+	}
+
+	if (render == NULL || strcmp(render_name, "pixman") == 0) {
+		render = wlf_pixman_renderer_create_from_backend(backend);
 		if (render == NULL) {
-			wlf_log(WLF_ERROR, "Failed to create Vulkan render");
+			wlf_log(WLF_ERROR, "Failed to create Pixman renderer");
 			return NULL;
 		}
 	}
