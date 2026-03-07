@@ -30,6 +30,8 @@ if is_linux
 	subdirs += ['wayland', 'platform/wayland', 'renderer/vulkan', 'dmabuf']
 endif
 
+subdirs += ['renderer/pixman']
+
 foreach subdir : subdirs
 	if fs.is_dir(subdir)
 		header_files = run_command(
