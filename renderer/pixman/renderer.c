@@ -47,6 +47,7 @@ struct wlf_renderer *wlf_pixman_renderer_create_from_backend(
 	}
 
 	wlf_renderer_init(&renderer->base, &pixman_renderer_impl);
+	wlf_linked_list_init(&renderer->buffers);
 	renderer->base.type = CPU;
 	renderer->backend = backend;
 
