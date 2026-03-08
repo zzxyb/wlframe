@@ -21,6 +21,8 @@ big_endian = target_machine.endian() == 'big'
 
 add_project_arguments([
 	'-D_POSIX_C_SOURCE=200809L',
+	'-DWLF_LITTLE_ENDIAN=@0@'.format(little_endian.to_int()),
+	'-DWLF_BIG_ENDIAN=@0@'.format(big_endian.to_int()),
 ], language: 'c')
 
 cc = meson.get_compiler('c')

@@ -35,6 +35,8 @@ struct wlf_backend;
 struct wlf_pixman_renderer {
 	struct wlf_renderer base;     /**< Base renderer interface. */
 	struct wlf_backend *backend;  /**< Associated wlframe backend. */
+
+	struct wlf_linked_list buffers; // wlf_pixman_buffer.link
 };
 
 /**

@@ -22,6 +22,11 @@
 
 struct wlf_buffer;
 
+enum wlf_buffer_data_ptr_access_flag {
+	WLF_BUFFER_DATA_PTR_ACCESS_READ = 1 << 0,
+	WLF_BUFFER_DATA_PTR_ACCESS_WRITE = 1 << 1,
+};
+
 /**
  * @brief Virtual methods for buffer operations.
  *
