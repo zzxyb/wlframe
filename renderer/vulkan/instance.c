@@ -66,7 +66,7 @@ struct wlf_vk_instance *wlf_vk_instance_create(bool debug) {
 	uint32_t ini_version;
 	if (pfEnumInstanceVersion(&ini_version) != VK_SUCCESS ||
 			ini_version < VK_API_VERSION_1_1) {
-		wlf_log(WLF_ERROR, "wlroots requires vulkan 1.1 which is not available");
+		wlf_log(WLF_ERROR, "wlframe requires vulkan 1.1 which is not available");
 		return NULL;
 	}
 
@@ -111,7 +111,7 @@ struct wlf_vk_instance *wlf_vk_instance_create(bool debug) {
 
 	VkApplicationInfo application_info = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
-		.pEngineName = "wlroots",
+		.pEngineName = "wlframe",
 		.engineVersion = WLF_VERSION_NUM,
 		.apiVersion = VK_API_VERSION_1_1,
 	};
