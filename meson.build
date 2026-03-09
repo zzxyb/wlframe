@@ -164,6 +164,7 @@ subdir('types')
 subdir('buffer')
 subdir('animator')
 subdir('texture')
+subdir('window')
 
 wlf_inc = include_directories('include')
 
