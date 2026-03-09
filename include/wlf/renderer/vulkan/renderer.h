@@ -19,6 +19,7 @@
 #define VULKAN_VK_RENDERER_H
 
 #include "wlf/renderer/wlf_renderer.h"
+#include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_log.h"
 
 #include <vulkan/vulkan.h>
@@ -45,6 +46,7 @@ struct wlf_vk_renderer {
 	VkCommandPool command_pool;      /**< Vulkan command pool for rendering command buffers. */
 
 	VkSemaphore timeline_semaphore;  /**< Vulkan timeline semaphore used for frame synchronization. */
+	struct wlf_linked_list render_buffers; // wlf_vk_render_buffer.link
 };
 
 /**

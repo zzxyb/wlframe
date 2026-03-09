@@ -3,6 +3,8 @@
 #include "wlf/renderer/vulkan/instance.h"
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/utils/wlf_env.h"
+#include "wlf/utils/wlf_linked_list.h"
+#include "wlf/buffer/vulkan/render_buffer.h"
 
 #include <stdint.h>
 #include <stdlib.h>
@@ -70,6 +72,12 @@ static void vk_renderer_destroy(struct wlf_renderer *render) {
 		wlf_vk_error("vkDeviceWaitIdle", res);
 	}
 
+	struct wlf_vk_render_buffer *render_buffer, *render_buffer_tmp;
+	wlf_linked_list_for_each_safe(render_buffer, render_buffer_tmp,
+			&vk_render->render_buffers, link) {
+		wlf_vk_render_buffer_destroy(render_buffer);
+	}
+
 	vkDestroyCommandPool(vk_render->dev->base, vk_render->command_pool, NULL);
 	vkDestroySemaphore(vk_render->dev->base, vk_render->timeline_semaphore, NULL);
 
@@ -109,6 +117,7 @@ struct wlf_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *devic
 	}
 
 	render->dev = device;
+	wlf_linked_list_init(&render->render_buffers);
 	wlf_renderer_init(&render->base, &vk_renderer_impl);
 	VkPhysicalDeviceProperties phdev_props;
 	vkGetPhysicalDeviceProperties(device->phdev, &phdev_props);
