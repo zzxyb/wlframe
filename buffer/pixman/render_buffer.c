@@ -1,4 +1,4 @@
-#include "wlf/buffer/pixman/buffer.h"
+#include "wlf/buffer/pixman/render_buffer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
 
@@ -103,7 +103,7 @@ static const struct wlf_pixman_pixel_format formats[] = {
 #endif
 };
 
-static void destroy_buffer(struct wlf_pixman_buffer *buffer) {
+static void destroy_buffer(struct wlf_pixman_render_buffer *buffer) {
 	wlf_linked_list_remove(&buffer->link);
 	wlf_linked_list_remove(&buffer->buffer_destroy.link);
 
@@ -112,16 +112,16 @@ static void destroy_buffer(struct wlf_pixman_buffer *buffer) {
 }
 
 static void handle_destroy_buffer(struct wlf_listener *listener, void *data) {
-	struct wlf_pixman_buffer *buffer =
+	struct wlf_pixman_render_buffer *buffer =
 		wlf_container_of(listener, buffer, buffer_destroy);
 	destroy_buffer(buffer);
 }
 
-struct wlf_pixman_buffer *wlf_pixman_buffer_create(
+struct wlf_pixman_render_buffer *wlf_pixman_render_buffer_create(
 	struct wlf_pixman_renderer *renderer,struct wlf_buffer *wlf_buffer) {
-	struct wlf_pixman_buffer *buffer = malloc(sizeof(*buffer));
+	struct wlf_pixman_render_buffer *buffer = malloc(sizeof(*buffer));
 	if (buffer == NULL) {
-		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_pixman_buffer");
+		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_pixman_render_buffer");
 		return NULL;
 	}
 
@@ -164,6 +164,27 @@ struct wlf_pixman_buffer *wlf_pixman_buffer_create(
 
 failed:
 	free(buffer);
+	return NULL;
+}
+
+void wlf_pixman_render_buffer_destroy(struct wlf_pixman_render_buffer *buffer) {
+	wlf_linked_list_remove(&buffer->link);
+	wlf_linked_list_remove(&buffer->buffer_destroy.link);
+
+	pixman_image_unref(buffer->image);
+
+	free(buffer);
+}
+
+struct wlf_pixman_render_buffer *wlf_pixman_render_buffer_get(
+		struct wlf_pixman_renderer *renderer, struct wlf_buffer *wlf_buffer) {
+	struct wlf_pixman_render_buffer *buffer;
+	wlf_linked_list_for_each(buffer, &renderer->buffers, link) {
+		if (buffer->buffer == wlf_buffer) {
+			return buffer;
+		}
+	}
+
 	return NULL;
 }
 

@@ -1,4 +1,3 @@
 wlf_files += files(
-	'buffer.c',
+	'render_buffer.c',
 )
-
