@@ -37,6 +37,7 @@ struct wlf_pixman_renderer {
 	struct wlf_backend *backend;  /**< Associated wlframe backend. */
 
 	struct wlf_linked_list buffers; // wlf_pixman_render_buffer.link
+	struct wlf_linked_list textures; // wlf_pixman_texture.link
 };
 
 /**
