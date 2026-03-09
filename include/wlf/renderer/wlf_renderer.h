@@ -18,6 +18,8 @@
 #define RENDERER_WLF_RENDERER_H
 
 #include "wlf/utils/wlf_signal.h"
+#include "wlf/texture/wlf_texture.h"
+#include "wlf/buffer/wlf_buffer.h"
 
 struct wlf_renderer;
 struct wlf_backend;
@@ -43,6 +45,8 @@ enum wlf_renderer_type {
  */
 struct wlf_renderer_impl {
 	void (*destroy)(struct wlf_renderer *render);
+	struct wlf_texture *(*texture_from_buffer)(struct wlf_renderer *renderer,
+		struct wlf_buffer *buffer);
 };
 
 /**

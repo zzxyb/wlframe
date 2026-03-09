@@ -1,7 +1,107 @@
 #include "wlf/buffer/wlf_buffer.h"
+#include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <stdint.h>
+
+static void buffer_consider_destroy(struct wlf_buffer *buffer) {
+	if (!buffer->dropped || buffer->n_locks > 0) {
+		return;
+	}
+
+	assert(!buffer->accessing_data_ptr);
+
+	buffer->impl->destroy(buffer);
+}
+
+static void readonly_data_buffer_destroy(struct wlf_buffer *wlf_buffer) {
+	struct wlf_readonly_data_buffer *buffer =
+		wlf_readonly_data_buffer_from_buffer(wlf_buffer);
+	wlf_buffer_destroy(wlf_buffer);
+	free(buffer->saved_data);
+	free(buffer);
+}
+
+static bool readonly_data_buffer_begin_data_ptr_access(struct wlf_buffer *wlf_buffer,
+		uint32_t flags, void **data, uint32_t *format, size_t *stride) {
+	struct wlf_readonly_data_buffer *buffer =
+		wlf_readonly_data_buffer_from_buffer(wlf_buffer);
+	if (buffer->data == NULL) {
+		return false;
+	}
+	if (flags & WLF_BUFFER_DATA_PTR_ACCESS_WRITE) {
+		return false;
+	}
+	*data = (void *)buffer->data;
+	*format = buffer->format;
+	*stride = buffer->stride;
+	return true;
+}
+
+static void readonly_data_buffer_end_data_ptr_access(struct wlf_buffer *wlf_buffer) {
+	WLF_UNUSED(wlf_buffer);
+}
+
+static const struct wlf_buffer_impl readonly_data_buffer_impl = {
+	.destroy = readonly_data_buffer_destroy,
+	.begin_data_ptr_access = readonly_data_buffer_begin_data_ptr_access,
+	.end_data_ptr_access = readonly_data_buffer_end_data_ptr_access,
+};
+
+struct wlf_readonly_data_buffer *wlf_readonly_data_buffer_create(uint32_t format,
+		size_t stride, uint32_t width, uint32_t height, const void *data) {
+	struct wlf_readonly_data_buffer *buffer = malloc(sizeof(*buffer));
+	if (buffer == NULL) {
+		return NULL;
+	}
+
+	wlf_buffer_init(&buffer->base, &readonly_data_buffer_impl, width, height);
+
+	buffer->data = data;
+	buffer->format = format;
+	buffer->stride = stride;
+
+	return buffer;
+}
+
+bool wlf_readonly_data_buffer_drop(struct wlf_readonly_data_buffer *buffer) {
+		bool ok = true;
+
+	if (buffer->base.n_locks > 0) {
+		size_t size = buffer->stride * buffer->base.height;
+		buffer->saved_data = malloc(size);
+		if (buffer->saved_data == NULL) {
+			wlf_log_errno(WLF_ERROR, "Failed to allocate saved_data");
+			ok = false;
+			buffer->data = NULL;
+			// We can't destroy the buffer, or we risk use-after-free in the
+			// consumers. We can't allow accesses to buffer->data anymore, so
+			// set it to NULL and make subsequent begin_data_ptr_access()
+			// calls fail.
+		} else {
+			memcpy(buffer->saved_data, buffer->data, size);
+			buffer->data = buffer->saved_data;
+		}
+	}
+
+	wlf_buffer_drop(&buffer->base);
+	return ok;
+}
+
+bool wlf_buffer_is_readonly_data(const struct wlf_buffer *wlf_buffer) {
+	return wlf_buffer->impl == &readonly_data_buffer_impl;
+}
+
+struct wlf_readonly_data_buffer *wlf_readonly_data_buffer_from_buffer(
+		struct wlf_buffer *wlf_buffer) {
+	if (!wlf_buffer_is_readonly_data(wlf_buffer)) {
+		return NULL;
+	}
+
+	struct wlf_readonly_data_buffer *buffer = wlf_container_of(wlf_buffer, buffer, base);
+	return buffer;
+}
 
 void wlf_buffer_init(struct wlf_buffer *buffer,
 		const struct wlf_buffer_impl *impl, uint32_t width, uint32_t height) {
@@ -28,8 +128,20 @@ void wlf_buffer_destroy(struct wlf_buffer *buffer) {
 	buffer->impl->destroy(buffer);
 }
 
-void wlf_buffer_lock(struct wlf_buffer *buffer) {
+void wlf_buffer_drop(struct wlf_buffer *buffer) {
+	if (buffer == NULL) {
+		return;
+	}
+
+	assert(!buffer->dropped);
+	buffer->dropped = true;
+	buffer_consider_destroy(buffer);
+}
+
+struct wlf_buffer *wlf_buffer_lock(struct wlf_buffer *buffer) {
 	buffer->n_locks++;
+
+	return buffer;
 }
 
 void wlf_buffer_unlock(struct wlf_buffer *buffer) {
