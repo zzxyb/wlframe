@@ -20,6 +20,7 @@
 #include "wlf/utils/wlf_signal.h"
 #include "wlf/texture/wlf_texture.h"
 #include "wlf/buffer/wlf_buffer.h"
+#include "wlf/types/wlf_format_set.h"
 
 struct wlf_renderer;
 struct wlf_backend;
@@ -46,6 +47,10 @@ enum wlf_renderer_type {
 struct wlf_renderer_impl {
 	void (*destroy)(struct wlf_renderer *render);
 	struct wlf_texture *(*texture_from_buffer)(struct wlf_renderer *renderer,
+		struct wlf_buffer *buffer);
+	const struct wlf_format_set *(*get_render_formats)(
+		struct wlf_renderer *renderer);
+	struct wlf_render_target_info *(*begin_buffer_pass)(struct wlf_renderer *renderer,
 		struct wlf_buffer *buffer);
 };
 
@@ -95,5 +100,10 @@ void wlf_renderer_destroy(struct wlf_renderer *render);
  */
 void wlf_renderer_init(struct wlf_renderer *render,
 	const struct wlf_renderer_impl *impl);
+
+const struct wlf_format_set *wlf_renderer_get_render_formats(
+	struct wlf_renderer *renderer);
+struct wlf_render_target_info *wlf_renderer_begin_buffer_pass(
+	struct wlf_renderer *renderer, struct wlf_buffer *buffer);
 
 #endif // RENDERER_WLF_RENDERER_H

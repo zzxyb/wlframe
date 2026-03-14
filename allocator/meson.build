@@ -1,8 +1,8 @@
 wlf_files += files(
-	'wlf_buffer.c',
+	'wlf_allocator.c',
 )
 
 if is_linux
-	subdir('pixman')
 	subdir('shm')
+	subdir('vulkan')
 endif

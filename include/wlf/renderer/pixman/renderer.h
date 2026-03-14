@@ -19,9 +19,12 @@
 #define PIXMAN_RENDERER_H
 
 #include "wlf/renderer/wlf_renderer.h"
+#include "wlf/types/wlf_format_set.h"
 
 #include <stdbool.h>
 #include <stdint.h>
+
+#include <pixman-1/pixman.h>
 
 struct wlf_backend;
 
@@ -38,6 +41,8 @@ struct wlf_pixman_renderer {
 
 	struct wlf_linked_list buffers; // wlf_pixman_buffer.link
 	struct wlf_linked_list textures; // wlf_pixman_texture.link
+
+	struct wlf_format_set formats;
 };
 
 /**
@@ -70,5 +75,8 @@ bool wlf_renderer_is_pixman(const struct wlf_renderer *renderer);
  */
 struct wlf_pixman_renderer *wlf_pixman_renderer_from_renderer(
 	struct wlf_renderer *renderer);
+
+bool begin_pixman_data_ptr_access(struct wlf_buffer *buffer, pixman_image_t **image_ptr,
+	uint32_t flags);
 
 #endif /* PIXMAN_RENDERER_H */

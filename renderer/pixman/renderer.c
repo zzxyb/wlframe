@@ -4,6 +4,7 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/buffer/pixman/buffer.h"
 #include "wlf/texture/pixman/texture.h"
+#include "wlf/pass/pixman/render_target_info.h"
 
 #include <pixman.h>
 
@@ -61,9 +62,49 @@ static struct wlf_texture *pixman_renderer_texture_from_buffer(struct wlf_render
 	return &texture->wlf_texture;
 }
 
+static const struct wlf_format_set *pixman_get_render_formats(
+		struct wlf_renderer *renderer) {
+	struct wlf_pixman_renderer *pixman_renderer = wlf_pixman_renderer_from_renderer(renderer);
+	return &pixman_renderer->formats;
+}
+
+static struct wlf_pixman_render_buffer *get_pixman_render_buffer(
+		struct wlf_pixman_renderer *renderer, struct wlf_buffer *wlr_buffer) {
+	struct wlf_pixman_render_buffer *buffer;
+	wl_list_for_each(buffer, &renderer->buffers, link) {
+		if (buffer->buffer == wlr_buffer) {
+			return buffer;
+		}
+	}
+
+	return NULL;
+}
+
+static struct wlf_render_target_info *pixman_begin_buffer_pass(struct wlf_renderer *renderer,
+		struct wlf_buffer *buffer) {
+	struct wlf_pixman_renderer *pixman_renderer = wlf_pixman_renderer_from_renderer(renderer);
+	struct wlf_pixman_render_buffer *pixman_buffer = get_pixman_render_buffer(pixman_renderer, buffer);
+	if (pixman_buffer == NULL) {
+		pixman_buffer = wlf_pixman_render_buffer_create(pixman_renderer, buffer);
+	}
+
+	if (pixman_buffer == NULL) {
+		return NULL;
+	}
+
+	struct wlf_pixman_render_target_info *render_target_info = begin_pixman_render_pass(pixman_buffer);
+	if (render_target_info == NULL) {
+		return NULL;
+	}
+
+	return &render_target_info->base;
+}
+
 static const struct wlf_renderer_impl pixman_renderer_impl = {
 	.destroy = pixman_renderer_destroy,
 	.texture_from_buffer = pixman_renderer_texture_from_buffer,
+	.get_render_formats = pixman_get_render_formats,
+	.begin_buffer_pass = pixman_begin_buffer_pass,
 };
 
 bool wlf_renderer_is_pixman(const struct wlf_renderer *renderer) {
@@ -97,4 +138,35 @@ struct wlf_renderer *wlf_pixman_renderer_create_from_backend(
 	renderer->backend = backend;
 
 	return &renderer->base;
+}
+
+bool begin_pixman_data_ptr_access(struct wlf_buffer *buffer, pixman_image_t **image_ptr,
+		uint32_t flags) {
+	pixman_image_t *image = *image_ptr;
+
+	void *data = NULL;
+	uint32_t drm_format;
+	size_t stride;
+	if (!wlf_buffer_begin_data_ptr_access(buffer, flags,
+			&data, &drm_format, &stride)) {
+		return false;
+	}
+
+	if (data != pixman_image_get_data(image)) {
+		pixman_format_code_t format = get_pixman_format_from_drm(drm_format);
+		assert(format != 0);
+
+		pixman_image_t *new_image = pixman_image_create_bits_no_clear(format,
+			buffer->width, buffer->height, data, stride);
+		if (new_image == NULL) {
+			wlf_buffer_end_data_ptr_access(buffer);
+			return false;
+		}
+
+		pixman_image_unref(image);
+		image = new_image;
+	}
+
+	*image_ptr = image;
+	return true;
 }
