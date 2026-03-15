@@ -48,6 +48,22 @@
 4. Do not use raw pointer casts for base-to-derived conversion.
 5. Keep the helper naming consistent across the subsystem.
 
+### Add Or Extend An Event Interface
+
+1. Group owned signals under an `events` sub-struct.
+2. Initialize each signal with `wlf_signal_init()` in the owning object's init/create path.
+3. Set `listener.notify` before calling `wlf_signal_add()`.
+4. Use `wlf_signal_emit_mutable()` for destroy or mutation-prone lifecycle events.
+5. Remove externally attached listeners during teardown before freeing the owner.
+
+### Add Or Extend Intrusive List Usage
+
+1. Initialize every list head and intrusive node with `wlf_linked_list_init()` before use.
+2. Insert nodes only after their ownership and teardown path are clear.
+3. Remove linked nodes with `wlf_linked_list_remove()` before freeing the owning object.
+4. Use `_safe` iteration macros when removal may happen during traversal.
+5. Reinitialize a removed node before any later reuse.
+
 ### Add A New Source File
 
 1. Place file in the owning module directory.
@@ -82,6 +98,22 @@
 3. Prefer direct return expressions such as `renderer->impl == &vk_renderer_impl` or `backend->type == WLF_BACKEND_WAYLAND`.
 4. Flag helpers that mix classification logic with argument validation unless the API contract explicitly says nullable input is valid.
 
+### Review Signal Usage
+
+1. Check that every owned signal is initialized before first add or emit.
+2. Check that listeners are attached only after `notify` is set.
+3. Check whether callbacks can mutate listener state during emission.
+4. Require `wlf_signal_emit_mutable()` for destroy and other mutation-prone emissions.
+5. Check that teardown removes externally attached listener links before free.
+
+### Review Linked-List Usage
+
+1. Check that every list head and intrusive node is initialized before use.
+2. Check that teardown removes linked nodes before object free.
+3. Check that removal during iteration uses `wlf_linked_list_for_each_safe()` or the reverse-safe variant.
+4. Check that removed nodes are not reused without `wlf_linked_list_init()`.
+5. Check that no node is inserted into multiple lists.
+
 ### Review A Meson Change
 
 1. Check new sources are added to the correct target.
@@ -106,6 +138,8 @@
 - In derived structs, put the embedded base object first by default.
 - Group multiple `wlf_signal` members under `events` and multiple `wlf_listener` members under `listeners`.
 - Use `*_is_*()` plus `*_from_*()` helpers for base/derived conversions, and make `*_from_*()` use `wlf_container_of()`.
+- Initialize owned signals with `wlf_signal_init()`, attach listeners with `wlf_signal_add()` after setting `notify`, and use `wlf_signal_emit_mutable()` when callbacks may mutate listener state.
+- Initialize intrusive lists with `wlf_linked_list_init()`, remove nodes with `wlf_linked_list_remove()` before free, and use safe iteration when removing during traversal.
 
 ## Risk Hotspots
 
@@ -118,6 +152,8 @@
 - Missing `wlf_log_errno()` after allocation failure.
 - Struct layouts that bury hot fields behind cold metadata or flatten signals/listeners without grouping.
 - Base-to-derived conversions implemented with raw casts instead of `wlf_container_of()`.
+- Signals emitted before initialization, listeners added before `notify` is set, or mutation-prone emissions using `wlf_signal_emit()`.
+- Linked-list nodes freed while still linked, removed during non-safe iteration, or reused without reinitialization.
 
 ## Review Output Template
 
