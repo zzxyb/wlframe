@@ -137,6 +137,27 @@ Also borrow judgment from:
 - Do not use raw pointer casts to convert a base pointer into a derived pointer.
 - If the derived type depends on embedded-base recovery, keep the base object as the first field by default.
 
+### 4.3) Signal And Listener Pattern
+
+- Initialize every `wlf_signal` with `wlf_signal_init()` during object `init` or `create` before the signal can be used.
+- Set `listener.notify` or `listener->notify` before registering the listener with `wlf_signal_add()`.
+- Treat a `wlf_listener` as single-attachment state: one listener instance may listen to only one signal at a time.
+- Remove listener links during teardown before freeing the owning object when those listeners are still attached to external signals.
+- Use `wlf_signal_emit()` when callbacks are not expected to mutate the listener list during iteration.
+- Use `wlf_signal_emit_mutable()` when callbacks may add/remove listeners, destroy the emitting object, or otherwise mutate signal/listener state during emission.
+- Prefer `wlf_signal_emit_mutable()` for destroy-style events and other lifecycle edges where listener mutation is realistic.
+- Group owned signals under an `events` sub-struct and subscribed listeners under a `listeners` sub-struct.
+
+### 4.4) Linked-List Pattern
+
+- Initialize every list head and every intrusive list node with `wlf_linked_list_init()` before first insertion or iteration.
+- Treat intrusive `struct wlf_linked_list` members as owned lifecycle state, not as uninitialized padding.
+- Remove a node with `wlf_linked_list_remove()` before freeing the object that owns it if that node may still be linked.
+- After `wlf_linked_list_remove()`, treat the node as invalid until it is explicitly reinitialized with `wlf_linked_list_init()` before reuse.
+- When removing elements while iterating, use the `_safe` iteration macros.
+- Do not insert a node that is already linked into another list.
+- If an object owns multiple list heads or intrusive nodes, initialize each one explicitly in the owning object's init/create path.
+
 ### 5) Memory And Ownership
 
 - Define ownership transfer explicitly in API comments and call sites.
@@ -234,6 +255,20 @@ Pay special attention to base/derived helper patterns during review:
 - If a type extends a base object, check for both `*_is_*()` and `*_from_*()` helpers.
 - Check that `*_from_*()` uses `wlf_container_of()` rather than raw casts.
 - Check that embedded-base recovery relies on a stable first-field layout when the design expects it.
+
+Pay special attention to signal usage during review:
+- Check that every owned signal is initialized with `wlf_signal_init()` before first use.
+- Check that listener callbacks are assigned before `wlf_signal_add()`.
+- Check that teardown removes externally attached listeners before freeing the owner.
+- Check that `wlf_signal_emit_mutable()` is used when callbacks may mutate listener state during emission.
+- Check that stable, non-mutating notifications do not unnecessarily use a stronger emission mode without reason.
+
+Pay special attention to linked-list usage during review:
+- Check that list heads and intrusive nodes are initialized with `wlf_linked_list_init()` before use.
+- Check that linked nodes are removed with `wlf_linked_list_remove()` before the owning object is freed.
+- Check that removal during iteration uses the `_safe` traversal macros.
+- Check that removed nodes are not reused without reinitialization.
+- Check that a node is not inserted into more than one list at the same time.
 
 ## Change Workflow
 
