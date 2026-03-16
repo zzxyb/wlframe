@@ -19,7 +19,7 @@ static void buffer_consider_destroy(struct wlf_buffer *buffer) {
 static void readonly_data_buffer_destroy(struct wlf_buffer *wlf_buffer) {
 	struct wlf_readonly_data_buffer *buffer =
 		wlf_readonly_data_buffer_from_buffer(wlf_buffer);
-	wlf_buffer_destroy(wlf_buffer);
+	wlf_buffer_finish(wlf_buffer);
 	free(buffer->saved_data);
 	free(buffer);
 }
@@ -115,15 +115,17 @@ void wlf_buffer_init(struct wlf_buffer *buffer,
 	};
 
 	wlf_signal_init(&buffer->events.destroy);
+	wlf_signal_init(&buffer->events.release);
+
+	wlf_addon_set_init(&buffer->addons);
 }
 
-void wlf_buffer_destroy(struct wlf_buffer *buffer) {
-	if (buffer == NULL) {
-		return;
-	}
+void wlf_buffer_finish(struct wlf_buffer *buffer) {
+	wlf_signal_emit_mutable(&buffer->events.destroy, buffer);
+	wlf_addon_set_finish(&buffer->addons);
 
-	wlf_signal_emit_mutable(&buffer->events.destroy, NULL);
-	buffer->impl->destroy(buffer);
+	assert(wlf_linked_list_empty(&buffer->events.destroy.listener_list));
+	assert(wlf_linked_list_empty(&buffer->events.release.listener_list));
 }
 
 void wlf_buffer_drop(struct wlf_buffer *buffer) {
@@ -145,6 +147,11 @@ struct wlf_buffer *wlf_buffer_lock(struct wlf_buffer *buffer) {
 void wlf_buffer_unlock(struct wlf_buffer *buffer) {
 	assert(buffer->n_locks > 0);
 	buffer->n_locks--;
+	if (buffer->n_locks == 0) {
+		wlf_signal_emit_mutable(&buffer->events.release, NULL);
+	}
+
+	buffer_consider_destroy(buffer);
 }
 
 bool wlf_buffer_is_opaque(struct wlf_buffer *buffer) {

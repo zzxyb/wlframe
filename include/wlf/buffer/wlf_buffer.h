@@ -16,6 +16,7 @@
 
 #include "wlf/utils/wlf_signal.h"
 #include "wlf/math/wlf_region.h"
+#include "wlf/utils/wlf_addon.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -77,14 +78,18 @@ struct wlf_buffer_impl {
  */
 struct wlf_buffer {
 	const struct wlf_buffer_impl *impl;  /**< Virtual method table */
-	struct {
-		struct wlf_signal destroy;       /**< Signal emitted when buffer is destroyed */
-	} events;
 
 	bool dropped;                /**< Whether the buffer has been dropped (pending destruction) */
 	size_t n_locks;              /**< Lock counter for reference tracking */
 	uint32_t width, height;      /**< Buffer dimensions in pixels */
 	bool accessing_data_ptr;     /**< Flag indicating if raw data is currently being accessed */
+
+	struct {
+		struct wlf_signal destroy;       /**< Signal emitted when buffer is destroyed */
+		struct wlf_signal release;       /**< Signal emitted when buffer is released */
+	} events;
+
+	struct wlf_addon_set addons; /**< Addon set for attaching extensible data */
 };
 
 /**
@@ -155,12 +160,19 @@ struct wlf_readonly_data_buffer *wlf_readonly_data_buffer_from_buffer(
 void wlf_buffer_init(struct wlf_buffer *buffer,
 	const struct wlf_buffer_impl *impl, uint32_t width, uint32_t height);
 
-/**
- * @brief Destroys a buffer.
+ /**
+ * @brief Finalizes a buffer without freeing its memory.
+ * This function performs internal cleanup for a buffer (such as emitting
+ * signals and cleaning up addons), but does not call the buffer
+ * implementation's @c destroy method and does not free the buffer's
+ * memory itself.
  *
- * @param buffer Buffer to destroy.
+ * Buffer implementations must call this function from their
+ * @c wlf_buffer_impl::destroy method before freeing their own allocation.
+ *
+ * @param buffer Buffer to finalize.
  */
-void wlf_buffer_destroy(struct wlf_buffer *buffer);
+void wlf_buffer_finish(struct wlf_buffer *buffer);
 
 /**
  * @brief Drops a buffer, destroying it immediately if there are no active locks.
