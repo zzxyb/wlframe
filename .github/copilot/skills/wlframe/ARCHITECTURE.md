@@ -33,4 +33,4 @@
 1. Correctness and memory safety.
 2. API consistency with existing module naming/lifecycle.
 3. Build integration and platform guard correctness.
-4. Readability and maintainability under wlroots-like style.
+4. Readability and maintainability under wlframe's established code style and module boundaries.

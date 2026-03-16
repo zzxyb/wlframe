@@ -9,7 +9,7 @@ Apply this skill for any task that changes wlframe code under `animator/`, `buff
 
 ## Primary Goal
 
-Produce minimal, correct, review-friendly patches that match wlframe, wlroots, and rigorous systems-level review expectations:
+Produce minimal, correct, review-friendly patches that match wlframe's existing architecture, module boundaries, and rigorous systems-level review expectations:
 - C11 + POSIX compatible code.
 - K&R braces on the same line.
 - Tabs for indentation in C sources and headers.
@@ -24,7 +24,7 @@ Produce minimal, correct, review-friendly patches that match wlframe, wlroots, a
 - Implement new C functions or small subsystems in wlframe.
 - Review patches for correctness, regressions, memory leaks, null handling, and API drift.
 - Change public headers, exported symbols, Meson wiring, or platform guards.
-- Refactor code to match wlroots-like structure without changing behavior.
+- Refactor code to better match wlframe's existing module structure without changing behavior.
 - Audit lifecycle code such as `init`, `create`, `finish`, `destroy`, attach, detach, map, unmap, or backend setup paths.
 
 ## Related Dependency Skills
@@ -55,7 +55,7 @@ Follow these project files first:
 If instructions conflict, prefer explicit repository conventions over generic defaults.
 
 Also borrow judgment from:
-- wlroots-style subsystem boundaries and explicit ownership.
+- wlframe's subsystem boundaries and explicit ownership.
 - strict maintainer review habits: small diffs, clear invariants, obvious failure paths, and skepticism toward hidden side effects.
 
 ## Repository Map
