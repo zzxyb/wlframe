@@ -1,5 +1,5 @@
 #include "wlf/texture/pixman/texture.h"
-#include "wlf/buffer/pixman/render_buffer.h"
+#include "wlf/buffer/pixman/buffer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/math/wlf_rect.h"
 

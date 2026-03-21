@@ -2,7 +2,7 @@
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/texture/wlf_texture.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/buffer/pixman/render_buffer.h"
+#include "wlf/buffer/pixman/buffer.h"
 #include "wlf/texture/pixman/texture.h"
 
 #include <pixman.h>
@@ -15,9 +15,9 @@ static void pixman_renderer_destroy(struct wlf_renderer *render) {
 	struct wlf_pixman_renderer *pixman_render =
 		wlf_pixman_renderer_from_renderer(render);
 
-	struct wlf_pixman_render_buffer *buffer, *buffer_tmp;
+	struct wlf_pixman_buffer *buffer, *buffer_tmp;
 	wlf_linked_list_for_each_safe(buffer, buffer_tmp, &pixman_render->buffers, link) {
-		wlf_pixman_render_buffer_destroy(buffer);
+		wlf_pixman_buffer_destroy(buffer);
 	}
 
 	struct wlf_pixman_texture *tex, *tex_tmp;
