@@ -18,8 +18,8 @@
  *      version: v1.0, 2025-11-03, initial version.
  */
 
-#ifndef VULKAN_VK_INSTANCE_H
-#define VULKAN_VK_INSTANCE_H
+#ifndef VULKAN_INSTANCE_H
+#define VULKAN_INSTANCE_H
 
 #include <vulkan/vulkan.h>
 #include <stdbool.h>
@@ -71,4 +71,4 @@ struct wlf_vk_instance *wlf_vk_instance_create(bool debug);
  */
 void wlf_vk_instance_destroy(struct wlf_vk_instance *instance);
 
-#endif /* VULKAN_VK_INSTANCE_H */
+#endif // VULKAN_INSTANCE_H

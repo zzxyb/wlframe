@@ -15,8 +15,8 @@
  *      version: v1.0, 2025-11-03, initial version.
  */
 
-#ifndef VULKAN_VK_RENDERER_H
-#define VULKAN_VK_RENDERER_H
+#ifndef VULKAN_RENDERER_H
+#define VULKAN_RENDERER_H
 
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/utils/wlf_log.h"
@@ -140,4 +140,4 @@ const char *wlf_vulkan_strerror(VkResult err);
 	wlf_vulkan_strerror(res), res, ##__VA_ARGS__)
 #endif
 
-#endif // VULKAN_VK_RENDERER_H
+#endif // VULKAN_RENDERER_H

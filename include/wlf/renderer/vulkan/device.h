@@ -20,8 +20,8 @@
  *      version: v1.0, 2025-11-03, initial version.
  */
 
-#ifndef VULKAN_VK_DEVICE_H
-#define VULKAN_VK_DEVICE_H
+#ifndef VULKAN_DEVICE_H
+#define VULKAN_DEVICE_H
 
 #include <vulkan/vulkan.h>
 #include <stdbool.h>
@@ -112,4 +112,4 @@ void load_device_proc(struct wlf_vk_device *device, const char *name,
  */
 VkPhysicalDevice wlf_vk_find_phdev(struct wlf_vk_instance *instance);
 
-#endif /* VULKAN_VK_DEVICE_H */
+#endif // VULKAN_DEVICE_H
