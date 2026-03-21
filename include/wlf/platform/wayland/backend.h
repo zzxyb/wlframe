@@ -11,8 +11,8 @@
  *      version: v1.0, YaoBing Xiao, 2025-06-25, initial version\n
  */
 
-#ifndef PLATFORM_WLF_BACKEND_WAYLAND_H
-#define PLATFORM_WLF_BACKEND_WAYLAND_H
+#ifndef WAYLAND_BACKEND_H
+#define WAYLAND_BACKEND_H
 
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/utils/wlf_signal.h"
@@ -57,4 +57,4 @@ bool wlf_backend_is_wayland(const struct wlf_backend *backend);
  */
 struct wlf_backend_wayland *wlf_backend_wayland_from_backend(struct wlf_backend *backend);
 
-#endif // PLATFORM_WLF_BACKEND_WAYLAND_H
+#endif // WAYLAND_BACKEND_H

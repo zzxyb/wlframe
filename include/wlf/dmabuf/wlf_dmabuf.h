@@ -17,8 +17,8 @@
  *      version: v1.0, YaoBing Xiao, 2025-12-27, initial version\n
  */
 
-#ifndef BUFFER_WLF_DMABUF_H
-#define BUFFER_WLF_DMABUF_H
+#ifndef DMABUF_WLF_DMABUF_H
+#define DMABUF_WLF_DMABUF_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -104,4 +104,4 @@ bool wlf_dmabuf_import_sync_file(int dmabuf_fd, uint32_t flags, int sync_file_fd
  */
 int wlf_dmabuf_export_sync_file(int dmabuf_fd, uint32_t flags);
 
-#endif // BUFFER_WLF_DMABUF_H
+#endif // DMABUF_WLF_DMABUF_H
