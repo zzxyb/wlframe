@@ -40,7 +40,7 @@ This skill should be treated as broad pixman guidance, including:
 Prefer pixman semantics and pixel-correctness first, then adapt them to wlframe.
 
 Within this repository, relevant integration points include:
-- `buffer/pixman/render_buffer.c`
+- `buffer/pixman/buffer.c`
 - `renderer/pixman/**`
 - relevant public headers under `include/wlf/**`
 - top-level `meson.build`

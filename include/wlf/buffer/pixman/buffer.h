@@ -13,8 +13,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-03-08, initial version\n
  */
 
-#ifndef PIXMAN_RENDER_BUFFER_H
-#define PIXMAN_RENDER_BUFFER_H
+#ifndef PIXMAN_BUFFER_H
+#define PIXMAN_BUFFER_H
 
 #include "wlf/buffer/wlf_buffer.h"
 #include "wlf/renderer/pixman/renderer.h"
@@ -41,7 +41,7 @@ struct wlf_pixman_pixel_format {
  * by the pixman renderer. Each instance is tracked by the renderer's buffer list
  * and is destroyed automatically when the underlying buffer is destroyed.
  */
-struct wlf_pixman_render_buffer {
+struct wlf_pixman_buffer {
 	struct wlf_buffer *buffer;              /**< Underlying generic buffer */
 	struct wlf_pixman_renderer *renderer;   /**< Renderer that owns this buffer */
 
@@ -55,7 +55,7 @@ struct wlf_pixman_render_buffer {
 /**
  * @brief Creates a pixman buffer wrapping an existing wlframe buffer.
  *
- * Allocates and initializes a @ref wlf_pixman_render_buffer for use with the given
+ * Allocates and initializes a @ref wlf_pixman_buffer for use with the given
  * pixman renderer. The new buffer is added to the renderer's buffer list and
  * will be destroyed automatically when the underlying @p wlf_buffer is destroyed.
  *
@@ -63,7 +63,7 @@ struct wlf_pixman_render_buffer {
  * @param wlf_buffer  The generic wlframe buffer to wrap.
  * @return Pointer to the newly created pixman buffer, or NULL on failure.
  */
-struct wlf_pixman_render_buffer *wlf_pixman_render_buffer_create(
+struct wlf_pixman_buffer *wlf_pixman_buffer_create(
 	struct wlf_pixman_renderer *renderer, struct wlf_buffer *wlf_buffer);
 
 /**
@@ -74,19 +74,19 @@ struct wlf_pixman_render_buffer *wlf_pixman_render_buffer_create(
  *
  * @param buffer The pixman render buffer to destroy.
  */
-void wlf_pixman_render_buffer_destroy(struct wlf_pixman_render_buffer *buffer);
+void wlf_pixman_buffer_destroy(struct wlf_pixman_buffer *buffer);
 
 /**
  * @brief Looks up an existing pixman render buffer wrapping the given wlf_buffer.
  *
- * Searches the renderer's internal buffer list for a @ref wlf_pixman_render_buffer
+ * Searches the renderer's internal buffer list for a @ref wlf_pixman_buffer
  * whose underlying buffer matches @p wlf_buffer.
  *
  * @param renderer   The pixman renderer owning the buffer list.
  * @param wlf_buffer The generic wlframe buffer to look up.
  * @return Pointer to the matching pixman render buffer, or NULL if not found.
  */
-struct wlf_pixman_render_buffer *wlf_pixman_render_buffer_get(
+struct wlf_pixman_buffer *wlf_pixman_buffer_get(
 	struct wlf_pixman_renderer *renderer, struct wlf_buffer *wlf_buffer);
 
 /**
@@ -113,4 +113,4 @@ uint32_t get_drm_format_from_pixman(pixman_format_code_t fmt);
  */
 const uint32_t *get_pixman_drm_formats(size_t *len);
 
-#endif // PIXMAN_RENDER_BUFFER_H
+#endif // PIXMAN_BUFFER_H
