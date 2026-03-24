@@ -44,6 +44,8 @@ jobs:
           mesa \
           libdrm \
           pixman \
+          ocl-icd \
+          opencl-headers \
 
     - name: Build with GCC
       run: |

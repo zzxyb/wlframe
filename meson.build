@@ -120,6 +120,7 @@ if is_linux
 			'tests=false',
 		],
 	)
+	opencl = dependency('OpenCL-Headers', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -145,6 +146,7 @@ elif is_linux
 		gbm,
 		drm,
 		pixman,
+		opencl,
 	]
 else
 endif
@@ -165,6 +167,8 @@ subdir('buffer')
 subdir('animator')
 subdir('texture')
 subdir('window')
+subdir('accel')
+subdir('capture')
 
 wlf_inc = include_directories('include')
 
