@@ -4,4 +4,5 @@ wlf_files += files(
 	'wlf_pixel_format.c',
 	'wlf_gradient.c',
 	'wlf_linear_gradient.c',
+	'wlf_radial_gradient.c',
 )
