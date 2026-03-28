@@ -5,4 +5,5 @@ wlf_files += files(
 	'wlf_gradient.c',
 	'wlf_linear_gradient.c',
 	'wlf_radial_gradient.c',
+	'wlf_mesh_gradient.c',
 )
