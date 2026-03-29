@@ -44,6 +44,7 @@ jobs:
           mesa \
           libdrm \
           pixman \
+          libwebp \
 
     - name: Build with GCC
       run: |

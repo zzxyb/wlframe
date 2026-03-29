@@ -4,4 +4,5 @@ wlf_files += files(
 	'wlf_jpeg_image.c',
 	'wlf_bmp_image.c',
 	'wlf_ppm_image.c',
+	'wlf_webp_image.c',
 )

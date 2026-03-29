@@ -41,6 +41,7 @@ jobs:
           libxslt \
           xmlto \
           libxml2 \
+          webp \
 
     - name: Setup build
       run: |
