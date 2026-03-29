@@ -120,10 +120,16 @@ if is_linux
 			'tests=false',
 		],
 	)
+	libwebp = dependency('libwebp', required: true)
+	libwebpdemux = dependency('libwebpdemux', required: true)
+	libwebpmux = dependency('libwebpmux', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
 	libturbojpeg = dependency('libturbojpeg', required: true, method: 'pkg-config')
+	libwebp = dependency('libwebp', required: true, method: 'pkg-config')
+	libwebpdemux = dependency('libwebpdemux', required: true, method: 'pkg-config')
+	libwebpmux = dependency('libwebpmux', required: true, method: 'pkg-config')
 else
 	error('Unsupported platform')
 endif
@@ -133,9 +139,14 @@ wlf_deps = [
 	math,
 	libpng,
 	libturbojpeg,
+	libwebp,
+	libwebpdemux,
+	libwebpmux,
 ]
 
 if is_macos
+	wlf_deps += [
+	]
 elif is_linux
 	wlf_deps += [
 		rt,

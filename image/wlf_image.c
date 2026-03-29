@@ -3,6 +3,7 @@
 #include "wlf/image/wlf_jpeg_image.h"
 #include "wlf/image/wlf_bmp_image.h"
 #include "wlf/image/wlf_ppm_image.h"
+#include "wlf/image/wlf_webp_image.h"
 
 #include <assert.h>
 #include <string.h>
@@ -108,6 +109,14 @@ bool wlf_image_save(struct wlf_image *image, const char *filename) {
 		}
 	}
 
+	// Try WebP - check if this is a WebP image
+	if (wlf_image_is_webp(image)) {
+		struct wlf_webp_image *webp_image = wlf_webp_image_from_image(image);
+		if (webp_image && webp_image->base.impl->save) {
+			return webp_image->base.impl->save(image, filename);
+		}
+	}
+
 	return false;
 }
 
@@ -170,6 +179,19 @@ struct wlf_image *wlf_image_load(const char *filename) {
 				return &ppm_image->base;
 			} else {
 				ppm_image->base.impl->destroy(&ppm_image->base);
+				return NULL;
+			}
+		} else {
+			return NULL;
+		}
+	} else if (strcasecmp(ext, ".webp") == 0) {
+		struct wlf_webp_image *webp_image = wlf_webp_image_create();
+		if (webp_image) {
+			webp_image->base.image_type = WLF_IMAGE_TYPE_WEBP;
+			if (webp_image->base.impl->load(&webp_image->base, filename, false)) {
+				return &webp_image->base;
+			} else {
+				webp_image->base.impl->destroy(&webp_image->base);
 				return NULL;
 			}
 		} else {
