@@ -162,7 +162,7 @@ subdir('platform')
 subdir('renderer')
 subdir('types')
 subdir('buffer')
-subdir('animator')
+subdir('curve')
 subdir('texture')
 subdir('window')
 

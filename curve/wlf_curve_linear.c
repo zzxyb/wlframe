@@ -1,5 +1,5 @@
-#include "wlf/animator/wlf_curve_linear.h"
-#include "wlf/animator/curve_helpers.h"
+#include "wlf/curve/wlf_curve_linear.h"
+#include "wlf/curve/curve_helpers.h"
 #include "wlf/utils/wlf_utils.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"

@@ -5,7 +5,7 @@ description: "Use this skill when implementing, refactoring, or reviewing wlfram
 
 # wlframe Core Development Skill
 
-Apply this skill for any task that changes wlframe code under `animator/`, `buffer/`, `dmabuf/`, `image/`, `math/`, `platform/`, `renderer/`, `texture/`, `types/`, `utils/`, `wayland/`, `window/`, `include/wlf/`, examples, docs, and top-level `meson.build` files.
+Apply this skill for any task that changes wlframe code under `curve/`, `buffer/`, `dmabuf/`, `image/`, `math/`, `platform/`, `renderer/`, `texture/`, `types/`, `utils/`, `wayland/`, `window/`, `include/wlf/`, examples, docs, and top-level `meson.build` files.
 
 ## Primary Goal
 
@@ -61,7 +61,7 @@ Also borrow judgment from:
 ## Repository Map
 
 - `include/wlf/**`: public API headers, module entry points, ABI-facing declarations.
-- `animator/`: easing/curve implementations and animation primitives.
+- `curve/`: easing/curve implementations.
 - `buffer/`: buffer abstraction and pixman backend integrations.
 - `dmabuf/`: external buffer helpers and lifecycle management.
 - `image/`: image loading and format-specific decoding.
