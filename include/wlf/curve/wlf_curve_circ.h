@@ -16,7 +16,7 @@
 #ifndef ANIMATOR_WLF_CURVE_CIRC_H
 #define ANIMATOR_WLF_CURVE_CIRC_H
 
-#include "wlf/animator/wlf_curve.h"
+#include "wlf/curve/wlf_curve.h"
 
 #include <stdbool.h>
 

@@ -17,7 +17,7 @@
 #ifndef ANIMATOR_WLF_CURVE_QUART_H
 #define ANIMATOR_WLF_CURVE_QUART_H
 
-#include "wlf/animator/wlf_curve.h"
+#include "wlf/curve/wlf_curve.h"
 
 #include <stdbool.h>
 

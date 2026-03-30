@@ -19,7 +19,7 @@
 
 #include <stdbool.h>
 
-#include "wlf/animator/wlf_curve.h"
+#include "wlf/curve/wlf_curve.h"
 
 /**
  * @brief Back easing curves with configurable overshoot.
