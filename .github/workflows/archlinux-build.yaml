@@ -46,6 +46,7 @@ jobs:
           pixman \
           libwebp \
           wlr-protocols \
+          giflib \
 
     - name: Build with GCC
       run: |

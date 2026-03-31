@@ -42,6 +42,7 @@ jobs:
           xmlto \
           libxml2 \
           webp \
+          giflib \
 
     - name: Setup build
       run: |
