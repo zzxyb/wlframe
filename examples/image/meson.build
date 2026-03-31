@@ -19,6 +19,10 @@ image_examples = {
 		'src': ['webp_image_test.c'],
 		'dep': [],
 	},
+	'gif_image_test': {
+		'src': ['gif_image_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : image_examples
