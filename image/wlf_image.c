@@ -4,6 +4,7 @@
 #include "wlf/image/wlf_bmp_image.h"
 #include "wlf/image/wlf_ppm_image.h"
 #include "wlf/image/wlf_webp_image.h"
+#include "wlf/image/wlf_gif_image.h"
 
 #include <assert.h>
 #include <string.h>
@@ -117,6 +118,14 @@ bool wlf_image_save(struct wlf_image *image, const char *filename) {
 		}
 	}
 
+	// Try GIF - check if this is a GIF image
+	if (wlf_image_is_gif(image)) {
+		struct wlf_gif_image *gif_image = wlf_gif_image_from_image(image);
+		if (gif_image && gif_image->base.impl->save) {
+			return gif_image->base.impl->save(image, filename);
+		}
+	}
+
 	return false;
 }
 
@@ -192,6 +201,19 @@ struct wlf_image *wlf_image_load(const char *filename) {
 				return &webp_image->base;
 			} else {
 				webp_image->base.impl->destroy(&webp_image->base);
+				return NULL;
+			}
+		} else {
+			return NULL;
+		}
+	} else if (strcasecmp(ext, ".gif") == 0) {
+		struct wlf_gif_image *gif_image = wlf_gif_image_create();
+		if (gif_image) {
+			gif_image->base.image_type = WLF_IMAGE_TYPE_GIF;
+			if (gif_image->base.impl->load(&gif_image->base, filename, false)) {
+				return &gif_image->base;
+			} else {
+				gif_image->base.impl->destroy(&gif_image->base);
 				return NULL;
 			}
 		} else {

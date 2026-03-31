@@ -45,6 +45,7 @@ jobs:
           libdrm \
           pixman \
           libwebp \
+          giflib \
 
     - name: Build with GCC
       run: |
