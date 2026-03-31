@@ -23,6 +23,10 @@ image_examples = {
 		'src': ['xpm_image_test.c'],
 		'dep': [],
 	},
+	'gif_image_test': {
+		'src': ['gif_image_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : image_examples
