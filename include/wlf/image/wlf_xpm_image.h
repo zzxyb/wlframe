@@ -1,6 +1,22 @@
 /**
  * @file        wlf_xpm_image.h
  * @brief       XPM image handling and utility functions for wlframe.
+ * @details     This file defines XPM-specific image structures derived from
+ *              @ref wlf_image and provides helper functions for creating,
+ *              detecting, and converting XPM image objects.
+ *
+ *              Typical usage:
+ *                  - Create an XPM image container via wlf_xpm_image_create().
+ *                  - Check whether a generic image instance is an XPM image.
+ *                  - Convert a generic @ref wlf_image pointer into a
+ *                    @ref wlf_xpm_image pointer when appropriate.
+ *
+ * @author      YaoBing Xiao
+ * @date        2026-05-10
+ * @version     v1.0
+ * @par Copyright:
+ * @par History:
+ *      version: v1.0, YaoBing Xiao, 2026-05-10, initial version\n
  */
 
 #ifndef IMAGE_WLF_XPM_IMAGE_H
