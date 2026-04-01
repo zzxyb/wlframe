@@ -4,6 +4,7 @@
 #include "wlf/image/wlf_bmp_image.h"
 #include "wlf/image/wlf_ppm_image.h"
 #include "wlf/image/wlf_webp_image.h"
+#include "wlf/image/wlf_xpm_image.h"
 
 #include <assert.h>
 #include <string.h>
@@ -117,6 +118,14 @@ bool wlf_image_save(struct wlf_image *image, const char *filename) {
 		}
 	}
 
+	// Try XPM - check if this is a XPM image
+	if (wlf_image_is_xpm(image)) {
+		struct wlf_xpm_image *xpm_image = wlf_xpm_image_from_image(image);
+		if (xpm_image && xpm_image->base.impl->save) {
+			return xpm_image->base.impl->save(image, filename);
+		}
+	}
+
 	return false;
 }
 
@@ -192,6 +201,19 @@ struct wlf_image *wlf_image_load(const char *filename) {
 				return &webp_image->base;
 			} else {
 				webp_image->base.impl->destroy(&webp_image->base);
+				return NULL;
+			}
+		} else {
+			return NULL;
+		}
+	} else if (strcasecmp(ext, ".xpm") == 0) {
+		struct wlf_xpm_image *xpm_image = wlf_xpm_image_create();
+		if (xpm_image) {
+			xpm_image->base.image_type = WLF_IMAGE_TYPE_XPM;
+			if (xpm_image->base.impl->load(&xpm_image->base, filename, false)) {
+				return &xpm_image->base;
+			} else {
+				xpm_image->base.impl->destroy(&xpm_image->base);
 				return NULL;
 			}
 		} else {
