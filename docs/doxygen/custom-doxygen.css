@@ -1,0 +1,24 @@
+table.memberdecls,
+table.fieldtable {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: auto !important;
+  max-width: 100%;
+}
+
+table.memberdecls td.memItemLeft,
+table.memberdecls td.memTemplItemLeft,
+table.fieldtable td.fieldtype {
+  padding-right: 0.45rem;
+}
+
+table.memberdecls td,
+table.memberdecls th,
+table.fieldtable td,
+table.fieldtable th,
+td.memItemLeft,
+td.memItemRight,
+td.memTemplItemLeft,
+td.memTemplItemRight {
+  text-align: left !important;
+}
