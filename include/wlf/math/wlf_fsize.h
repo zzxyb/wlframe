@@ -147,7 +147,7 @@ struct wlf_size wlf_fsize_ceil(const struct wlf_fsize *size);
 /**
  * @brief Converts a string representation of a point to a wlf_fsize structure.
  * @param str String in the format "(width, height)".
- * @param point Pointer to the wlf_fsize structure to fill.
+ * @param size Pointer to the wlf_fsize structure to fill.
  * @return true if conversion was successful, false otherwise.
  */
 bool wlf_fsize_from_str(const char *str, struct wlf_fsize *size);

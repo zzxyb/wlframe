@@ -39,7 +39,7 @@ char* wlf_vector2_to_str(const struct wlf_vector2 *vector);
 
 /**
  * @brief Converts a 2D vector to a string representation with specified precision.
- * @param size Source 2D vector vector.
+ * @param vector Source 2D vector vector.
  * @param precision Number of decimal places (0-15).
  * @return A string representing the 2D vector, or NULL if memory allocation fails.
  */

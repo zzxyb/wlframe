@@ -69,12 +69,13 @@ struct wlf_renderer {
 };
 
 /**
- * @brief Destroys a renderer instance.
+ * @brief Automatically creates a renderer instance for the given backend.
  *
- * This function cleans up all resources associated with a renderer and emits
- * the `destroy` signal before final deallocation.
+ * This function selects and creates a suitable renderer implementation based
+ * on the backend capabilities.
  *
- * @param render Pointer to the renderer to destroy.
+ * @param backend Pointer to the backend used to create the renderer.
+ * @return Pointer to the created renderer, or NULL on failure.
  */
 struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend);
 

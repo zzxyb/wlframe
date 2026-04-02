@@ -51,7 +51,7 @@ char* wlf_vector3_to_str(const struct wlf_vector3 *vector);
 
 /**
  * @brief Converts a 3D vector to a string representation with specified precision.
- * @param size Source 3D vector.
+ * @param vector Source 3D vector.
  * @param precision Number of decimal places (0-15).
  * @return A string representing the 3D vector, or NULL if memory allocation fails.
  */

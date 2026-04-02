@@ -86,7 +86,6 @@ void _wlf_vlog(enum wlf_log_importance verbosity, const char *format, va_list ar
 /**
  * @brief Aborts the program with a formatted message.
  * @param filename The name of the file where the abort occurred.
- * @return The formatted abort message.
  */
 void _wlf_abort(const char *filename, ...) _WLF_ATTRIB_PRINTF(1, 2);
 
