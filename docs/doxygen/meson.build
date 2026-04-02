@@ -15,11 +15,29 @@ wlframe_doxygen = configure_file(
 )
 
 src_files = files([
+		'../../include/wlf/buffer/wlf_buffer.h',
+
+		'../../include/wlf/curve/curve_helpers.h',
+		'../../include/wlf/curve/easing_functions.h',
+		'../../include/wlf/curve/wlf_curve.h',
+		'../../include/wlf/curve/wlf_curve_back.h',
+		'../../include/wlf/curve/wlf_curve_bounce.h',
+		'../../include/wlf/curve/wlf_curve_circ.h',
+		'../../include/wlf/curve/wlf_curve_cubic.h',
+		'../../include/wlf/curve/wlf_curve_elastic.h',
+		'../../include/wlf/curve/wlf_curve_expo.h',
+		'../../include/wlf/curve/wlf_curve_linear.h',
+		'../../include/wlf/curve/wlf_curve_quad.h',
+		'../../include/wlf/curve/wlf_curve_quart.h',
+		'../../include/wlf/curve/wlf_curve_quint.h',
+		'../../include/wlf/curve/wlf_curve_sine.h',
+
 		'../../include/wlf/image/wlf_bmp_image.h',
 		'../../include/wlf/image/wlf_image.h',
 		'../../include/wlf/image/wlf_jpeg_image.h',
 		'../../include/wlf/image/wlf_png_image.h',
 		'../../include/wlf/image/wlf_ppm_image.h',
+		'../../include/wlf/image/wlf_webp_image.h',
 
 		'../../include/wlf/math/wlf_fpoint.h',
 		'../../include/wlf/math/wlf_frect.h',
@@ -42,8 +60,16 @@ src_files = files([
 
 		'../../include/wlf/renderer/wlf_renderer.h',
 
-		'../../include/wlf/types/wlf_color.h',
+		'../../include/wlf/texture/wlf_texture.h',
 
+		'../../include/wlf/types/wlf_color.h',
+		'../../include/wlf/types/wlf_gradient.h',
+		'../../include/wlf/types/wlf_linear_gradient.h',
+		'../../include/wlf/types/wlf_output.h',
+		'../../include/wlf/types/wlf_pixel_format.h',
+		'../../include/wlf/types/wlf_radial_gradient.h',
+
+		'../../include/wlf/utils/wlf_addon.h',
 		'../../include/wlf/utils/wlf_cmd_parser.h',
 		'../../include/wlf/utils/wlf_env.h',
 		'../../include/wlf/utils/wlf_linked_list.h',
@@ -52,18 +78,26 @@ src_files = files([
 		'../../include/wlf/utils/wlf_signal.h',
 		'../../include/wlf/utils/wlf_time.h',
 		'../../include/wlf/utils/wlf_utils.h',
+
+		'../../include/wlf/window/wlf_window.h',
 ])
 
 if is_linux
 	src_files += files([
+			'../../include/wlf/dmabuf/wlf_dmabuf.h',
+
 			'../../include/wlf/platform/wayland/backend.h',
 
+			'../../include/wlf/renderer/pixman/renderer.h',
 			'../../include/wlf/renderer/vulkan/device.h',
 			'../../include/wlf/renderer/vulkan/instance.h',
 			'../../include/wlf/renderer/vulkan/renderer.h',
 
+			'../../include/wlf/texture/pixman/texture.h',
+
 			'../../include/wlf/wayland/wlf_wl_compositor.h',
 			'../../include/wlf/wayland/wlf_wl_display.h',
+			'../../include/wlf/wayland/wlf_wl_output.h',
 	])
 endif
 
