@@ -91,7 +91,7 @@ int wlf_size_area(const struct wlf_size *size);
 /**
  * @brief Converts a string representation of a point to a wlf_size structure.
  * @param str String in the format "(width, height)".
- * @param point Pointer to the wlf_size structure to fill.
+ * @param size Pointer to the wlf_size structure to fill.
  * @return true if conversion was successful, false otherwise.
  */
 bool wlf_size_from_str(const char *str, struct wlf_size *size);

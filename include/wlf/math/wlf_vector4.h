@@ -53,7 +53,7 @@ char* wlf_vector4_to_str(const struct wlf_vector4 *vector);
 
 /**
  * @brief Converts a 4D vector to a string representation with specified precision.
- * @param size Source 4D vector.
+ * @param vector Source 4D vector.
  * @param precision Number of decimal places (0-15).
  * @return A string representing the 4D vector, or NULL if memory allocation fails.
  */
