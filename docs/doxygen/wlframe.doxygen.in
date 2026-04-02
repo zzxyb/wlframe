@@ -3,10 +3,11 @@ PROJECT_NAME           = "wlframe"
 PROJECT_NUMBER         = @VERSION@
 OUTPUT_DIRECTORY       = @top_builddir@/docs/doxygen
 JAVADOC_AUTOBRIEF      = YES
-TAB_SIZE               = 8
+TAB_SIZE               = 4
 QUIET                  = YES
 GENERATE_LATEX         = NO
 MAN_LINKS              = NO
+HTML_EXTRA_STYLESHEET  = @top_srcdir@/docs/doxygen/custom-doxygen.css
 PREDEFINED             = WL_EXPORT=              \
                          WL_PRINTF(x,y)=
 MACRO_EXPANSION        = YES

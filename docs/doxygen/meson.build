@@ -8,6 +8,7 @@ dot_map = []
 doxygen_conf = configuration_data()
 doxygen_conf.set('VERSION', meson.project_version())
 doxygen_conf.set('top_builddir', meson.project_build_root())
+doxygen_conf.set('top_srcdir', meson.project_source_root())
 wlframe_doxygen = configure_file(
 		input: 'wlframe.doxygen.in',
 		output: 'wlframe.doxygen',
