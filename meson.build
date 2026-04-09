@@ -58,6 +58,7 @@ macos_c_args = cc.get_supported_arguments([
 
 is_linux = host_machine.system() == 'linux'
 is_macos = host_machine.system() == 'darwin'
+is_win = host_machine.system() == 'windows'
 if is_linux
 	add_project_arguments(common_c_args + linux_c_args, language: 'c')
 elif is_macos
@@ -88,6 +89,7 @@ features = {
 	'pixman-render': true,
 	'macos_platform': is_macos,
 	'linux_platform': is_linux,
+	'win_platform': is_win,
 }
 
 math = cc.find_library('m')
@@ -174,6 +176,7 @@ subdir('buffer')
 subdir('curve')
 subdir('texture')
 subdir('window')
+subdir('stream')
 
 wlf_inc = include_directories('include')
 
