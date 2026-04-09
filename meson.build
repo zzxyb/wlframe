@@ -123,6 +123,7 @@ if is_linux
 	libwebp = dependency('libwebp', required: true)
 	libwebpdemux = dependency('libwebpdemux', required: true)
 	libwebpmux = dependency('libwebpmux', required: true)
+	giflib = cc.find_library('gif', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -130,6 +131,34 @@ elif is_macos
 	libwebp = dependency('libwebp', required: true, method: 'pkg-config')
 	libwebpdemux = dependency('libwebpdemux', required: true, method: 'pkg-config')
 	libwebpmux = dependency('libwebpmux', required: true, method: 'pkg-config')
+	brew = find_program('brew', required: false)
+	if not brew.found()
+		error('brew not found on macOS. Please install Homebrew and run: brew install giflib')
+	endif
+
+	brew_cmd = run_command(brew, '--prefix', check: false)
+	if brew_cmd.returncode() != 0
+		error('failed to query Homebrew prefix. Please run: brew install giflib')
+	endif
+	brew_prefix = brew_cmd.stdout().strip()
+	if brew_prefix == ''
+		error('empty Homebrew prefix. Please run: brew install giflib')
+	endif
+
+	giflib_lib = cc.find_library('gif', required: true, dirs: [brew_prefix / 'lib'])
+	gif_inc_dir = brew_prefix / 'include'
+	if cc.has_header('gif_lib.h', args: ['-I' + gif_inc_dir])
+		giflib = declare_dependency(
+			dependencies: giflib_lib,
+			compile_args: ['-I' + gif_inc_dir],
+		)
+	else
+		error('gif_lib.h not found under Homebrew prefix. Please run: brew install giflib')
+	endif
+
+	if not giflib.found()
+		error('giflib not found on macOS. Install giflib (for example: brew install giflib).')
+	endif
 else
 	error('Unsupported platform')
 endif
@@ -142,6 +171,7 @@ wlf_deps = [
 	libwebp,
 	libwebpdemux,
 	libwebpmux,
+	giflib,
 ]
 
 if is_macos
