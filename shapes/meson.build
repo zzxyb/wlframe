@@ -8,4 +8,5 @@ wlf_files += files(
 	'wlf_line_shape.c',
 	'wlf_poly_shape.c',
 	'wlf_text_shape.c',
+	'wlf_use_shape.c',
 )
