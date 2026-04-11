@@ -7,4 +7,5 @@ wlf_files += files(
 	'wlf_ellipse_shape.c',
 	'wlf_line_shape.c',
 	'wlf_poly_shape.c',
+	'wlf_text_shape.c',
 )
