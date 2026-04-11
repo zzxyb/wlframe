@@ -9,4 +9,5 @@ wlf_files += files(
 	'wlf_poly_shape.c',
 	'wlf_text_shape.c',
 	'wlf_use_shape.c',
+	'wlf_symbol_shape.c',
 )
