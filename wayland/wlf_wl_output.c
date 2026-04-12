@@ -1,7 +1,7 @@
 #include "wlf/wayland/wlf_wl_output.h"
 #include "wlf/types/wlf_output.h"
 #include "wlf/utils/wlf_log.h"
-#include "protocols/xdg-output-unstable-v1-client-protocol.h"
+#include "wayland/protocols/xdg-output-unstable-v1-client-protocol.h"
 
 #include <stdlib.h>
 #include <assert.h>
