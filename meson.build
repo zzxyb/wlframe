@@ -162,7 +162,6 @@ subdir('include')
 subdir('utils')
 if is_linux
 	subdir('wayland')
-	subdir('protocols')
 	subdir('dmabuf')
 endif
 subdir('image')
