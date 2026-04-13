@@ -174,6 +174,7 @@ subdir('curve')
 subdir('texture')
 subdir('window')
 subdir('pass')
+subdir('allocator')
 
 wlf_inc = include_directories('include')
 
