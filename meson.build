@@ -173,6 +173,8 @@ subdir('buffer')
 subdir('curve')
 subdir('texture')
 subdir('window')
+subdir('shapes')
+subdir('svg')
 
 wlf_inc = include_directories('include')
 
