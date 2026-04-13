@@ -173,6 +173,7 @@ subdir('buffer')
 subdir('curve')
 subdir('texture')
 subdir('window')
+subdir('pass')
 
 wlf_inc = include_directories('include')
 
