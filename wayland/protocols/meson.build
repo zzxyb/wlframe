@@ -4,6 +4,7 @@ wayland_scanner = find_program(
 	native: true,
 )
 wl_protocol_dir = wayland_protos.get_variable('pkgdatadir')
+wlr_protocols_dir = wlr_protos.get_variable('pkgdatadir')
 
 protocols = {
 	# Stable upstream protocols
@@ -51,6 +52,7 @@ protocols = {
 	'xdg-foreign-unstable-v2': wl_protocol_dir / 'unstable/xdg-foreign/xdg-foreign-unstable-v2.xml',
 	'xdg-output-unstable-v1': wl_protocol_dir / 'unstable/xdg-output/xdg-output-unstable-v1.xml',
 	'ext-transient-seat-v1': wl_protocol_dir / 'staging/ext-transient-seat/ext-transient-seat-v1.xml',
+	'zwlr_layer_shell_v1': wlr_protocols_dir / 'unstable/wlr-layer-shell-unstable-v1.xml',
 }
 
 protocols_code = {}

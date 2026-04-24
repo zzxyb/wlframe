@@ -123,6 +123,7 @@ if is_linux
 	libwebp = dependency('libwebp', required: true)
 	libwebpdemux = dependency('libwebpdemux', required: true)
 	libwebpmux = dependency('libwebpmux', required: true)
+	wlr_protos =  dependency('wlr-protocols')
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
