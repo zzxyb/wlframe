@@ -45,6 +45,7 @@ jobs:
           libdrm \
           pixman \
           libwebp \
+          wlr-protocols \
 
     - name: Build with GCC
       run: |
