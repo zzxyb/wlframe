@@ -38,7 +38,7 @@ void wlf_wl_interface_destroy(struct wlf_wl_interface *interface) {
 }
 
 struct wlf_wl_interface *wlf_wl_backend_find_interface(
-		const struct wlf_backend_wayland *backend, const char *interface) {
+		const struct wlf_wl_backend *backend, const char *interface) {
 	struct wlf_wl_interface *reg;
 	wlf_linked_list_for_each(reg, &backend->interfaces, link) {
 		if (strcmp(reg->interface, interface) == 0) {
