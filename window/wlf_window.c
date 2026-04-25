@@ -191,3 +191,10 @@ void wlf_window_set_background_color(struct wlf_window *window,
 		window->impl->set_background_color(window, &window->state.background_color);
 	}
 }
+
+
+void wlf_window_init_render(struct wlf_window *window,
+		struct wlf_allocator *allocator, struct wlf_renderer *renderer) {
+	window->state.allocator = allocator;
+	window->state.renderer = renderer;
+}

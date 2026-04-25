@@ -1,12 +1,14 @@
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/window/wayland/xdg_window.h"
+#include "wlf/window/wlf_window.h"
 
 #include <stdlib.h>
 #include <unistd.h>
 
 int main(int argc, char *argv[]) {
-	wlf_log_init(WLF_DEBUG, NULL);
+	// wlf_log_init(WLF_DEBUG, NULL);
 	struct wlf_backend *backend = wlf_backend_autocreate();
 	if (backend == NULL) {
 		wlf_log(WLF_ERROR, "Failed to auto-create backend");
@@ -20,7 +22,12 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
+	struct wlf_window *window = wlf_xdg_window_create_from_backend(backend,
+		WLF_WINDOW_TYPE_TOPLEVEL, 400, 300);
+	wlf_window_show(window);
 	wlf_log(WLF_INFO, "Backend started successfully");
+
+	// wlf_backend_exe(backend);
 	wlf_backend_destroy(backend);
 
 	return EXIT_SUCCESS;

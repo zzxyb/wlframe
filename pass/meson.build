@@ -4,4 +4,5 @@ wlf_files += files(
 
 if is_linux
 	subdir('pixman')
+	subdir('vulkan')
 endif

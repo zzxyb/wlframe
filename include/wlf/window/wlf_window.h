@@ -28,6 +28,8 @@
 #include "wlf/math/wlf_size.h"
 #include "wlf/types/wlf_color.h"
 #include "wlf/math/wlf_region.h"
+#include "wlf/allocator/wlf_allocator.h"
+#include "wlf/renderer/wlf_renderer.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -95,6 +97,8 @@ struct wlf_window_impl {
 };
 
 struct wlf_window_state {
+	struct wlf_allocator *allocator;
+	struct wlf_renderer *renderer;
 	char *title;                        /**< Window title */
 
 	struct wlf_color background_color;  /**< Background color (RGBA doubles) */
@@ -267,5 +271,8 @@ void wlf_window_set_mask(struct wlf_window *window, const struct wlf_region *mas
  * @param color New background color.
  */
 void wlf_window_set_background_color(struct wlf_window *window, const struct wlf_color *color);
+
+void wlf_window_init_render(struct wlf_window *window,
+	struct wlf_allocator *allocator, struct wlf_renderer *renderer);
 
 #endif // WINDOW_WLF_WINDOW_H
