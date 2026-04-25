@@ -153,7 +153,7 @@ uint32_t convert_wl_shm_format_to_wlf(enum wl_shm_format fmt) {
 	case WL_SHM_FORMAT_ARGB8888:
 		return WLF_FORMAT_ARGB8888;
 	default:
-		return WLF_FORMAT_INVALID;
+		return (uint32_t)fmt;
 	}
 }
 
