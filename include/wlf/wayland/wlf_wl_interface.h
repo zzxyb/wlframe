@@ -20,7 +20,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-struct wlf_backend_wayland;
+struct wlf_wl_backend;
 
 /**
  * @brief Structure representing a Wayland global interface.
@@ -38,12 +38,12 @@ struct wlf_wl_interface {
 
 /**
  * @brief Get a registry interface by interface name.
- * @param backend Pointer to the wlf_backend_wayland object.
+ * @param backend Pointer to the wlf_wl_backend object.
  * @param interface Name of the interface to search for.
  * @return Pointer to the found wlf_wl_interface, or NULL if not found.
  */
 struct wlf_wl_interface *wlf_wl_backend_find_interface(
-	const struct wlf_backend_wayland *backend, const char *interface);
+	const struct wlf_wl_backend *backend, const char *interface);
 
 /**
  * @brief Create a new wlf_wl_interface object.
