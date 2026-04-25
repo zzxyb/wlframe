@@ -23,24 +23,32 @@
 
 #include "wlf/utils/wlf_signal.h"
 #include "wlf/utils/wlf_linked_list.h"
-#include "wlf/types/wlf_output.h"
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 struct wlf_backend;
+
+typedef void (*wlf_backend_event_source_dispatch_t)(
+	struct wlf_backend *backend, int fd, uint32_t revents, void *data);
 
 /**
  * @brief Backend implementation interface
  * This structure defines the function pointers that each backend must implement
  */
 struct wlf_backend_impl {
-	const char *name;
+	const char *name;  /**< Backend implementation name */
 	/**
 	 * @brief Destroy the backend and free resources
 	 * @param backend Pointer to the backend
 	 */
 	void (*destroy)(struct wlf_backend *backend);
+	/**
+	 * @brief Run the backend main event loop
+	 * @param backend Pointer to the backend
+	 */
+	void (*exe)(struct wlf_backend *backend);
 };
 
 /**
@@ -48,6 +56,16 @@ struct wlf_backend_impl {
  */
 struct wlf_backend {
 	const struct wlf_backend_impl *impl;  /**< Backend implementation */
+	bool running;  /**< True while backend event loop is running */
+
+	struct {
+		int fd;  /**< File descriptor to monitor */
+		short events;  /**< poll(2) event mask */
+		wlf_backend_event_source_dispatch_t dispatch;  /**< Event callback */
+		void *data;  /**< User data passed to callback */
+	} *event_sources;  /**< Dynamic event source array */
+	size_t event_source_count;  /**< Number of active event sources */
+	size_t event_source_capacity;  /**< Allocated event source capacity */
 
 	struct {
 		struct wlf_signal destroy;        /**< Emitted when backend is destroyed */
@@ -61,9 +79,14 @@ struct wlf_backend {
 	 */
 	void *data;
 
-	struct wlf_linked_list outputs;
+	struct wlf_linked_list outputs;  /**< Managed output list */
 };
 
+/**
+ * @brief Initialize a backend object
+ * @param backend Pointer to backend object to initialize
+ * @param impl Backend implementation vtable
+ */
 void wlf_backend_init(struct wlf_backend *backend,
 	const struct wlf_backend_impl *impl);
 
@@ -78,5 +101,41 @@ struct wlf_backend *wlf_backend_autocreate(void);
  * @param backend Pointer to the backend
  */
 void wlf_backend_destroy(struct wlf_backend *backend);
+
+/**
+ * @brief Execute backend event loop
+ * @param backend Pointer to backend
+ */
+void wlf_backend_exe(struct wlf_backend *backend);
+
+/**
+ * @brief Register an external file descriptor event source
+ * @param backend Pointer to backend
+ * @param fd File descriptor to poll
+ * @param events poll(2) event mask
+ * @param dispatch Callback invoked when events occur
+ * @param data User data passed to dispatch callback
+ * @return true on success, false on failure
+ */
+bool wlf_backend_add_event_source(struct wlf_backend *backend,
+	int fd, short events,
+	wlf_backend_event_source_dispatch_t dispatch,
+	void *data);
+
+/**
+ * @brief Unregister a previously added event source
+ * @param backend Pointer to backend
+ * @param fd File descriptor used during registration
+ * @param data User data used during registration
+ * @return true if removed, false if not found
+ */
+bool wlf_backend_remove_event_source(struct wlf_backend *backend,
+	int fd, void *data);
+
+/**
+ * @brief Request backend event loop termination
+ * @param backend Pointer to backend
+ */
+void wlf_backend_quit(struct wlf_backend *backend);
 
 #endif // PLATFORM_WLF_BACKEND_H
