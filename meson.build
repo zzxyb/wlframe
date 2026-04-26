@@ -124,6 +124,16 @@ if is_linux
 	libwebpdemux = dependency('libwebpdemux', required: true)
 	libwebpmux = dependency('libwebpmux', required: true)
 	wlr_protos =  dependency('wlr-protocols')
+	xkbcommon = dependency('xkbcommon',
+		version: '>=1.8.0',
+		fallback: 'libxkbcommon',
+		default_options: [
+			'enable-tools=false',
+			'enable-x11=false',
+			'enable-docs=false',
+			'enable-xkbregistry=false',
+		],
+	)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -155,6 +165,7 @@ elif is_linux
 		gbm,
 		drm,
 		pixman,
+		xkbcommon,
 	]
 else
 endif
