@@ -8,4 +8,5 @@ wlf_files += files(
 	'wlf_mesh_gradient.c',
 	'wlf_format_set.c',
 	'wlf_pointer.c',
+	'wlf_touch.c',
 )
