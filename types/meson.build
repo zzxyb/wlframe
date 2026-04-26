@@ -7,4 +7,5 @@ wlf_files += files(
 	'wlf_radial_gradient.c',
 	'wlf_mesh_gradient.c',
 	'wlf_format_set.c',
+	'wlf_pointer.c',
 )
