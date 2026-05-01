@@ -8,4 +8,5 @@ wlf_files += files(
 	'wlf_env.c',
 	'wlf_cmd_parser.c',
 	'wlf_addon.c',
+	'wlf_array.c',
 )
