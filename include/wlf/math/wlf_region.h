@@ -47,6 +47,13 @@ struct wlf_region {
 void wlf_region_init(struct wlf_region *region);
 
 /**
+ * @brief Initialize a region object with a rectangle.
+ * @param region Pointer to the region object.
+ * @param rect Pointer to the initial rectangle (can be NULL).
+ */
+void wlf_region_init_rect(struct wlf_region *region, const struct wlf_frect *rect);
+
+/**
  * @brief Finalize a region object and release its resources.
  * @param region Pointer to the region object.
  */
@@ -114,6 +121,15 @@ void wlf_region_intersects_rect(const struct wlf_region *region, const struct wl
  * @param src Source region object pointer.
  */
 void wlf_region_union(struct wlf_region *dst, const struct wlf_region *src);
+
+/**
+ * @brief Compute the union of a region and a rectangle.
+ * @param dst Destination region object pointer, result will be written here.
+ * @param src Source region object pointer.
+ * @param rect Pointer to the rectangle to union (can be NULL).
+ * @note The result is: dst = src ∪ rect
+ */
+void wlf_region_union_rect(struct wlf_region *dst, struct wlf_region *src, const struct wlf_frect *rect);
 
 /**
  * @brief Compute the intersection of two regions.

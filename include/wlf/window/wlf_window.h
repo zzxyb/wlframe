@@ -28,6 +28,7 @@
 #include "wlf/math/wlf_size.h"
 #include "wlf/types/wlf_color.h"
 #include "wlf/math/wlf_region.h"
+#include "wlf/scene/wlf_scene_tree.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -116,6 +117,8 @@ struct wlf_window_state {
  */
 struct wlf_window {
 	const struct wlf_window_impl *impl; /**< Platform-specific implementation */
+
+	struct wlf_scene_tree *tree;
 	void *data;                    /**< User data pointer */
 
 	struct wlf_window_state state;
