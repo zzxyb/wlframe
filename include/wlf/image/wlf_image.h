@@ -34,7 +34,7 @@ enum wlf_image_type {
 	WLF_IMAGE_TYPE_UNKNOWN, /**< Unknown or unsupported image type */
 	WLF_IMAGE_TYPE_PNG,     /**< PNG (Portable Network Graphics) image */
 	WLF_IMAGE_TYPE_JPEG,    /**< JPEG (Joint Photographic Experts Group) image */
-	WLF_IMAGE_TYPE_BMP,     /**< SVG (Scalable Vector Graphics) image */
+	WLF_IMAGE_TYPE_BMP,     /**< BMP (Bitmap) image */
 	WLF_IMAGE_TYPE_PPM,     /**< PPM (Portable Pixmap Format) image */
 	WLF_IMAGE_TYPE_WEBP,    /**< WebP image */
 };
