@@ -1,6 +1,8 @@
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
 
+#include <stdlib.h>
+
 static const struct wlf_pixel_format_info wlf_pixel_formats[] = {
 	{ WLF_FORMAT_XRGB8888, 0, 4, 1, 1 },
 	{ WLF_FORMAT_ARGB8888, WLF_FORMAT_XRGB8888, 4, 1, 1 },
