@@ -306,3 +306,19 @@ void wlf_region_intersect(const struct wlf_region *dst, const struct wlf_region 
 
 	free(results_rect);
 }
+
+void wlf_region_init_rect(struct wlf_region *region, const struct wlf_frect *rect) {
+	wlf_region_init(region);
+	wlf_region_add_rect(region, rect);
+}
+
+void wlf_region_union_rect(struct wlf_region *dst, struct wlf_region *src, const struct wlf_frect *rect) {
+	wlf_region_fini(dst);
+	wlf_region_init(dst);
+
+	for (long i = 0; i < src->data->numRects; ++i) {
+		wlf_region_add_rect(dst, &src->data->rects[i]);
+	}
+
+	wlf_region_add_rect(dst, rect);
+}
