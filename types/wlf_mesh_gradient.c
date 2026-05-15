@@ -104,6 +104,11 @@ struct wlf_mesh_gradient *wlf_mesh_gradient_create(struct wlf_fpoint origin,
 	mesh->patch_rows = patch_rows;
 
 	size_t count = (size_t)patch_columns * (size_t)patch_rows;
+	if (count > 65536) {
+		wlf_log(WLF_ERROR, "Mesh gradient patch count exceeds maximum limit");
+		wlf_gradient_destroy(&mesh->base);
+		return NULL;
+	}
 	mesh->patches = calloc(count, sizeof(*mesh->patches));
 	if (mesh->patches == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate mesh patches");
