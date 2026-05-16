@@ -206,6 +206,7 @@ subdir('texture')
 subdir('window')
 subdir('pass')
 subdir('allocator')
+subdir('scene')
 
 wlf_inc = include_directories('include')
 
