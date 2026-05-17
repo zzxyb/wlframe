@@ -33,6 +33,7 @@
 #include <stdbool.h>
 
 struct wlf_window;
+struct wlf_scene_tree;
 
 /**
  * @brief Window states.
@@ -116,6 +117,7 @@ struct wlf_window_state {
  */
 struct wlf_window {
 	const struct wlf_window_impl *impl; /**< Platform-specific implementation */
+	struct wlf_scene_tree *tree;        /**< root node */
 	void *data;                    /**< User data pointer */
 
 	struct wlf_window_state state;
