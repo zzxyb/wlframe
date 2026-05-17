@@ -311,3 +311,12 @@ void wlf_scene_node_bounds(struct wlf_scene_node *node,
 
 	node->impl->bounds(node, x, y, visible);
 }
+
+bool wlf_scene_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
+		scene_node_box_iterator_func_t iterator, void *user_data) {
+	if (node->impl->in_box == NULL) {
+		return false;
+	}
+
+	return node->impl->in_box(node, box, iterator, user_data);
+}

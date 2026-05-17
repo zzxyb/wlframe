@@ -26,6 +26,25 @@ struct wlf_window;
 struct wlf_scene_node;
 
 /**
+ * @brief Callback function type for scene node bounding box iterations.
+ *
+ * This iterator is invoked for each scene node or sub-element that intersects with
+ * a requested bounding box. It provides the matched node along with its origin coordinates
+ * transformed into the query's coordinate space, allowing the caller to calculate local offsets.
+ *
+ * @param node     The scene node currently being intersected and evaluated.
+ * @param sx       The X coordinate of the matched node's origin in the query box space.
+ * @param sy       The Y coordinate of the matched node's origin in the query box space.
+ * @param data     User-defined context data (e.g., a pointer to `struct wlf_node_at_data`)
+ *                 passed through from the initial `in_box` call.
+ * @return True to continue the traversal/iteration; false to abort the traversal immediately
+ *         (e.g., when the desired node has been found during a hit-test).
+ */
+typedef bool (*scene_node_box_iterator_func_t)(struct wlf_scene_node *node,
+	double sx, double sy, void *data);
+
+
+/**
  * @brief Focus policy for scene nodes.
  *
  * Determines how a scene node can receive keyboard focus.
@@ -152,6 +171,19 @@ struct wlf_scene_node_impl {
 	 */
 	void (*bounds)(struct wlf_scene_node *node,
 		int x, int y, struct wlf_region *visible);
+
+	/**
+	 * @brief Iterates over child nodes or sub-elements intersecting a bounding box.
+	 * @param node      The parent scene node containing the elements to query.
+	 * @param box       The bounding box area to check against, defined in the node's coordinate space.
+	 * @param iterator  Callback function invoked for each intersecting element. 
+	 *                  The callback receives the element's origin coordinates ($lx, ly$) within the box space.
+	 *                  Returning false from the iterator aborts the traversal immediately.
+	 * @param user_data User-defined context data (e.g., struct wlf_node_at_data) passed directly to the callback.
+	 * @return True if the traversal completed entirely or no elements intersected; false if aborted early by the iterator.
+	 */
+	bool (*in_box)(struct wlf_scene_node *node, struct wlf_frect *box,
+		scene_node_box_iterator_func_t iterator, void *user_data);
 };
 
 /**
@@ -205,6 +237,18 @@ struct wlf_scene_node_render_entry {
 	struct wlf_scene_node *node;             /**< Node to render */
 	bool highlight_transparent_region;       /**< Whether to highlight transparent regions */
 	double x, y;                             /**< Rendering position */
+};
+
+/**
+ * @brief Data structure for node querying or coordinate transformation at a specific point.
+ *
+ * Used to store localized coordinates, relative coordinates, and the target scene node,
+ * typically during hit-testing or input routing (e.g., finding which node is at a given coordinate).
+ */
+struct wlf_node_at_data {
+	double lx, ly;               /**< Local coordinates relative to the node */
+	double rx, ry;               /**< Relative or requested input coordinates */
+	struct wlf_scene_node *node; /**< The target scene node found at the coordinates */
 };
 
 /**
@@ -392,5 +436,23 @@ void wlf_scene_node_update(struct wlf_scene_node *node, struct wlf_region *damag
  */
 void wlf_scene_node_bounds(struct wlf_scene_node *node,
 	int x, int y, struct wlf_region *visible);
+
+/**
+ * @brief Traverses and evaluates scene graph elements within a specified bounding box.
+ *
+ * Dispatches a bounding box query onto the given @p node. It searches for child nodes
+ * or visual regions intersecting @p box. When a match is found, @p iterator is executed
+ * with the matched element's origin ($lx, ly$) inside the query coordinate system, enabling
+ * downstream logic to calculate local relative positions (e.g., $rx = target\_x - lx$).
+ *
+ * @param node      Pointer to the scene node serving as the root of this box query.
+ * @param box       Pointer to the rectangle defining the geometric search boundaries.
+ * @param iterator  The callback function triggered for every intersecting child or region.
+ * @param user_data Opaque pointer passed to the iterator for state tracking or data collection.
+ * @return True if the traversal successfully finished without interruption; 
+ *         false if a callback returned false to prematurely stop the search (e.g., upon a successful hit-test).
+ */
+bool wlf_scene_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
+	scene_node_box_iterator_func_t iterator, void *user_data);
 
 #endif // SCENE_WLF_SCENE_NODE_H
