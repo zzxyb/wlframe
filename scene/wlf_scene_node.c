@@ -217,6 +217,10 @@ struct wlf_linked_list *wlf_scene_node_get_children(struct wlf_scene_node *node)
 void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
 		double y, struct wlf_region *opaque) {
 	if (node->impl->get_opaque_region == NULL) {
+		if (node->state.opacity != 1) {
+			return;
+		}
+
 		double width, height;
 		wlf_scene_node_get_size(node, &width, &height);
 		wlf_region_fini(opaque);
