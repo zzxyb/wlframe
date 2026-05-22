@@ -17,6 +17,7 @@
 #include "wlf/math/wlf_fpoint.h"
 #include "wlf/math/wlf_fsize.h"
 #include "wlf/math/wlf_rect.h"
+#include "wlf/types/wlf_output.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -147,5 +148,36 @@ bool wlf_frect_is_empty(const struct wlf_frect *rect);
  */
 bool wlf_frect_intersection(struct wlf_frect *dest, const struct wlf_frect *a,
 	const struct wlf_frect *b);
+
+/**
+ * @brief Checks whether a point lies inside a floating-point rectangle.
+ * @param rect Rectangle to test against.
+ * @param x X coordinate of the point.
+ * @param y Y coordinate of the point.
+ * @return true if the point is inside the rectangle, false otherwise.
+ * @note Empty rectangles never contain any point.
+ */
+bool wlf_frect_contains_point(const struct wlf_frect *rect, double x, double y);
+
+/**
+ * @brief Checks whether one floating-point rectangle fully contains another.
+ * @param bigger Candidate containing rectangle.
+ * @param smaller Candidate contained rectangle.
+ * @return true if `bigger` fully contains `smaller`, false otherwise.
+ * @note If either rectangle is empty, the result is false.
+ */
+bool wlf_frect_contains_frect(const struct wlf_frect *bigger, const struct wlf_frect *smaller);
+
+/**
+ * @brief Applies an output transform to a floating-point rectangle.
+ * @param dest Pointer to the rectangle where the transformed result will be written.
+ * @param rect Source rectangle to transform.
+ * @param transform Output transform to apply.
+ * @param width Width of the source or target coordinate space used by the transform.
+ * @param height Height of the source or target coordinate space used by the transform.
+ * @note For 90-degree and 270-degree rotations, the resulting rectangle width and height are swapped.
+ */
+void wlf_frect_transform(struct wlf_frect *dest, const struct wlf_frect *rect,
+	enum wlf_output_transform transform, double width, double height);
 
 #endif // MATH_WLF_FRECT_H
