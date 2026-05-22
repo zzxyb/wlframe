@@ -12,14 +12,12 @@
 #define WLF_FRECT_STRLEN 256
 
 struct wlf_frect wlf_frect_make(double x, double y, double width, double height) {
-	struct wlf_frect frect = {
+	return (struct wlf_frect){
 		.x = x,
 		.y = y,
 		.width = width,
 		.height = height,
 	};
-
-	return frect;
 }
 
 struct wlf_frect wlf_frect_from_point_size(const struct wlf_fpoint *pos, const struct wlf_fsize *size) {
@@ -27,12 +25,8 @@ struct wlf_frect wlf_frect_from_point_size(const struct wlf_fpoint *pos, const s
 }
 
 struct wlf_frect wlf_frect_from_points(const struct wlf_fpoint *p1, const struct wlf_fpoint *p2) {
-	int x = fmin(p1->x, p2->x);
-	int y = fmin(p1->y, p2->y);
-	int width = fabs(p1->x - p2->x);
-	int height = fabs(p1->y - p2->y);
-
-	return wlf_frect_make(x, y, width, height);
+	return wlf_frect_make(fmin(p1->x, p2->x), fmin(p1->y, p2->y), fabs(p1->x - p2->x),
+		fabs(p1->y - p2->y));
 }
 
 char* wlf_frect_to_str_prec(const struct wlf_frect *rect, uint8_t precision) {
@@ -60,10 +54,35 @@ char* wlf_frect_to_str_prec(const struct wlf_frect *rect, uint8_t precision) {
 }
 
 bool wlf_frect_equal(const struct wlf_frect *a, const struct wlf_frect *b) {
-	return (a->x == b->x) && (a->y == b->y) && (a->width == b->width) && (a->height == b->height);
+	if (wlf_frect_is_empty(a)) {
+		a = NULL;
+	}
+
+	if (wlf_frect_is_empty(b)) {
+		b = NULL;
+	}
+
+	if (a == NULL || b == NULL) {
+		return a == b;
+	}
+
+	return a->x == b->x && a->y == b->y &&
+		a->width == b->width && a->height == b->height;
 }
 
 bool wlf_frect_nearly_equal(const struct wlf_frect *a, const struct wlf_frect *b, double epsilon) {
+	if (wlf_frect_is_empty(a)) {
+		a = NULL;
+	}
+
+	if (wlf_frect_is_empty(b)) {
+		b = NULL;
+	}
+
+	if (a == NULL || b == NULL) {
+		return a == b;
+	}
+
 	return (fabs(a->x - b->x) < epsilon) && (fabs(a->y - b->y) < epsilon) &&
 		(fabs(a->width - b->width) < epsilon) && (fabs(a->height - b->height) < epsilon);
 }
@@ -86,13 +105,6 @@ struct wlf_rect wlf_frect_floor(const struct wlf_frect *rect) {
 
 struct wlf_rect wlf_frect_ceil(const struct wlf_frect *rect) {
 	return wlf_rect_make(ceil(rect->x), ceil(rect->y), ceil(rect->width), ceil(rect->height));
-}
-
-bool wlf_frect_is_valid(const struct wlf_frect *rect) {
-	if (rect == NULL) {
-		return false;
-	}
-	return (rect->width > 0.0) && (rect->height > 0.0);
 }
 
 bool wlf_frect_from_str(const char *str, struct wlf_frect *rect) {
@@ -142,6 +154,38 @@ bool wlf_frect_from_str(const char *str, struct wlf_frect *rect) {
 	rect->y = y;
 	rect->width = width;
 	rect->height = height;
+
+	return true;
+}
+
+bool wlf_frect_is_empty(const struct wlf_frect *rect) {
+	return rect == NULL || rect->width <= 0 || rect->height <= 0;
+}
+
+bool wlf_frect_intersection(struct wlf_frect *dest, const struct wlf_frect *a,
+		const struct wlf_frect *b) {
+	bool a_empty = wlf_frect_is_empty(a);
+	bool b_empty = wlf_frect_is_empty(b);
+
+	if (a_empty || b_empty) {
+		*dest = (struct wlf_frect){0};
+		return false;
+	}
+
+	double x1 = fmax(a->x, b->x);
+	double y1 = fmax(a->y, b->y);
+	double x2 = fmin(a->x + a->width, b->x + b->width);
+	double y2 = fmin(a->y + a->height, b->y + b->height);
+
+	dest->x = x1;
+	dest->y = y1;
+	dest->width = x2 - x1;
+	dest->height = y2 - y1;
+
+	if (wlf_frect_is_empty(dest)) {
+		*dest = (struct wlf_frect){0};
+		return false;
+	}
 
 	return true;
 }
