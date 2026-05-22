@@ -262,17 +262,17 @@ int main(int argc, char *argv[]) {
 	struct wlf_frect zero_height = wlf_frect_make(10.0, 20.0, 30.5, 0.0);
 
 	wlf_log(WLF_INFO, "Valid rect (10.0,20.0,30.5,40.8) is valid: %s",
-		wlf_frect_is_valid(&valid_rect) ? "true" : "false");
+		!wlf_frect_is_empty(&valid_rect) ? "true" : "false");
 	wlf_log(WLF_INFO, "Invalid width rect is valid: %s",
-		wlf_frect_is_valid(&invalid_width) ? "true" : "false");
+		!wlf_frect_is_empty(&invalid_width) ? "true" : "false");
 	wlf_log(WLF_INFO, "Invalid height rect is valid: %s",
-		wlf_frect_is_valid(&invalid_height) ? "true" : "false");
+		!wlf_frect_is_empty(&invalid_height) ? "true" : "false");
 	wlf_log(WLF_INFO, "Zero width rect is valid: %s",
-		wlf_frect_is_valid(&zero_width) ? "true" : "false");
+		!wlf_frect_is_empty(&zero_width) ? "true" : "false");
 	wlf_log(WLF_INFO, "Zero height rect is valid: %s",
-		wlf_frect_is_valid(&zero_height) ? "true" : "false");
+		!wlf_frect_is_empty(&zero_height) ? "true" : "false");
 	wlf_log(WLF_INFO, "NULL pointer is valid: %s",
-		wlf_frect_is_valid(NULL) ? "true" : "false");
+		!wlf_frect_is_empty(NULL) ? "true" : "false");
 
 	// Test String Parsing
 	wlf_log(WLF_INFO, "\n--- Testing String Parsing ---");
@@ -283,7 +283,7 @@ int main(int argc, char *argv[]) {
 	if (wlf_frect_from_str("(10.5,20.3,100.7,80.2)", &parsed_rect)) {
 		char *parsed_str = wlf_frect_to_str_prec(&parsed_rect, 3);
 		wlf_log(WLF_INFO, "Parsed '(10.5,20.3,100.7,80.2)': %s", parsed_str);
-		wlf_log(WLF_INFO, "Is valid: %s", wlf_frect_is_valid(&parsed_rect) ? "true" : "false");
+		wlf_log(WLF_INFO, "Is valid: %s", !wlf_frect_is_empty(&parsed_rect) ? "true" : "false");
 		free(parsed_str);
 	} else {
 		wlf_log(WLF_ERROR, "Failed to parse '(10.5,20.3,100.7,80.2)'");
@@ -311,7 +311,7 @@ int main(int argc, char *argv[]) {
 	if (wlf_frect_from_str("(-10.5,-20.8,100.3,80.7)", &parsed_rect)) {
 		char *parsed_str = wlf_frect_to_str_prec(&parsed_rect, 3);
 		wlf_log(WLF_INFO, "Parsed '(-10.5,-20.8,100.3,80.7)': %s", parsed_str);
-		wlf_log(WLF_INFO, "Is valid: %s", wlf_frect_is_valid(&parsed_rect) ? "true" : "false");
+		wlf_log(WLF_INFO, "Is valid: %s", !wlf_frect_is_empty(&parsed_rect) ? "true" : "false");
 		free(parsed_str);
 	} else {
 		wlf_log(WLF_ERROR, "Failed to parse '(-10.5,-20.8,100.3,80.7)'");

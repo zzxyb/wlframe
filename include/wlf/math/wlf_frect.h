@@ -122,13 +122,6 @@ struct wlf_rect wlf_frect_floor(const struct wlf_frect *rect);
 struct wlf_rect wlf_frect_ceil(const struct wlf_frect *rect);
 
 /**
- * @brief Checks if floating-point rectangle is valid (positive width and height).
- * @param rect Rectangle to check.
- * @return true if rectangle is valid (width > 0 and height > 0), false otherwise.
- */
-bool wlf_frect_is_valid(const struct wlf_frect *rect);
-
-/**
  * @brief Parses a string representation of a floating-point rectangle and creates a wlf_frect structure.
  * @param str String representation of rectangle in format "(x,y,width,height)"
  *            or "(x, y, width, height)".
@@ -136,5 +129,23 @@ bool wlf_frect_is_valid(const struct wlf_frect *rect);
  * @return true if parsing was successful, false otherwise.
  */
 bool wlf_frect_from_str(const char *str, struct wlf_frect *rect);
+
+/**
+ * @brief Checks whether a floating-point rectangle is empty.
+ * @param rect Rectangle to check.
+ * @return true if the rectangle has zero width or zero height, false otherwise.
+ */
+bool wlf_frect_is_empty(const struct wlf_frect *rect);
+
+/**
+ * @brief Computes the intersection of two floating-point rectangles.
+ * @param dest Pointer to the rectangle where the intersection result will be written.
+ * @param a First input rectangle.
+ * @param b Second input rectangle.
+ * @return true if the two rectangles have a non-empty intersection, false otherwise.
+ * @note If there is no intersection, or if either input rectangle is empty, `dest` is set to a zero rectangle.
+ */
+bool wlf_frect_intersection(struct wlf_frect *dest, const struct wlf_frect *a,
+	const struct wlf_frect *b);
 
 #endif // MATH_WLF_FRECT_H
