@@ -17,9 +17,10 @@
 
 void wlf_backend_init(struct wlf_backend *backend,
 		const struct wlf_backend_impl *impl) {
-	assert(impl->destroy);
-	assert(impl->name);
-	assert(impl->exe);
+	assert(impl->destroy != NULL &&
+		impl->name != NULL &&
+		impl->exe != NULL &&
+		impl->native_display != NULL);
 
 	*backend = (struct wlf_backend){
 		.impl = impl,
