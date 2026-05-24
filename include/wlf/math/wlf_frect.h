@@ -32,9 +32,6 @@ struct wlf_frect {
 	double height; /**< Height of the rectangle */
 };
 
-static const struct wlf_frect WLF_FRECT_ZERO = {0.0, 0.0, 0.0, 0.0};  /**< Zero rectangle */
-static const struct wlf_frect WLF_FRECT_UNIT = {0.0, 0.0, 1.0, 1.0};  /**< Unit rectangle */
-
 /**
  * @brief Creates a new floating-point rectangle from position and size.
  * @param x X coordinate of the top-left corner.

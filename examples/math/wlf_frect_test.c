@@ -12,6 +12,9 @@
 #define M_E 2.7182818284590452354
 #endif
 
+static const struct wlf_frect WLF_FRECT_ZERO = {0.0, 0.0, 0.0, 0.0};  /**< Zero rectangle */
+static const struct wlf_frect WLF_FRECT_UNIT = {0.0, 0.0, 1.0, 1.0};  /**< Unit rectangle */
+
 int main(int argc, char *argv[]) {
 	wlf_log_init(WLF_DEBUG, NULL);
 
