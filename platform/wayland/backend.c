@@ -991,10 +991,18 @@ out:
 	backend->running = false;
 }
 
+static void *backend_native_display(struct wlf_backend *backend) {
+	struct wlf_wl_backend *wayland_backend =
+		wlf_wl_backend_from_backend(backend);
+
+	return wayland_backend->display;
+}
+
 static const struct wlf_backend_impl wayland_backend_impl = {
 	.name = "Wayland",
 	.destroy = backend_destroy,
 	.exe = backend_exe,
+	.native_display = backend_native_display,
 };
 
 struct wlf_backend *wayland_backend_create(void) {

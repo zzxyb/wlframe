@@ -49,6 +49,24 @@ struct wlf_backend_impl {
 	 * @param backend Pointer to the backend
 	 */
 	void (*exe)(struct wlf_backend *backend);
+
+	/**
+	 * @brief Get the native display handle used by the backend
+	 *
+	 * Returns the underlying platform-specific display object associated
+	 * with this backend. The returned pointer type depends on the backend
+	 * implementation.
+	 *
+	 * Examples:
+	 * - Wayland backend: struct wl_display *
+	 *
+	 * The returned pointer is owned by the backend and must not be freed
+	 * or modified by the caller.
+	 *
+	 * @param backend Pointer to the backend
+	 * @return Native display handle, or NULL if unsupported
+	 */
+	void *(*native_display)(struct wlf_backend *backend);
 };
 
 /**
