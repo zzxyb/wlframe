@@ -141,9 +141,13 @@ bool wlf_rect_intersects(const struct wlf_rect *a, const struct wlf_rect *b) {
 }
 
 struct wlf_rect wlf_rect_intersection(const struct wlf_rect *a, const struct wlf_rect *b) {
-	// Return zero rectangle if no intersection
 	if (!wlf_rect_intersects(a, b)) {
-		return WLF_RECT_ZERO;
+		return (struct wlf_rect){
+			.x = 0,
+			.y = 0,
+			.width = 0,
+			.height = 0,
+		};
 	}
 
 	int x1 = fmax(a->x, b->x);
