@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+static const struct wlf_rect WLF_RECT_ZERO = {0, 0, 0, 0};            /**< Zero rectangle */
+static const struct wlf_rect WLF_RECT_UNIT = {0, 0, 1, 1};            /**< Unit rectangle */
+
 int main(int argc, char *argv[]) {
 	wlf_log_init(WLF_DEBUG, NULL);
 

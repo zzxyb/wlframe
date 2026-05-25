@@ -28,9 +28,6 @@ struct wlf_rect {
 	int height; /**< Height of the rectangle */
 };
 
-static const struct wlf_rect WLF_RECT_ZERO = {0, 0, 0, 0};            /**< Zero rectangle */
-static const struct wlf_rect WLF_RECT_UNIT = {0, 0, 1, 1};            /**< Unit rectangle */
-
 /**
  * @brief Creates a new rectangle from position and size.
  * @param x X coordinate.
