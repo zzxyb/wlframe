@@ -45,6 +45,7 @@ struct wlf_vk_device {
 	bool sync_file_import_export;     /**< Whether the device supports sync file import/export (VK_EXT_external_fd). */
 	bool implicit_sync_interop;       /**< Whether implicit synchronization interop is supported. */
 	bool sampler_ycbcr_conversion;    /**< Whether the device supports YCbCr sampler conversion. */
+	bool incremental_present;         /**< Whether the device supports VK_KHR_incremental_present for damage tracking. */
 
 	uint32_t queue_family;            /**< Index of the primary queue family used for rendering and transfer. */
 	VkQueue queue;                    /**< Primary Vulkan queue used for command submission. */

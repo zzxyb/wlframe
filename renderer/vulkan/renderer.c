@@ -118,6 +118,8 @@ struct wlf_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *devic
 		render->base.type = GPU;
 	}
 
+	render->base.features.damage = device->incremental_present;
+
 	VkCommandPoolCreateInfo cpool_info = {
 		.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
 		.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
