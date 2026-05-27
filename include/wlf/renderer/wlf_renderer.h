@@ -65,6 +65,10 @@ struct wlf_renderer {
 
 	void *data;                    /**< Backend-specific user data (opaque pointer). */
 
+	struct {
+		bool damage;               /**< Whether the renderer supports damage-based partial updates. */
+	} features;                    /**< Optional renderer feature capabilities. */
+
 	enum wlf_renderer_type type;   /**< Type of renderer backend. */
 };
 

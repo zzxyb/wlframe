@@ -95,6 +95,7 @@ struct wlf_renderer *wlf_pixman_renderer_create_from_backend(
 	wlf_linked_list_init(&renderer->textures);
 	renderer->base.type = CPU;
 	renderer->backend = backend;
+	renderer->base.features.damage = true;
 
 	return &renderer->base;
 }

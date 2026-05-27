@@ -167,6 +167,15 @@ struct wlf_vk_device *wlf_vk_device_create(struct wlf_vk_instance *instance,
 	wlf_log(WLF_DEBUG, "Sampler YCbCr conversion %s",
 		dev->sampler_ycbcr_conversion ? "supported" : "not supported");
 
+	dev->incremental_present = check_extension(avail_ext_props, avail_extc,
+		VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME);
+	if (dev->incremental_present) {
+		extensions[extensions_len++] = VK_KHR_INCREMENTAL_PRESENT_EXTENSION_NAME;
+		wlf_log(WLF_DEBUG, "Vulkan incremental present (damage tracking) supported");
+	} else {
+		wlf_log(WLF_DEBUG, "Vulkan incremental present not supported, damage tracking disabled");
+	}
+
 	const float prio = 1.f;
 	VkDeviceQueueCreateInfo qinfo = {
 		.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
