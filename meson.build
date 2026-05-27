@@ -125,6 +125,9 @@ if is_linux
 	libwebpmux = dependency('libwebpmux', required: true)
 	wlr_protos =  dependency('wlr-protocols')
 	giflib = cc.find_library('gif', required: true)
+	glesv2 = dependency('glesv2', required: true)
+	wayland_egl = dependency('wayland-egl', required: true)
+	egl = dependency('egl', version: '>= 1.5', required: true)
 elif is_macos
 	message('Building for macOS')
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
@@ -185,6 +188,9 @@ elif is_linux
 		gbm,
 		drm,
 		pixman,
+		glesv2,
+		wayland_egl,
+		egl,
 	]
 else
 endif
