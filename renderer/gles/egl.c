@@ -2,6 +2,7 @@
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/config.h"
+#include "wlf/utils/wlf_env.h"
 
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
@@ -168,6 +169,23 @@ static void load_egl_procs(struct wlf_egl *egl,
 	}
 }
 
+static enum wlf_log_importance egl_log_importance_to_wlf(EGLint type) {
+	switch (type) {
+	case EGL_DEBUG_MSG_CRITICAL_KHR: return WLF_ERROR;
+	case EGL_DEBUG_MSG_ERROR_KHR:    return WLF_ERROR;
+	case EGL_DEBUG_MSG_WARN_KHR:     return WLF_ERROR;
+	case EGL_DEBUG_MSG_INFO_KHR:     return WLF_INFO;
+	default:                         return WLF_INFO;
+	}
+}
+
+static void egl_log(EGLenum error, const char *command, EGLint msg_type,
+		EGLLabelKHR thread, EGLLabelKHR obj, const char *msg) {
+	_wlf_log(egl_log_importance_to_wlf(msg_type),
+		"[EGL] command: %s, error: %s (0x%x), message: \"%s\"",
+		command, wlf_egl_error_str(error), error, msg);
+}
+
 struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
 	void *native_display = backend->impl->native_display(backend);
 	EGLDisplay egl_display = eglGetDisplay((EGLNativeDisplayType)native_display);
@@ -203,6 +221,17 @@ struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
 		client_exts ? client_exts : "(none)");
 	check_egl_exts(egl, display_exts, client_exts, backend);
 	load_egl_procs(egl, display_exts, client_exts);
+	if (wlf_env_parse_bool("WLF_RENDER_DEBUG") &&
+			egl->procs.eglDebugMessageControlKHR != NULL) {
+		static const EGLAttrib debug_attribs[] = {
+			EGL_DEBUG_MSG_CRITICAL_KHR, EGL_TRUE,
+			EGL_DEBUG_MSG_ERROR_KHR, EGL_TRUE,
+			EGL_DEBUG_MSG_WARN_KHR, EGL_TRUE,
+			EGL_DEBUG_MSG_INFO_KHR, EGL_TRUE,
+			EGL_NONE,
+		};
+		egl->procs.eglDebugMessageControlKHR(egl_log, debug_attribs);
+	}
 
 	const EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
