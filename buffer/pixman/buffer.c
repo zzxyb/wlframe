@@ -131,8 +131,8 @@ struct wlf_pixman_buffer *wlf_pixman_buffer_create(
 	uint32_t drm_format;
 	size_t stride;
 	if (!wlf_buffer_begin_data_ptr_access(wlf_buffer,
-		    WLF_BUFFER_DATA_PTR_ACCESS_READ | WLF_BUFFER_DATA_PTR_ACCESS_WRITE,
-		    &data, &drm_format, &stride)) {
+			WLF_BUFFER_DATA_PTR_ACCESS_READ | WLF_BUFFER_DATA_PTR_ACCESS_WRITE,
+			&data, &drm_format, &stride)) {
 		wlf_log(WLF_ERROR, "Failed to get buffer data");
 		goto failed;
 	}
