@@ -58,7 +58,7 @@ static void output_destroy(struct wlf_output *output) {
 }
 
 static const struct wlf_output_impl wlf_wl_output_impl = {
-	.type = WLF_OUTPUT,
+	.name = "wl_output",
 	.destroy = output_destroy,
 };
 

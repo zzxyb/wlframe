@@ -3,18 +3,18 @@
 
 #include <assert.h>
 
-void wlf_render_rect_pass_init(struct wlf_rect_pass *pass,
-		const struct wlf_rect_pass_impl *impl) {
+void wlf_render_rect_pass_init(struct wlf_render_rect_pass *pass,
+		const struct wlf_render_rect_pass_impl *impl) {
 	assert(impl->destroy);
 	assert(impl->render);
-	*pass = (struct wlf_rect_pass){
+	*pass = (struct wlf_render_rect_pass){
 		.impl = impl,
 	};
 
 	wlf_signal_init(&pass->events.destroy);
 }
 
-void wlf_render_rect_pass_destroy(struct wlf_rect_pass *pass) {
+void wlf_render_rect_pass_destroy(struct wlf_render_rect_pass *pass) {
 	if (pass == NULL) {
 		return;
 	}
@@ -29,7 +29,7 @@ void wlf_render_rect_pass_destroy(struct wlf_rect_pass *pass) {
 	}
 }
 
-void wlf_render_pass_add_rect(struct wlf_rect_pass *pass,
+void wlf_render_pass_add_rect(struct wlf_render_rect_pass *pass,
 		struct wlf_render_target_info *render_target_info,
 		const struct wlf_render_rect_options *options) {
 	assert(options->box.width >= 0 && options->box.height >= 0);

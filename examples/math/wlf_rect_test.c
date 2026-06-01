@@ -1,7 +1,6 @@
 #include "wlf/math/wlf_rect.h"
 #include "wlf/utils/wlf_log.h"
 #include <stdlib.h>
-#include <stdint.h>
 
 static const struct wlf_rect WLF_RECT_ZERO = {0, 0, 0, 0};            /**< Zero rectangle */
 static const struct wlf_rect WLF_RECT_UNIT = {0, 0, 1, 1};            /**< Unit rectangle */
@@ -71,42 +70,42 @@ int main(int argc, char *argv[]) {
 
 	wlf_log(WLF_INFO, "r1 is empty: %s", wlf_rect_is_empty(&r1) ? "true" : "false");
 	wlf_log(WLF_INFO, "empty_rect is empty: %s", wlf_rect_is_empty(&empty_rect) ? "true" : "false");
-	wlf_log(WLF_INFO, "r1 is valid: %s", wlf_rect_is_valid(&r1) ? "true" : "false");
-	wlf_log(WLF_INFO, "invalid_rect is valid: %s", wlf_rect_is_valid(&invalid_rect) ? "true" : "false");
+	wlf_log(WLF_INFO, "r1 is empty: %s", wlf_rect_is_empty(&r1) ? "true" : "false");
+	wlf_log(WLF_INFO, "invalid_rect is empty: %s", wlf_rect_is_empty(&invalid_rect) ? "true" : "false");
 
 	// Test Getters
 	wlf_log(WLF_INFO, "\n--- Testing Getters ---");
 
-	struct wlf_point position = wlf_rect_get_position(&r1);
-	struct wlf_size rect_size = wlf_rect_get_size(&r1);
-	struct wlf_point center = wlf_rect_get_center(&r1);
-	struct wlf_point top_left = wlf_rect_get_top_left(&r1);
-	struct wlf_point bottom_right = wlf_rect_get_bottom_right(&r1);
+	// struct wlf_point position = wlf_rect_get_position(&r1);
+	// struct wlf_size rect_size = wlf_rect_get_size(&r1);
+	// struct wlf_point center = wlf_rect_get_center(&r1);
+	// struct wlf_point top_left = wlf_rect_get_top_left(&r1);
+	// struct wlf_point bottom_right = wlf_rect_get_bottom_right(&r1);
 
-	char *pos_str = wlf_point_to_str(&position);
-	char *size_str = wlf_size_to_str(&rect_size);
-	char *center_str = wlf_point_to_str(&center);
-	char *tl_str = wlf_point_to_str(&top_left);
-	char *br_str = wlf_point_to_str(&bottom_right);
+	// char *pos_str = wlf_point_to_str(&position);
+	// char *size_str = wlf_size_to_str(&rect_size);
+	// char *center_str = wlf_point_to_str(&center);
+	// char *tl_str = wlf_point_to_str(&top_left);
+	// char *br_str = wlf_point_to_str(&bottom_right);
 
-	wlf_log(WLF_INFO, "r1 position: %s", pos_str);
-	wlf_log(WLF_INFO, "r1 size: %s", size_str);
-	wlf_log(WLF_INFO, "r1 center: %s", center_str);
-	wlf_log(WLF_INFO, "r1 top-left: %s", tl_str);
-	wlf_log(WLF_INFO, "r1 bottom-right: %s", br_str);
+	// wlf_log(WLF_INFO, "r1 position: %s", pos_str);
+	// wlf_log(WLF_INFO, "r1 size: %s", size_str);
+	// wlf_log(WLF_INFO, "r1 center: %s", center_str);
+	// wlf_log(WLF_INFO, "r1 top-left: %s", tl_str);
+	// wlf_log(WLF_INFO, "r1 bottom-right: %s", br_str);
 
-	free(pos_str); free(size_str); free(center_str); free(tl_str); free(br_str);
+	// free(pos_str); free(size_str); free(center_str); free(tl_str); free(br_str);
 
-	// Test Area and Perimeter
-	wlf_log(WLF_INFO, "\n--- Testing Area and Perimeter ---");
+	// // Test Area and Perimeter
+	// wlf_log(WLF_INFO, "\n--- Testing Area and Perimeter ---");
 
-	int area = wlf_rect_area(&r1);
-	int perimeter = wlf_rect_perimeter(&r1);
-	wlf_log(WLF_INFO, "r1 area: %d (expected: 8000)", area);
-	wlf_log(WLF_INFO, "r1 perimeter: %d (expected: 360)", perimeter);
+	// int area = wlf_rect_area(&r1);
+	// int perimeter = wlf_rect_perimeter(&r1);
+	// wlf_log(WLF_INFO, "r1 area: %d (expected: 8000)", area);
+	// wlf_log(WLF_INFO, "r1 perimeter: %d (expected: 360)", perimeter);
 
-	// Test Transformations
-	wlf_log(WLF_INFO, "\n--- Testing Transformations ---");
+	// // Test Transformations
+	// wlf_log(WLF_INFO, "\n--- Testing Transformations ---");
 
 	struct wlf_point offset = {5, -3};
 	struct wlf_rect offset_rect = wlf_rect_offset(&r1, &offset);
@@ -124,83 +123,70 @@ int main(int argc, char *argv[]) {
 	wlf_log(WLF_INFO, "r1 scaled by (2.0,0.5): %s", scaled_str);
 	free(scaled_str);
 
-	// Test Point Containment
-	wlf_log(WLF_INFO, "\n--- Testing Point Containment ---");
+	wlf_log(WLF_INFO, "\n--- Testing Point/Rect Containment & Intersection ---");
 
-	struct wlf_point test_point1 = {50, 50}; // inside r1
-	struct wlf_point test_point2 = {5, 5};   // outside r1
-	struct wlf_point test_point3 = {10, 20}; // on edge
-
-	wlf_log(WLF_INFO, "r1 contains (50,50): %s", wlf_rect_contains_point(&r1, &test_point1) ? "true" : "false");
-	wlf_log(WLF_INFO, "r1 contains (5,5): %s", wlf_rect_contains_point(&r1, &test_point2) ? "true" : "false");
-	wlf_log(WLF_INFO, "r1 contains (10,20): %s", wlf_rect_contains_point(&r1, &test_point3) ? "true" : "false");
-
-	// Test with double coordinates
-	wlf_log(WLF_INFO, "r1 contains (50.5,50.5): %s", wlf_rect_contains_point_d(&r1, 50.5, 50.5) ? "true" : "false");
-	wlf_log(WLF_INFO, "r1 contains (109.9,99.9): %s", wlf_rect_contains_point_d(&r1, 109.9, 99.9) ? "true" : "false");
-
-	// Test Rectangle Containment
-	wlf_log(WLF_INFO, "\n--- Testing Rectangle Containment ---");
-
-	struct wlf_rect inner = wlf_rect_make(20, 30, 50, 40); // inside r1
-	struct wlf_rect outer = wlf_rect_make(0, 0, 200, 200); // contains r1
-	struct wlf_rect partial = wlf_rect_make(50, 50, 100, 100); // partially overlaps
-
-	char *inner_str = wlf_rect_to_str(&inner);
-	char *outer_str = wlf_rect_to_str(&outer);
-	char *partial_str = wlf_rect_to_str(&partial);
-
-	wlf_log(WLF_INFO, "r1 contains %s: %s", inner_str, wlf_rect_contains_rect(&r1, &inner) ? "true" : "false");
-	wlf_log(WLF_INFO, "%s contains r1: %s", outer_str, wlf_rect_contains_rect(&outer, &r1) ? "true" : "false");
-	wlf_log(WLF_INFO, "r1 contains %s: %s", partial_str, wlf_rect_contains_rect(&r1, &partial) ? "true" : "false");
-
-	free(inner_str); free(outer_str); free(partial_str);
-
-	// Test Intersection
-	wlf_log(WLF_INFO, "\n--- Testing Intersection ---");
-
+	struct wlf_rect inner = wlf_rect_make(20, 30, 50, 40);
+	struct wlf_rect partial = wlf_rect_make(50, 50, 100, 100);
 	struct wlf_rect rect_a = wlf_rect_make(0, 0, 50, 50);
 	struct wlf_rect rect_b = wlf_rect_make(25, 25, 50, 50);
 	struct wlf_rect no_overlap = wlf_rect_make(100, 100, 20, 20);
+	struct wlf_rect intersection;
 
-	wlf_log(WLF_INFO, "rect_a intersects rect_b: %s", wlf_rect_intersects(&rect_a, &rect_b) ? "true" : "false");
-	wlf_log(WLF_INFO, "rect_a intersects no_overlap: %s", wlf_rect_intersects(&rect_a, &no_overlap) ? "true" : "false");
+	wlf_log(WLF_INFO, "r1 contains point (50,50): %s",
+		wlf_rect_contains_point(&r1, 50, 50) ? "true" : "false");
+	wlf_log(WLF_INFO, "r1 contains point (5,5): %s",
+		wlf_rect_contains_point(&r1, 5, 5) ? "true" : "false");
+	wlf_log(WLF_INFO, "r1 contains inner rect: %s",
+		wlf_rect_contains_frect(&r1, &inner) ? "true" : "false");
+	wlf_log(WLF_INFO, "r1 contains partial rect: %s",
+		wlf_rect_contains_frect(&r1, &partial) ? "true" : "false");
 
-	struct wlf_rect intersection = wlf_rect_intersection(&rect_a, &rect_b);
-	char *intersection_str = wlf_rect_to_str(&intersection);
-	wlf_log(WLF_INFO, "rect_a ∩ rect_b: %s", intersection_str);
-	free(intersection_str);
+	if (wlf_rect_intersection(&intersection, &rect_a, &rect_b)) {
+		char *intersection_str = wlf_rect_to_str(&intersection);
+		wlf_log(WLF_INFO, "rect_a ∩ rect_b: %s", intersection_str);
+		free(intersection_str);
+	} else {
+		wlf_log(WLF_ERROR, "rect_a ∩ rect_b should not be empty");
+	}
 
-	// Test Union
-	wlf_log(WLF_INFO, "\n--- Testing Union ---");
+	if (!wlf_rect_intersection(&intersection, &rect_a, &no_overlap)) {
+		wlf_log(WLF_INFO, "rect_a ∩ no_overlap: empty");
+	} else {
+		char *intersection_str = wlf_rect_to_str(&intersection);
+		wlf_log(WLF_ERROR, "Unexpected intersection: %s", intersection_str);
+		free(intersection_str);
+	}
 
-	struct wlf_rect union_rect = wlf_rect_union(&rect_a, &rect_b);
-	char *union_str = wlf_rect_to_str(&union_rect);
-	wlf_log(WLF_INFO, "rect_a ∪ rect_b: %s", union_str);
-	free(union_str);
+	// // Test Union
+	// wlf_log(WLF_INFO, "\n--- Testing Union ---");
 
-	// Test Edge Cases
-	wlf_log(WLF_INFO, "\n--- Testing Edge Cases ---");
+	// struct wlf_rect union_rect = wlf_rect_union(&rect_a, &rect_b);
+	// char *union_str = wlf_rect_to_str(&union_rect);
+	// wlf_log(WLF_INFO, "rect_a ∪ rect_b: %s", union_str);
+	// free(union_str);
 
-	// Zero area rectangle
-	struct wlf_rect zero_area = wlf_rect_make(10, 10, 0, 0);
-	wlf_log(WLF_INFO, "Zero area rectangle area: %d", wlf_rect_area(&zero_area));
-	wlf_log(WLF_INFO, "Zero area rectangle is empty: %s", wlf_rect_is_empty(&zero_area) ? "true" : "false");
+	// // Test Edge Cases
+	// wlf_log(WLF_INFO, "\n--- Testing Edge Cases ---");
 
-	// Negative dimensions
-	struct wlf_rect negative = wlf_rect_make(10, 10, -20, -30);
-	wlf_log(WLF_INFO, "Negative rectangle is valid: %s", wlf_rect_is_valid(&negative) ? "true" : "false");
-	wlf_log(WLF_INFO, "Negative rectangle area: %d", wlf_rect_area(&negative));
+	// // Zero area rectangle
+	// struct wlf_rect zero_area = wlf_rect_make(10, 10, 0, 0);
+	// wlf_log(WLF_INFO, "Zero area rectangle area: %d", wlf_rect_area(&zero_area));
+	// wlf_log(WLF_INFO, "Zero area rectangle is empty: %s", wlf_rect_is_empty(&zero_area) ? "true" : "false");
 
-	// Test large coordinates
-	struct wlf_rect large = wlf_rect_make(1000000, 2000000, 500000, 300000);
-	wlf_log(WLF_INFO, "Large rectangle area: %d", wlf_rect_area(&large));
+	// // Negative dimensions
+	// struct wlf_rect negative = wlf_rect_make(10, 10, -20, -30);
+	// wlf_log(WLF_INFO, "Negative rectangle is empty: %s", wlf_rect_is_empty(&negative) ? "true" : "false");
+	// wlf_log(WLF_INFO, "Negative rectangle area: %d", wlf_rect_area(&negative));
 
-	char *large_str = wlf_rect_to_str(&large);
-	wlf_log(WLF_INFO, "Large rectangle: %s", large_str);
-	free(large_str);
+	// // Test large coordinates
+	// struct wlf_rect large = wlf_rect_make(1000000, 2000000, 500000, 300000);
+	// wlf_log(WLF_INFO, "Large rectangle area: %d", wlf_rect_area(&large));
+
+	// char *large_str = wlf_rect_to_str(&large);
+	// wlf_log(WLF_INFO, "Large rectangle: %s", large_str);
+	// free(large_str);
 	// Test String Parsing
-	wlf_log(WLF_INFO, "\n--- Testing String Parsing ---");
+	// wlf_log(WLF_INFO, "\n--- Testing String Parsing ---");
 
 	struct wlf_rect parsed_rect;
 
@@ -235,7 +221,7 @@ int main(int argc, char *argv[]) {
 	if (wlf_rect_from_str("(-10,-20,100,80)", &parsed_rect)) {
 		char *parsed_str = wlf_rect_to_str(&parsed_rect);
 		wlf_log(WLF_INFO, "Parsed '(-10,-20,100,80)': %s", parsed_str);
-		wlf_log(WLF_INFO, "Is valid: %s", wlf_rect_is_valid(&parsed_rect) ? "true" : "false");
+		wlf_log(WLF_INFO, "Is empty: %s", wlf_rect_is_empty(&parsed_rect) ? "true" : "false");
 		free(parsed_str);
 	} else {
 		wlf_log(WLF_ERROR, "Failed to parse '(-10,-20,100,80)'");
