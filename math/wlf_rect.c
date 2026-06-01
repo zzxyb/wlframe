@@ -11,14 +11,12 @@
 #define WLF_RECT_STRLEN 64
 
 struct wlf_rect wlf_rect_make(int x, int y, int width, int height) {
-	struct wlf_rect rect = {
+	return (struct wlf_rect){
 		.x = x,
 		.y = y,
 		.width = width,
 		.height = height,
 	};
-
-	return rect;
 }
 
 char* wlf_rect_to_str(const struct wlf_rect *rect) {
@@ -51,29 +49,24 @@ struct wlf_rect wlf_rect_from_points(const struct wlf_point *p1, const struct wl
 }
 
 bool wlf_rect_equal(const struct wlf_rect *a, const struct wlf_rect *b) {
-	return (a->x == b->x) && (a->y == b->y) && (a->width == b->width) && (a->height == b->height);
+	if (wlf_rect_is_empty(a)) {
+		a = NULL;
+	}
+
+	if (wlf_rect_is_empty(b)) {
+		b = NULL;
+	}
+
+	if (a == NULL || b == NULL) {
+		return a == b;
+	}
+
+	return a->x == b->x && a->y == b->y &&
+		a->width == b->width && a->height == b->height;
 }
 
 bool wlf_rect_is_empty(const struct wlf_rect *rect) {
-	return (rect->width == 0) || (rect->height == 0);
-}
-
-bool wlf_rect_is_valid(const struct wlf_rect *rect) {
-	return (rect->width > 0) && (rect->height > 0);
-}
-
-struct wlf_point wlf_rect_get_position(const struct wlf_rect *rect) {
-	return (struct wlf_point){
-		.x = rect->x,
-		.y = rect->y,
-	};
-}
-
-struct wlf_size wlf_rect_get_size(const struct wlf_rect *rect) {
-	return (struct wlf_size){
-		.width = rect->width,
-		.height = rect->height,
-	};
+	return rect == NULL || rect->width <= 0 || rect->height <= 0;
 }
 
 struct wlf_point wlf_rect_get_center(const struct wlf_rect *rect) {
@@ -97,14 +90,6 @@ struct wlf_point wlf_rect_get_bottom_right(const struct wlf_rect *rect) {
 	};
 }
 
-int wlf_rect_area(const struct wlf_rect *rect) {
-	return rect->width * rect->height;
-}
-
-int wlf_rect_perimeter(const struct wlf_rect *rect) {
-	return 2 * (rect->width + rect->height);
-}
-
 struct wlf_rect wlf_rect_offset(const struct wlf_rect *rect, const struct wlf_point *offset) {
 	return wlf_rect_make(rect->x + offset->x, rect->y + offset->y, rect->width, rect->height);
 }
@@ -115,56 +100,6 @@ struct wlf_rect wlf_rect_inflate(const struct wlf_rect *rect, int dx, int dy) {
 
 struct wlf_rect wlf_rect_scale(const struct wlf_rect *rect, double sx, double sy) {
 	return wlf_rect_make(rect->x, rect->y, (int)(rect->width * sx), (int)(rect->height * sy));
-}
-
-bool wlf_rect_contains_point_d(const struct wlf_rect *rect, double x, double y) {
-	return (x >= rect->x) && (x <= rect->x + rect->width) &&
-		(y >= rect->y) && (y <= rect->y + rect->height);
-}
-
-bool wlf_rect_contains_point(const struct wlf_rect *rect, const struct wlf_point *point) {
-	return (point->x >= rect->x) && (point->x <= rect->x + rect->width) &&
-		(point->y >= rect->y) && (point->y <= rect->y + rect->height);
-}
-
-bool wlf_rect_contains_rect(const struct wlf_rect *outer, const struct wlf_rect *inner) {
-	struct wlf_point top_left = wlf_rect_get_top_left(inner);
-	struct wlf_point bottom_right = wlf_rect_get_bottom_right(inner);
-
-	return wlf_rect_contains_point(outer, &top_left) &&
-		wlf_rect_contains_point(outer, &bottom_right);
-}
-
-bool wlf_rect_intersects(const struct wlf_rect *a, const struct wlf_rect *b) {
-	return !(a->x + a->width < b->x || a->x > b->x + b->width ||
-		a->y + a->height < b->y || a->y > b->y + b->height);
-}
-
-struct wlf_rect wlf_rect_intersection(const struct wlf_rect *a, const struct wlf_rect *b) {
-	if (!wlf_rect_intersects(a, b)) {
-		return (struct wlf_rect){
-			.x = 0,
-			.y = 0,
-			.width = 0,
-			.height = 0,
-		};
-	}
-
-	int x1 = fmax(a->x, b->x);
-	int y1 = fmax(a->y, b->y);
-	int x2 = fmin(a->x + a->width, b->x + b->width);
-	int y2 = fmin(a->y + a->height, b->y + b->height);
-
-	return wlf_rect_make(x1, y1, x2 - x1, y2 - y1);
-}
-
-struct wlf_rect wlf_rect_union(const struct wlf_rect *a, const struct wlf_rect *b) {
-	int x1 = fmin(a->x, b->x);
-	int y1 = fmin(a->y, b->y);
-	int x2 = fmax(a->x + a->width, b->x + b->width);
-	int y2 = fmax(a->y + a->height, b->y + b->height);
-
-	return wlf_rect_make(x1, y1, x2 - x1, y2 - y1);
 }
 
 bool wlf_rect_from_str(const char *str, struct wlf_rect *rect) {
@@ -221,4 +156,52 @@ bool wlf_rect_from_str(const char *str, struct wlf_rect *rect) {
 	rect->height = height;
 
 	return true;
+}
+
+bool wlf_rect_intersection(struct wlf_rect *dest, const struct wlf_rect *a,
+		const struct wlf_rect *b) {
+	if (dest == NULL) {
+		return false;
+	}
+
+	*dest = wlf_rect_make(0, 0, 0, 0);
+	if (wlf_rect_is_empty(a) || wlf_rect_is_empty(b)) {
+		return false;
+	}
+
+	int left = a->x > b->x ? a->x : b->x;
+	int top = a->y > b->y ? a->y : b->y;
+	int right_a = a->x + a->width;
+	int right_b = b->x + b->width;
+	int bottom_a = a->y + a->height;
+	int bottom_b = b->y + b->height;
+	int right = right_a < right_b ? right_a : right_b;
+	int bottom = bottom_a < bottom_b ? bottom_a : bottom_b;
+
+	if (left >= right || top >= bottom) {
+		return false;
+	}
+
+	*dest = wlf_rect_make(left, top, right - left, bottom - top);
+	return true;
+}
+
+bool wlf_rect_contains_point(const struct wlf_rect *rect, int x, int y) {
+	if (wlf_rect_is_empty(rect)) {
+		return false;
+	}
+
+	return x >= rect->x && x < rect->x + rect->width &&
+		y >= rect->y && y < rect->y + rect->height;
+}
+
+bool wlf_rect_contains_frect(const struct wlf_rect *bigger, const struct wlf_rect *smaller) {
+	if (wlf_rect_is_empty(bigger) || wlf_rect_is_empty(smaller)) {
+		return false;
+	}
+
+	return smaller->x >= bigger->x &&
+		smaller->y >= bigger->y &&
+		smaller->x + smaller->width <= bigger->x + bigger->width &&
+		smaller->y + smaller->height <= bigger->y + bigger->height;
 }

@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
 	// Test intersects rect
 	struct wlf_frect test_rect = {90, 90, 20, 20};
 	struct wlf_region intersection_rect_result;
+	wlf_region_init(&intersection_rect_result);
 	wlf_region_intersects_rect(&region, &test_rect, &intersection_rect_result);
 	if (!wlf_region_is_nil(&intersection_rect_result)) {
 		char *intersection_str = wlf_region_to_str(&intersection_rect_result);
@@ -47,6 +48,7 @@ int main(int argc, char *argv[]) {
 
 	// Test intersection
 	struct wlf_region intersected_region_result;
+	wlf_region_init(&intersected_region_result);
 	wlf_region_intersect(&region, &region, &intersected_region_result);
 	if (!wlf_region_is_nil(&intersected_region_result)) {
 		char *intersected_str = wlf_region_to_str(&intersected_region_result);
@@ -56,7 +58,42 @@ int main(int argc, char *argv[]) {
 		wlf_log(WLF_INFO, "No intersection found.");
 	}
 
+	wlf_log(WLF_INFO, "Region not empty: %d", wlf_region_not_empty(&region));
+	wlf_log(WLF_INFO, "Region rect count: %ld", wlf_region_n_rects(&region));
+
+	struct wlf_frect contained = {10, 10, 20, 20};
+	struct wlf_frect partial = {90, 90, 80, 80};
+	struct wlf_frect outside = {500, 500, 10, 10};
+	wlf_log(WLF_INFO, "Contains rect [10,10,20,20]: %d",
+		wlf_region_contains_rect(&region, &contained));
+	wlf_log(WLF_INFO, "Contains rect [90,90,80,80]: %d",
+		wlf_region_contains_rect(&region, &partial));
+	wlf_log(WLF_INFO, "Contains rect [500,500,10,10]: %d",
+		wlf_region_contains_rect(&region, &outside));
+
+	struct wlf_region translated;
+	wlf_region_init(&translated);
+	wlf_region_copy(&translated, &region);
+	wlf_region_translate(&translated, 5, 10);
+	char *translated_str = wlf_region_to_str(&translated);
+	wlf_log(WLF_INFO, "Translated region: \n%s", translated_str);
+	free(translated_str);
+	wlf_region_fini(&translated);
+
+	struct wlf_region subtract_region;
+	wlf_region_init_rect(&subtract_region, &(struct wlf_frect){20, 20, 40, 40});
+	struct wlf_region subtracted;
+	wlf_region_init(&subtracted);
+	wlf_region_subtract(&subtracted, &region, &subtract_region);
+	char *subtracted_str = wlf_region_to_str(&subtracted);
+	wlf_log(WLF_INFO, "Subtracted region: \n%s", subtracted_str);
+	free(subtracted_str);
+	wlf_region_fini(&subtracted);
+	wlf_region_fini(&subtract_region);
+
 	wlf_region_fini(&region);
+	wlf_region_fini(&intersection_rect_result);
+	wlf_region_fini(&intersected_region_result);
 
 	return 0;
 }

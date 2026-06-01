@@ -16,6 +16,8 @@
 
 #include "wlf/math/wlf_point.h"
 #include "wlf/math/wlf_size.h"
+// #include "wlf/types/wlf_output.h"
+
 #include <stdbool.h>
 
 /**
@@ -77,27 +79,6 @@ bool wlf_rect_equal(const struct wlf_rect *a, const struct wlf_rect *b);
 bool wlf_rect_is_empty(const struct wlf_rect *rect);
 
 /**
- * @brief Checks if rectangle is valid (positive width and height).
- * @param rect Rectangle to check.
- * @return true if rectangle is valid, false otherwise.
- */
-bool wlf_rect_is_valid(const struct wlf_rect *rect);
-
-/**
- * @brief Gets the position (top-left corner) of the rectangle.
- * @param rect Source rectangle.
- * @return Top-left point.
- */
-struct wlf_point wlf_rect_get_position(const struct wlf_rect *rect);
-
-/**
- * @brief Gets the size of the rectangle.
- * @param rect Source rectangle.
- * @return Rectangle size.
- */
-struct wlf_size wlf_rect_get_size(const struct wlf_rect *rect);
-
-/**
  * @brief Gets the center point of the rectangle.
  * @param rect Source rectangle.
  * @return Center point.
@@ -117,20 +98,6 @@ struct wlf_point wlf_rect_get_top_left(const struct wlf_rect *rect);
  * @return Bottom-right point.
  */
 struct wlf_point wlf_rect_get_bottom_right(const struct wlf_rect *rect);
-
-/**
- * @brief Calculates the area of the rectangle.
- * @param rect Source rectangle.
- * @return Area of the rectangle.
- */
-int wlf_rect_area(const struct wlf_rect *rect);
-
-/**
- * @brief Calculates the perimeter of the rectangle.
- * @param rect Source rectangle.
- * @return Perimeter of the rectangle.
- */
-int wlf_rect_perimeter(const struct wlf_rect *rect);
 
 /**
  * @brief Moves rectangle by given offset.
@@ -159,55 +126,6 @@ struct wlf_rect wlf_rect_inflate(const struct wlf_rect *rect, int dx, int dy);
 struct wlf_rect wlf_rect_scale(const struct wlf_rect *rect, double sx, double sy);
 
 /**
- * @brief Checks if point with double coordinates is inside rectangle.
- * @param rect Rectangle to check.
- * @param x X coordinate of the point.
- * @param y Y coordinate of the point.
- * @return true if point is inside rectangle, false otherwise.
- */
-bool wlf_rect_contains_point_d(const struct wlf_rect *rect, double x, double y);
-
-/**
- * @brief Checks if point is inside rectangle.
- * @param rect Rectangle to check.
- * @param point Point to test.
- * @return true if point is inside rectangle, false otherwise.
- */
-bool wlf_rect_contains_point(const struct wlf_rect *rect, const struct wlf_point *point);
-
-/**
- * @brief Checks if one rectangle contains another.
- * @param outer Outer rectangle.
- * @param inner Inner rectangle to test.
- * @return true if outer contains inner, false otherwise.
- */
-bool wlf_rect_contains_rect(const struct wlf_rect *outer, const struct wlf_rect *inner);
-
-/**
- * @brief Checks if two rectangles intersect.
- * @param a First rectangle.
- * @param b Second rectangle.
- * @return true if rectangles intersect, false otherwise.
- */
-bool wlf_rect_intersects(const struct wlf_rect *a, const struct wlf_rect *b);
-
-/**
- * @brief Calculates intersection of two rectangles.
- * @param a First rectangle.
- * @param b Second rectangle.
- * @return Intersection rectangle (empty if no intersection).
- */
-struct wlf_rect wlf_rect_intersection(const struct wlf_rect *a, const struct wlf_rect *b);
-
-/**
- * @brief Calculates union (bounding box) of two rectangles.
- * @param a First rectangle.
- * @param b Second rectangle.
- * @return Union rectangle.
- */
-struct wlf_rect wlf_rect_union(const struct wlf_rect *a, const struct wlf_rect *b);
-
-/**
  * @brief Parses a string representation of a rectangle and creates a wlf_rect structure.
  * @param str String representation of rectangle in format "(x,y,width,height)"
  *             or "(x, y, width, height)".
@@ -215,5 +133,47 @@ struct wlf_rect wlf_rect_union(const struct wlf_rect *a, const struct wlf_rect *
  * @return true if parsing was successful, false otherwise.
  */
 bool wlf_rect_from_str(const char *str, struct wlf_rect *rect);
+
+/**
+ * @brief Computes the intersection of two point rectangles.
+ * @param dest Pointer to the rectangle where the intersection result will be written.
+ * @param a First input rectangle.
+ * @param b Second input rectangle.
+ * @return true if the two rectangles have a non-empty intersection, false otherwise.
+ * @note If there is no intersection, or if either input rectangle is empty, `dest` is set to a zero rectangle.
+ */
+bool wlf_rect_intersection(struct wlf_rect *dest, const struct wlf_rect *a,
+	const struct wlf_rect *b);
+
+/**
+ * @brief Checks whether a point lies inside a point rectangle.
+ * @param rect Rectangle to test against.
+ * @param x X coordinate of the point.
+ * @param y Y coordinate of the point.
+ * @return true if the point is inside the rectangle, false otherwise.
+ * @note Empty rectangles never contain any point.
+ */
+bool wlf_rect_contains_point(const struct wlf_rect *rect, int x, int y);
+
+// /**
+//  * @brief Checks whether one point rectangle fully contains another.
+//  * @param bigger Candidate containing rectangle.
+//  * @param smaller Candidate contained rectangle.
+//  * @return true if `bigger` fully contains `smaller`, false otherwise.
+//  * @note If either rectangle is empty, the result is false.
+//  */
+bool wlf_rect_contains_frect(const struct wlf_rect *bigger, const struct wlf_rect *smaller);
+
+// /**
+//  * @brief Applies an output transform to a point rectangle.
+//  * @param dest Pointer to the rectangle where the transformed result will be written.
+//  * @param rect Source rectangle to transform.
+//  * @param transform Output transform to apply.
+//  * @param width Width of the source or target coordinate space used by the transform.
+//  * @param height Height of the source or target coordinate space used by the transform.
+//  * @note For 90-degree and 270-degree rotations, the resulting rectangle width and height are swapped.
+//  */
+// void wlf_rect_transform(struct wlf_rect *dest, const struct wlf_rect *rect,
+// 	enum wlf_output_transform transform, int width, int height);
 
 #endif // MATH_WLF_RECT_H

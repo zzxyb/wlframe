@@ -18,12 +18,12 @@
 #ifndef TYPES_WLF_OUTPUT_H
 #define TYPES_WLF_OUTPUT_H
 
-#include "wlf/math/wlf_size.h"
-#include "wlf/math/wlf_rect.h"
 #include "wlf/utils/wlf_signal.h"
 #include "wlf/utils/wlf_linked_list.h"
 
 struct wlf_output;
+struct wlf_rect;
+struct wlf_size;
 
 /**
  * @brief Output transform types.
@@ -54,19 +54,10 @@ enum wlf_output_subpixel {
 };
 
 /**
- * @brief Output implementation type.
- * @details Backends extend output via wlf_output_impl.
- */
-enum wlf_output_type {
-	WLF_OUTPUT = 0,        /**< Real/physical monitor */
-	WLF_OUTPUT_VIRTUAL     /**< Virtual output */
-};
-
-/**
  * @brief Backend-specific output implementation.
  */
 struct wlf_output_impl {
-	enum wlf_output_type type;                   /**< Output type */
+	const char *name;
 	void (*destroy)(struct wlf_output *output);  /**< Implementation destroy callback */
 };
 
@@ -79,42 +70,35 @@ struct wlf_output_impl {
 struct wlf_output {
 	const struct wlf_output_impl *impl;  /**< Associated backend implementation */
 
-	/**
-	 * @brief Output-related events.
-	 * @details Fired when corresponding properties change.
-	 */
-	struct {
-		struct wlf_signal destroy;               /**< Output is being destroyed */
-		struct wlf_signal name_change;           /**< Name updated */
-		struct wlf_signal model_change;          /**< Model updated */
-		struct wlf_signal manufacturer_change;   /**< Manufacturer updated */
-		struct wlf_signal description_change;    /**< Description updated */
+	struct wlf_linked_list link; /**< Linked list node for output manager */
 
-		struct wlf_signal geometry_change;       /**< Geometry updated */
-		struct wlf_signal physical_size_change;  /**< Physical size updated */
-		struct wlf_signal refreshRate_change;    /**< Refresh rate updated */
-		struct wlf_signal scale_change;          /**< Scale updated */
-		struct wlf_signal transform_change;      /**< Transform updated */
-		struct wlf_signal subpixel_change;       /**< Subpixel layout updated */
+	struct {
+		struct wlf_signal destroy;                /**< Output is being destroyed */
+		struct wlf_signal name_changed;           /**< Name updated */
+		struct wlf_signal model_changed;          /**< Model updated */
+		struct wlf_signal manufacturer_changed;   /**< Manufacturer updated */
+		struct wlf_signal description_changed;    /**< Description updated */
+
+		struct wlf_signal geometry_changed;        /**< Geometry updated */
+		struct wlf_signal physical_size_changed;   /**< Physical size updated */
+		struct wlf_signal refresh_rate_changed;    /**< Refresh rate updated */
+		struct wlf_signal scale_changed;           /**< Scale updated */
+		struct wlf_signal transform_changed;       /**< Transform updated */
+		struct wlf_signal subpixel_changed;        /**< Subpixel layout updated */
 	} events;
 
-	/* ---- Identity ---- */
 	char *name;          /**< Human-readable identifier (e.g., "HDMI-1") */
 	char *model;         /**< Display model (e.g., "DELL U2720Q") */
 	char *manufacturer;  /**< Manufacturer name */
 	char *description;   /**< Optional description */
 
-	/* ---- Geometry & physical properties ---- */
-	struct wlf_rect geometry;     /**< Position + resolution in compositor space */
-	struct wlf_size physical_size;/**< Physical size in millimeters */
+	struct wlf_rect *geometry;     /**< Position + resolution in compositor space */
+	struct wlf_size *physical_size;/**< Physical size in millimeters */
 
-	/* ---- Display properties ---- */
 	int refresh_rate;                 /**< Refresh rate in Hz (e.g., 60000 = 60Hz) */
 	int scale;                        /**< Output scale factor */
 	enum wlf_output_transform transform; /**< Rotation/flip transform */
 	enum wlf_output_subpixel subpixel;   /**< Subpixel layout */
-
-	struct wlf_linked_list link; /**< Linked list node for output manager */
 };
 
 /**

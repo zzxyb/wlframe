@@ -9,4 +9,5 @@ wlf_files += files(
 	'wlf_format_set.c',
 	'wlf_pointer.c',
 	'wlf_touch.c',
+	'wlf_damage_ring.c',
 )

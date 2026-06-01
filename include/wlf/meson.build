@@ -24,7 +24,21 @@ ver_h = configure_file(
 
 install_headers(conf_h, ver_h, subdir: versioned_name / 'wlf')
 
-subdirs = ['image', 'math', 'platform', 'utils', 'renderer', 'buffer']
+subdirs = [
+	'image',
+	'math',
+	'platform',
+	'utils',
+	'renderer',
+	'buffer',
+	'curve',
+	'animator',
+	'scene',
+	'widgets',
+	'texture',
+	'types',
+	'window',
+]
 
 if is_linux
 	subdirs += [

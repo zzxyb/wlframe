@@ -47,7 +47,12 @@ struct wlf_quaternion wlf_quaternion_make(double w, double x, double y, double z
  */
 char* wlf_quaternion_to_str(const struct wlf_quaternion *quaternion);
 
-
+/**
+ * @brief Converts a quaternion to a string representation with specified precision.
+ * @param quaternion Source quaternion.
+ * @param precision Number of decimal places (0-15).
+ * @return A string representing the quaternion, Quaternion(w, x, y, z).
+ */
 char* wlf_quaternion_to_str_prec(const struct wlf_quaternion *quaternion, uint8_t precision);
 
 /**
