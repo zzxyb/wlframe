@@ -8,6 +8,7 @@ wlf_files += files(
 	'wlf_wp_content_type_manager_v1.c',
 	'wlf_zxdg_decoration_manager_v1.c',
 	'wlf_wp_viewporter.c',
+	'wlf_wl_seat.c',
 )
 
 subdir('protocols')
