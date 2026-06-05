@@ -9,6 +9,7 @@ wlf_files += files(
 	'wlf_zxdg_decoration_manager_v1.c',
 	'wlf_wp_viewporter.c',
 	'wlf_wl_seat.c',
+	'wlf_wp_alpha_modifier_v1.c',
 )
 
 subdir('protocols')
