@@ -10,6 +10,7 @@ wlf_files += files(
 	'wlf_wp_viewporter.c',
 	'wlf_wl_seat.c',
 	'wlf_wp_alpha_modifier_v1.c',
+	'wlf_wl_subsurface.c',
 )
 
 subdir('protocols')
