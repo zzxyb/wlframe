@@ -101,15 +101,15 @@ static void load_egl_procs(struct wlf_egl *egl,
 		const char *display_exts, const char *client_exts) {
 	if (client_exts != NULL) {
 		if (wlf_egl_check_ext(client_exts, "EGL_EXT_platform_base")) {
-			wlf_elg_load_proc(&egl->procs.eglGetPlatformDisplayEXT,
+			wlf_egl_load_proc(&egl->procs.eglGetPlatformDisplayEXT,
 				"eglGetPlatformDisplayEXT");
 		}
 		if (wlf_egl_check_ext(client_exts, "EGL_EXT_device_enumeration")) {
-			wlf_elg_load_proc(&egl->procs.eglQueryDevicesEXT,
+			wlf_egl_load_proc(&egl->procs.eglQueryDevicesEXT,
 				"eglQueryDevicesEXT");
 		}
 		if (wlf_egl_check_ext(client_exts, "EGL_KHR_debug")) {
-			wlf_elg_load_proc(&egl->procs.eglDebugMessageControlKHR,
+			wlf_egl_load_proc(&egl->procs.eglDebugMessageControlKHR,
 				"eglDebugMessageControlKHR");
 		}
 	}
@@ -117,54 +117,54 @@ static void load_egl_procs(struct wlf_egl *egl,
 		return;
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_KHR_image_base")) {
-		wlf_elg_load_proc(&egl->procs.eglCreateImageKHR, "eglCreateImageKHR");
-		wlf_elg_load_proc(&egl->procs.eglDestroyImageKHR, "eglDestroyImageKHR");
+		wlf_egl_load_proc(&egl->procs.eglCreateImageKHR, "eglCreateImageKHR");
+		wlf_egl_load_proc(&egl->procs.eglDestroyImageKHR, "eglDestroyImageKHR");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_EXT_image_dma_buf_import")) {
-		wlf_elg_load_proc(&egl->procs.eglQueryDmaBufFormatsEXT,
+		wlf_egl_load_proc(&egl->procs.eglQueryDmaBufFormatsEXT,
 			"eglQueryDmaBufFormatsEXT");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_EXT_image_dma_buf_import_modifiers")) {
-		wlf_elg_load_proc(&egl->procs.eglQueryDmaBufModifiersEXT,
+		wlf_egl_load_proc(&egl->procs.eglQueryDmaBufModifiersEXT,
 			"eglQueryDmaBufModifiersEXT");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_EXT_device_query")) {
-		wlf_elg_load_proc(&egl->procs.eglQueryDisplayAttribEXT,
+		wlf_egl_load_proc(&egl->procs.eglQueryDisplayAttribEXT,
 			"eglQueryDisplayAttribEXT");
-		wlf_elg_load_proc(&egl->procs.eglQueryDeviceStringEXT,
+		wlf_egl_load_proc(&egl->procs.eglQueryDeviceStringEXT,
 			"eglQueryDeviceStringEXT");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_KHR_fence_sync")) {
-		wlf_elg_load_proc(&egl->procs.eglCreateSyncKHR, "eglCreateSyncKHR");
-		wlf_elg_load_proc(&egl->procs.eglDestroySyncKHR, "eglDestroySyncKHR");
-		wlf_elg_load_proc(&egl->procs.eglWaitSyncKHR, "eglWaitSyncKHR");
+		wlf_egl_load_proc(&egl->procs.eglCreateSyncKHR, "eglCreateSyncKHR");
+		wlf_egl_load_proc(&egl->procs.eglDestroySyncKHR, "eglDestroySyncKHR");
+		wlf_egl_load_proc(&egl->procs.eglWaitSyncKHR, "eglWaitSyncKHR");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_ANDROID_native_fence_sync")) {
-		wlf_elg_load_proc(&egl->procs.eglDupNativeFenceFDANDROID,
+		wlf_egl_load_proc(&egl->procs.eglDupNativeFenceFDANDROID,
 			"eglDupNativeFenceFDANDROID");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_KHR_swap_buffers_with_damage")) {
-		wlf_elg_load_proc(&egl->procs.eglSwapBuffersWithDamageKHR,
+		wlf_egl_load_proc(&egl->procs.eglSwapBuffersWithDamageKHR,
 			"eglSwapBuffersWithDamageKHR");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_EXT_swap_buffers_with_damage")) {
-		wlf_elg_load_proc(&egl->procs.eglSwapBuffersWithDamageEXT,
+		wlf_egl_load_proc(&egl->procs.eglSwapBuffersWithDamageEXT,
 			"eglSwapBuffersWithDamageEXT");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_KHR_partial_update")) {
-		wlf_elg_load_proc(&egl->procs.eglSetDamageRegionKHR,
+		wlf_egl_load_proc(&egl->procs.eglSetDamageRegionKHR,
 			"eglSetDamageRegionKHR");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_MESA_image_dma_buf_export")) {
-		wlf_elg_load_proc(&egl->procs.eglExportDMABUFImageQueryMESA,
+		wlf_egl_load_proc(&egl->procs.eglExportDMABUFImageQueryMESA,
 			"eglExportDMABUFImageQueryMESA");
-		wlf_elg_load_proc(&egl->procs.eglExportDMABUFImageMESA,
+		wlf_egl_load_proc(&egl->procs.eglExportDMABUFImageMESA,
 			"eglExportDMABUFImageMESA");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_MESA_query_driver")) {
-		wlf_elg_load_proc(&egl->procs.eglGetDisplayDriverConfig,
+		wlf_egl_load_proc(&egl->procs.eglGetDisplayDriverConfig,
 			"eglGetDisplayDriverConfig");
-		wlf_elg_load_proc(&egl->procs.eglGetDisplayDriverName,
+		wlf_egl_load_proc(&egl->procs.eglGetDisplayDriverName,
 			"eglGetDisplayDriverName");
 	}
 }
@@ -339,7 +339,7 @@ bool wlf_egl_check_ext(const char *exts, const char *ext) {
 	return false;
 }
 
-void wlf_elg_load_proc(void *proc_ptr, const char *name) {
+void wlf_egl_load_proc(void *proc_ptr, const char *name) {
 	void *proc = (void *)eglGetProcAddress(name);
 	if (proc == NULL) {
 		wlf_log(WLF_ERROR, "eglGetProcAddress(%s) failed", name);

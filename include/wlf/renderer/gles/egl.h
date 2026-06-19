@@ -155,7 +155,7 @@ bool wlf_egl_check_ext(const char *exts, const char *ext);
  * @param proc_ptr Pointer to the function-pointer variable to fill.
  * @param name     Null-terminated name of the procedure to load.
  */
-void wlf_elg_load_proc(void *proc_ptr, const char *name);
+void wlf_egl_load_proc(void *proc_ptr, const char *name);
 
 /**
  * @brief Destroys an EGLImage created through this EGL context.

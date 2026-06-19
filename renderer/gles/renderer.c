@@ -63,35 +63,35 @@ const char *wlf_gles_error_str(GLenum error) {
 
 static void load_gl_procs(struct wlf_gles_renderer *renderer) {
 	if (renderer->exts.OES_egl_image || renderer->exts.OES_egl_image_external) {
-		wlf_elg_load_proc(&renderer->procs.glEGLImageTargetTexture2DOES,
+		wlf_egl_load_proc(&renderer->procs.glEGLImageTargetTexture2DOES,
 			"glEGLImageTargetTexture2DOES");
 	}
 	if (renderer->exts.KHR_debug) {
-		wlf_elg_load_proc(&renderer->procs.glDebugMessageCallbackKHR,
+		wlf_egl_load_proc(&renderer->procs.glDebugMessageCallbackKHR,
 			"glDebugMessageCallbackKHR");
-		wlf_elg_load_proc(&renderer->procs.glDebugMessageControlKHR,
+		wlf_egl_load_proc(&renderer->procs.glDebugMessageControlKHR,
 			"glDebugMessageControlKHR");
-		wlf_elg_load_proc(&renderer->procs.glPopDebugGroupKHR,
+		wlf_egl_load_proc(&renderer->procs.glPopDebugGroupKHR,
 			"glPopDebugGroupKHR");
-		wlf_elg_load_proc(&renderer->procs.glPushDebugGroupKHR,
+		wlf_egl_load_proc(&renderer->procs.glPushDebugGroupKHR,
 			"glPushDebugGroupKHR");
 	}
 	if (renderer->exts.OES_egl_image) {
-		wlf_elg_load_proc(&renderer->procs.glEGLImageTargetRenderbufferStorageOES,
+		wlf_egl_load_proc(&renderer->procs.glEGLImageTargetRenderbufferStorageOES,
 			"glEGLImageTargetRenderbufferStorageOES");
 	}
 	if (renderer->exts.KHR_debug) {
-		wlf_elg_load_proc(&renderer->procs.glGetGraphicsResetStatusKHR,
+		wlf_egl_load_proc(&renderer->procs.glGetGraphicsResetStatusKHR,
 			"glGetGraphicsResetStatusKHR");
 	}
 	if (renderer->exts.EXT_disjoint_timer_query) {
-		wlf_elg_load_proc(&renderer->procs.glGenQueriesEXT, "glGenQueriesEXT");
-		wlf_elg_load_proc(&renderer->procs.glDeleteQueriesEXT, "glDeleteQueriesEXT");
-		wlf_elg_load_proc(&renderer->procs.glQueryCounterEXT, "glQueryCounterEXT");
-		wlf_elg_load_proc(&renderer->procs.glGetQueryObjectivEXT, "glGetQueryObjectivEXT");
-		wlf_elg_load_proc(&renderer->procs.glGetQueryObjectui64vEXT,
+		wlf_egl_load_proc(&renderer->procs.glGenQueriesEXT, "glGenQueriesEXT");
+		wlf_egl_load_proc(&renderer->procs.glDeleteQueriesEXT, "glDeleteQueriesEXT");
+		wlf_egl_load_proc(&renderer->procs.glQueryCounterEXT, "glQueryCounterEXT");
+		wlf_egl_load_proc(&renderer->procs.glGetQueryObjectivEXT, "glGetQueryObjectivEXT");
+		wlf_egl_load_proc(&renderer->procs.glGetQueryObjectui64vEXT,
 			"glGetQueryObjectui64vEXT");
-		wlf_elg_load_proc(&renderer->procs.glGetInteger64vEXT, "glGetInteger64vEXT");
+		wlf_egl_load_proc(&renderer->procs.glGetInteger64vEXT, "glGetInteger64vEXT");
 	}
 }
 
