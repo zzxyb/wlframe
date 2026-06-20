@@ -6,6 +6,8 @@
 #include "wlf/utils/wlf_signal.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
+#elif WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/platform/windows/backend.h"
 #endif
 
 #include <stdlib.h>
@@ -39,6 +41,12 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 			wlf_log(WLF_ERROR, "Failed to create Wayland backend");
 			return NULL;
 		}
+	}
+#elif WLF_HAS_WINDOWS_PLATFORM
+	backend = windows_backend_create();
+	if (backend == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create Windows backend");
+		return NULL;
 	}
 #endif
 

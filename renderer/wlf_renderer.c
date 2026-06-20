@@ -8,6 +8,8 @@
 #include "wlf/renderer/vulkan/renderer.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
+#elif WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/renderer/directx12/renderer.h"
 #endif
 
 #include <stdlib.h>
@@ -45,6 +47,22 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		render = wlf_pixman_renderer_create_from_backend(backend);
 		if (render == NULL) {
 			wlf_log(WLF_ERROR, "Failed to create Pixman renderer");
+			return NULL;
+		}
+	}
+#elif WLF_HAS_WINDOWS_PLATFORM
+	const char *render_options[] = {
+		"auto",
+		"directx12",
+		NULL
+	};
+	const char *render_name = render_options[wlf_env_parse_switch("WLF_RENDERER",
+		render_options)];
+	if (strcmp(render_name, "auto") == 0 ||
+			strcmp(render_name, "directx12") == 0) {
+		render = wlf_dx12_renderer_create_from_backend(backend);
+		if (render == NULL) {
+			wlf_log(WLF_ERROR, "Failed to create DirectX 12 renderer");
 			return NULL;
 		}
 	}

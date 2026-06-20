@@ -6,4 +6,6 @@ if is_linux
 	subdir('vulkan')
 	subdir('pixman')
 	subdir('gles')
+elif is_windows
+	subdir('directx12')
 endif
