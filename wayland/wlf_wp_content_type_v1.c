@@ -1,4 +1,4 @@
-#include "wlf/wayland/wlf_wp_content_type_manager_v1.h"
+#include "wlf/wayland/wlf_wp_content_type_v1.h"
 #include "wlf/utils/wlf_log.h"
 #include "wayland/protocols/content-type-v1-client-protocol.h"
 

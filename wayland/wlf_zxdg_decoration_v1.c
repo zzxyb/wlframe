@@ -1,4 +1,4 @@
-#include "wlf/wayland/wlf_zxdg_decoration_manager_v1.h"
+#include "wlf/wayland/wlf_zxdg_decoration_v1.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 #include "wayland/protocols/xdg-decoration-unstable-v1-client-protocol.h"
