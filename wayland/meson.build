@@ -13,6 +13,7 @@ wlf_files += files(
 	'wlf_wl_subsurface.c',
 	'wlf_wl_subcompositor.c',
 	'wlf_xdg_wm_base.c',
+	'wlf_xdg_wm_dialog_v1.c',
 )
 
 subdir('protocols')
