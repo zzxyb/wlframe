@@ -12,6 +12,7 @@ wlf_files += files(
 	'wlf_wp_alpha_modifier_v1.c',
 	'wlf_wl_subsurface.c',
 	'wlf_wl_subcompositor.c',
+	'wlf_xdg_wm_base.c',
 )
 
 subdir('protocols')
