@@ -68,6 +68,9 @@ windows_msvc_c_args = cc.get_supported_arguments([
 is_linux = host_machine.system() == 'linux'
 is_macos = host_machine.system() == 'darwin'
 is_windows = host_machine.system() == 'windows'
+if is_macos
+	add_languages('objc', native: false)
+endif
 if is_linux
 	add_project_arguments(['-D_POSIX_C_SOURCE=200809L'], language: 'c')
 	add_project_arguments(common_c_args + linux_c_args, language: 'c')
@@ -147,6 +150,8 @@ elif is_macos
 	message('Building for macOS')
 
 	math = cc.find_library('m')
+	appkit = dependency('appleframeworks',
+		modules: ['AppKit'])
 	libpng = dependency('libpng', required: true, method: 'pkg-config')
 	libturbojpeg = dependency('libturbojpeg', required: true, method: 'pkg-config')
 	libwebp = dependency('libwebp', required: true, method: 'pkg-config')
@@ -215,6 +220,7 @@ wlf_deps = [
 if is_macos
 	wlf_deps += [
 		math,
+		appkit,
 	]
 elif is_linux
 	wlf_deps += [
@@ -243,6 +249,7 @@ endif
 subdir('image')
 subdir('math')
 subdir('platform')
+subdir('theme')
 subdir('renderer')
 subdir('types')
 subdir('buffer')
