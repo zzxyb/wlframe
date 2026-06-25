@@ -7,6 +7,10 @@ utils_examples = {
 		'src': ['theme_palette_test.c'],
 		'dep': [],
 	},
+	'fontconfig_test': {
+		'src': ['fontconfig_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : utils_examples
