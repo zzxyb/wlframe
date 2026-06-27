@@ -15,7 +15,7 @@
 #ifndef WLF_THEME_MACOS_THEME_H
 #define WLF_THEME_MACOS_THEME_H
 
-#include "wlf/theme/wlf_theme.h"
+#include "wlf/platform/wlf_theme.h"
 
 /**
  * @brief macOS theme specific data.

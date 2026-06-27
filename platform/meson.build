@@ -1,10 +1,11 @@
 wlf_files += files(
 	'wlf_backend.c',
+	'wlf_theme.c',
+	'wlf_fontconfig.c',
 )
-
-subdir('theme')
-subdir('fontconfig')
 
 if is_linux
 	subdir('wayland')
+elif is_macos
+	subdir('macos')
 endif

@@ -1,8 +1,8 @@
-#include "wlf/fontconfig/wlf_fontconfig.h"
+#include "wlf/platform/wlf_fontconfig.h"
 #include "wlf/config.h"
 
 #if WLF_HAS_MACOS_PLATFORM
-#include "wlf/fontconfig/macos/fontconfig.h"
+#include "wlf/platform/macos/fontconfig.h"
 #endif
 
 #include "wlf/utils/wlf_compat.h"

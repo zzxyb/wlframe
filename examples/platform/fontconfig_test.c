@@ -1,4 +1,4 @@
-#include "wlf/fontconfig/wlf_fontconfig.h"
+#include "wlf/platform/wlf_fontconfig.h"
 
 #include <stdio.h>
 

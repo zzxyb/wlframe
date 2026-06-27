@@ -1,8 +1,8 @@
-#include "wlf/theme/wlf_theme.h"
+#include "wlf/platform/wlf_theme.h"
 #include "wlf/config.h"
 
 #if WLF_HAS_MACOS_PLATFORM
-#include "wlf/theme/macos/theme.h"
+#include "wlf/platform/macos/theme.h"
 #endif
 
 #include <assert.h>
