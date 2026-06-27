@@ -3,14 +3,6 @@ utils_examples = {
 		'src': ['utils_cmd_parser_test.c'],
 		'dep': [],
 	},
-	'theme_palette_test': {
-		'src': ['theme_palette_test.c'],
-		'dep': [],
-	},
-	'fontconfig_test': {
-		'src': ['fontconfig_test.c'],
-		'dep': [],
-	},
 }
 
 foreach example, info : utils_examples
