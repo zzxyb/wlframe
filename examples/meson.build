@@ -1,4 +1,5 @@
 subdir('image')
+subdir('platform')
 subdir('utils')
 subdir('math')
 subdir('window')

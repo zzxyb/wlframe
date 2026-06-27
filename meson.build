@@ -249,8 +249,6 @@ endif
 subdir('image')
 subdir('math')
 subdir('platform')
-subdir('theme')
-subdir('fontconfig')
 subdir('renderer')
 subdir('types')
 subdir('buffer')
