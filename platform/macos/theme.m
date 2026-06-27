@@ -1,4 +1,4 @@
-#include "wlf/theme/macos/theme.h"
+#include "wlf/platform/macos/theme.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_compat.h"
 #include "wlf/utils/wlf_env.h"

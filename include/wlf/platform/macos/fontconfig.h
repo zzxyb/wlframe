@@ -15,7 +15,7 @@
 #ifndef WLF_FONTCONFIG_MACOS_FONTCONFIG_H
 #define WLF_FONTCONFIG_MACOS_FONTCONFIG_H
 
-#include "wlf/fontconfig/wlf_fontconfig.h"
+#include "wlf/platform/wlf_fontconfig.h"
 
 #include <stdbool.h>
 

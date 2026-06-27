@@ -1,4 +1,4 @@
-#include "wlf/theme/wlf_theme.h"
+#include "wlf/platform/wlf_theme.h"
 #include "wlf/types/wlf_color.h"
 #include <stdio.h>
 

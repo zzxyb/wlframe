@@ -1,4 +1,4 @@
-#include "wlf/fontconfig/macos/fontconfig.h"
+#include "wlf/platform/macos/fontconfig.h"
 
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_compat.h"
