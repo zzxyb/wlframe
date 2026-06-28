@@ -103,6 +103,7 @@ features = {
 	'x11-backend': false,
 	'vulkan-render': false,
 	'pixman-render': true,
+	'metal-render': is_macos,
 	'macos_platform': is_macos,
 	'linux_platform': is_linux,
 	'windows_platform': is_windows,
@@ -185,6 +186,8 @@ elif is_macos
 	if not giflib.found()
 		error('giflib not found on macOS. Install giflib (for example: brew install giflib).')
 	endif
+
+	metal = dependency('appleframeworks', modules: ['Foundation', 'Metal', 'AppKit'], required: true)
 elif is_windows
 	message('Building for Windows')
 	libpng = dependency('libpng', required: true)
@@ -221,6 +224,7 @@ if is_macos
 	wlf_deps += [
 		math,
 		appkit,
+		metal,
 	]
 elif is_linux
 	wlf_deps += [

@@ -9,6 +9,9 @@
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
 #endif
+#if WLF_HAS_MACOS_PLATFORM
+#include "wlf/renderer/metal/renderer.h"
+#endif
 
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +50,12 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 			wlf_log(WLF_ERROR, "Failed to create Pixman renderer");
 			return NULL;
 		}
+	}
+#elif WLF_HAS_MACOS_PLATFORM
+	render = wlf_mtl_renderer_create_from_backend(backend);
+	if (render == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create Metal render");
+		return NULL;
 	}
 #endif
 
