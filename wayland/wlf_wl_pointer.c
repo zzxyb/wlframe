@@ -1,4 +1,6 @@
 #include "wlf/wayland/wlf_wl_pointer.h"
+#include "wlf/wayland/wlf_wl_cursor.h"
+#include "wlf/types/wlf_cursor.h"
 #include "wlf/types/wlf_pointer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
@@ -15,13 +17,29 @@ static void pointer_enter(void *data, struct wl_pointer *wl_pointer,
 	struct wlf_wl_pointer *pointer = data;
 	pointer->focus_surface = surface;
 	pointer->enter_serial = serial;
+	pointer->base.cursor_serial = serial;
+	struct wlf_pointer_enter_event event = {
+		.pointer = &pointer->base,
+		.serial = serial,
+		.surface = surface,
+		.x = wl_fixed_to_double(surface_x),
+		.y = wl_fixed_to_double(surface_y),
+	};
+	wlf_signal_emit_mutable(&pointer->base.events.enter, &event);
 }
 
 static void pointer_leave(void *data, struct wl_pointer *wl_pointer,
 		uint32_t serial, struct wl_surface *surface) {
 	struct wlf_wl_pointer *pointer = data;
+	struct wlf_pointer_leave_event event = {
+		.pointer = &pointer->base,
+		.serial = serial,
+		.surface = surface,
+	};
+	wlf_signal_emit_mutable(&pointer->base.events.leave, &event);
 	pointer->focus_surface = NULL;
 	pointer->enter_serial = 0;
+	pointer->base.cursor_serial = 0;
 }
 
 static void pointer_motion(void *data, struct wl_pointer *wl_pointer,
@@ -30,6 +48,7 @@ static void pointer_motion(void *data, struct wl_pointer *wl_pointer,
 
 	struct wlf_pointer_motion_absolute_event event = {
 		.pointer = &pointer->base,
+		.surface = pointer->focus_surface,
 		.time_msec = time,
 		.x = wl_fixed_to_double(surface_x),
 		.y = wl_fixed_to_double(surface_y),
@@ -50,6 +69,7 @@ static void pointer_button(void *data, struct wl_pointer *wl_pointer,
 
 	struct wlf_pointer_button_event event = {
 		.pointer = &pointer->base,
+		.serial = serial,
 		.time_msec = time,
 		.button = button,
 		.state = btn_state,
@@ -201,6 +221,8 @@ static const struct wl_pointer_listener wl_pointer_listener = {
 
 static void pointer_destroy(struct wlf_pointer *base) {
 	struct wlf_wl_pointer *pointer = wlf_wl_pointer_from_pointer(base);
+	wlf_cursor_destroy(base->cursor);
+	base->cursor = NULL;
 	wl_pointer_release(pointer->pointer);
 	free(pointer);
 }
@@ -225,6 +247,7 @@ struct wlf_pointer *wlf_wl_pointer_create(struct wl_seat *seat) {
 		free(pointer);
 		return NULL;
 	}
+	pointer->seat = seat;
 
 	wl_pointer_add_listener(pointer->pointer, &wl_pointer_listener, pointer);
 	wlf_pointer_init(&pointer->base, &pointer_impl);
@@ -241,4 +264,19 @@ struct wlf_wl_pointer *wlf_wl_pointer_from_pointer(struct wlf_pointer *pointer) 
 
 	struct wlf_wl_pointer *wl_pointer = wlf_container_of(pointer, wl_pointer, base);
 	return wl_pointer;
+}
+
+void wlf_wl_pointer_configure_cursor(struct wlf_wl_pointer *pointer,
+		struct wp_cursor_shape_manager_v1 *shape_manager,
+		struct wl_compositor *compositor, struct wl_shm *shm) {
+	if (pointer == NULL) {
+		return;
+	}
+	wlf_cursor_destroy(pointer->base.cursor);
+	pointer->base.cursor = wlf_wl_cursor_create(pointer->pointer,
+		shape_manager, compositor, shm);
+	if (pointer->base.cursor != NULL && pointer->base.cursor_serial != 0) {
+		(void)wlf_pointer_set_cursor_shape(&pointer->base,
+			WLF_CURSOR_SHAPE_DEFAULT);
+	}
 }

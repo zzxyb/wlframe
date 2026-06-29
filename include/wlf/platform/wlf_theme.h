@@ -37,6 +37,12 @@ enum wlf_theme_appearance {
  */
 enum wlf_theme_color_role {
 	WLF_THEME_COLOR_HIGHLIGHT = 0,  /**< Active selection or highlight color. */
+	WLF_THEME_COLOR_WINDOW_BACKGROUND, /**< Default application window background. */
+	WLF_THEME_COLOR_TITLEBAR_ACTIVE, /**< Active CSD titlebar background. */
+	WLF_THEME_COLOR_TITLEBAR_INACTIVE, /**< Inactive CSD titlebar background. */
+	WLF_THEME_COLOR_TITLEBAR_TEXT_ACTIVE, /**< Active CSD titlebar foreground. */
+	WLF_THEME_COLOR_TITLEBAR_TEXT_INACTIVE, /**< Inactive CSD titlebar foreground. */
+	WLF_THEME_COLOR_TITLEBAR_SEPARATOR, /**< CSD titlebar separator. */
 	WLF_THEME_COLOR_COUNT,  /**< Total number of semantic theme color roles. */
 };
 
@@ -91,6 +97,11 @@ struct wlf_theme {
  */
 void wlf_theme_init(struct wlf_theme *theme,
 	const struct wlf_theme_impl *impl);
+
+/** Fills all semantic roles with the built-in light or dark palette. */
+void wlf_theme_fill_default_palette(
+	struct wlf_color palette[WLF_THEME_COLOR_COUNT],
+	enum wlf_theme_appearance appearance);
 
 /**
  * @brief Creates a theme for the current host platform.

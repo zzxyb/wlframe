@@ -19,6 +19,7 @@
 #include "wlf/buffer/wlf_buffer.h"
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/renderer/wlf_renderer.h"
+#include "wlf//types/wlf_format_set.h"
 
 struct wlf_allocator;
 
@@ -42,7 +43,7 @@ struct wlf_allocator_impl {
 	 * @return Newly created buffer, or NULL on failure.
 	 */
 	struct wlf_buffer *(*create_buffer)(struct wlf_allocator *allocator,
-		uint32_t width, uint32_t height);
+		uint32_t width, uint32_t height, const struct wlf_render_format *format);
 };
 
 /**
@@ -93,6 +94,6 @@ void wlf_allocator_destroy(struct wlf_allocator *allocator);
  * @return Newly created buffer, or NULL on failure.
  */
 struct wlf_buffer *wlf_allocator_create_buffer(struct wlf_allocator *allocator,
-	uint32_t width, uint32_t height);
+	uint32_t width, uint32_t height, const struct wlf_render_format *format);
 
 #endif // ALLOCATOR_WLF_ALLOCATOR_H

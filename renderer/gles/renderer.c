@@ -4,6 +4,7 @@
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/texture/gles/texture.h"
 #include "wlf/config.h"
 
 #include <stdlib.h>
@@ -12,6 +13,10 @@
 
 static void renderer_destroy(struct wlf_renderer *render) {
 	struct wlf_gles_renderer *renderer = wlf_gles_renderer_from_renderer(render);
+	struct wlf_gles_texture *texture, *tmp;
+	wlf_linked_list_for_each_safe(texture, tmp, &renderer->textures, link) {
+		wlf_texture_destroy(&texture->base);
+	}
 	wlf_egl_unset_current(renderer->egl);
 	wlf_egl_destroy(renderer->egl);
 	free(renderer);
@@ -19,7 +24,8 @@ static void renderer_destroy(struct wlf_renderer *render) {
 
 static struct wlf_texture *renderer_texture_from_buffer(
 		struct wlf_renderer *renderer, struct wlf_buffer *buffer) {
-	return NULL;
+	return wlf_gles_texture_from_buffer(
+		wlf_gles_renderer_from_renderer(renderer), buffer);
 }
 
 static const struct wlf_renderer_impl renderer_impl = {
@@ -127,6 +133,7 @@ struct wlf_renderer *wlf_gles_renderer_create_from_backend(
 
 	wlf_renderer_init(&renderer->base, &renderer_impl);
 	renderer->egl = egl;
+	wlf_linked_list_init(&renderer->textures);
 
 	renderer->base.features.damage =
 		(egl->exts.KHR_swap_buffers_with_damage || egl->exts.EXT_swap_buffers_with_damage) &&

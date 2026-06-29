@@ -43,6 +43,8 @@ struct zwlr_layer_shell_v1;
 struct zwp_primary_selection_device_manager_v1;
 struct zwp_pointer_gestures_v1;
 struct zwp_keyboard_shortcuts_inhibit_manager_v1;
+struct wp_presentation;
+struct wlf_wl_seat;
 
 /**
  * @brief Wayland backend specific data
@@ -54,6 +56,10 @@ struct wlf_wl_backend {
 
 	struct wl_display *display;         /**< Wayland display pointer */
 	struct wl_registry *registry;       /**< Wayland registry pointer */
+	struct {
+		struct wlf_wl_seat *seat;
+		uint32_t name;
+	} wl_seat;
 
 	struct {
 		struct wl_compositor *compositor;  /**< Wayland compositor interface */
@@ -181,6 +187,12 @@ struct wlf_wl_backend {
 		uint32_t bind_version;
 		uint32_t name;
 	} zwp_keyboard_shortcuts_inhibit_manager_v1;
+
+	struct {
+		struct wp_presentation *presentation;
+		uint32_t bind_version;
+		uint32_t name;
+	} wp_presentation;
 
 	struct {
 		struct wlf_signal global_add;   /**< Signal emitted when a global is added */

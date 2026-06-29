@@ -1,0 +1,128 @@
+/**
+ * @file        xdg_toplevel_window.h
+ * @brief       Wayland xdg_toplevel window implementation for wlframe.
+ * @details     This file exposes the wlframe window object backed by the
+ *              Wayland xdg_toplevel role. It combines the generic wlf_window
+ *              abstraction with the Wayland wl_surface, xdg_wm_base,
+ *              xdg_surface, and xdg_toplevel wrapper objects.
+ * @author      YaoBing Xiao
+ * @date        2026-06-20
+ * @version     v1.0
+ * @par Copyright(c):
+ * @par History:
+ *      version: v1.0, YaoBing Xiao, 2026-06-20, initial version\n
+ */
+
+#ifndef WAYLAND_XDG_TOPLEVEL_WINDOW_H
+#define WAYLAND_XDG_TOPLEVEL_WINDOW_H
+
+#include "wlf/window/wlf_window.h"
+
+#include <stdbool.h>
+#include <stdint.h>
+
+struct wlf_backend;
+struct wlf_wl_surface;
+struct wlf_xdg_surface;
+struct wlf_xdg_toplevel;
+struct wlf_xdg_wm_base;
+struct wlf_zxdg_decoration_manager_v1;
+struct wlf_zxdg_toplevel_decoration_v1;
+struct wlf_titlebar;
+struct wlf_wp_fractional_scale_manager_v1;
+struct wlf_wp_fractional_scale_v1;
+struct wlf_wp_viewporter;
+struct wlf_wp_viewport;
+
+/**
+ * @brief Wayland xdg_toplevel window object.
+ *
+ * This structure is fully exposed so platform-specific users can access the
+ * underlying Wayland wrapper objects directly when they need protocol-level
+ * control beyond the generic wlf_window API.
+ */
+struct wlf_xdg_toplevel_window {
+	struct wlf_window base;                  /**< Generic wlframe window base */
+	struct wlf_backend *backend;             /**< Backend that owns this window */
+	struct wlf_wl_surface *surface;          /**< Wayland wl_surface wrapper */
+	struct wlf_xdg_wm_base *wm_base;         /**< xdg_wm_base wrapper */
+	struct wlf_xdg_surface *xdg_surface;     /**< xdg_surface role wrapper */
+	struct wlf_xdg_toplevel *xdg_toplevel;   /**< xdg_toplevel role wrapper */
+	struct wlf_zxdg_decoration_manager_v1 *decoration_manager;
+	struct wlf_zxdg_toplevel_decoration_v1 *decoration;
+	struct wlf_wp_fractional_scale_manager_v1 *fractional_scale_manager;
+	struct wlf_wp_fractional_scale_v1 *fractional_scale;
+	struct wlf_wp_viewporter *viewporter;
+	struct wlf_wp_viewport *viewport;
+	/** Disables SSD negotiation and keeps the scene-owned CSD enabled. */
+	bool force_client_side_decorations;
+
+	struct wlf_listener xdg_surface_configure;   /**< xdg_surface configure listener */
+	struct wlf_listener xdg_toplevel_configure;  /**< xdg_toplevel configure listener */
+	struct wlf_listener xdg_toplevel_close;      /**< xdg_toplevel close listener */
+	struct wlf_listener decoration_configure;
+	struct wlf_listener preferred_buffer_scale;
+	struct wlf_listener preferred_fractional_scale;
+	bool has_xdg_surface_configure_listener;     /**< Whether xdg_surface listener is registered */
+	bool has_xdg_toplevel_configure_listener;    /**< Whether configure listener is registered */
+	bool has_xdg_toplevel_close_listener;        /**< Whether close listener is registered */
+	bool has_decoration_configure_listener;
+	bool has_preferred_buffer_scale_listener;
+	bool has_preferred_fractional_scale_listener;
+};
+
+/**
+ * @brief Creates a Wayland xdg_toplevel window from a backend.
+ *
+ * @param backend Wayland backend used to create protocol objects.
+ * @param width Initial window width.
+ * @param height Initial window height.
+ * @return Generic wlf_window pointer or NULL on failure.
+ */
+struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(
+	struct wlf_backend *backend, uint32_t width, uint32_t height);
+
+/**
+ * @brief Checks whether a generic window is an xdg_toplevel window.
+ *
+ * @param window Window to check.
+ * @return true if the window is backed by wlf_xdg_toplevel_window.
+ * @return false otherwise.
+ */
+bool wlf_window_is_xdg_toplevel(const struct wlf_window *window);
+
+/**
+ * @brief Gets the xdg_toplevel window from a generic window.
+ *
+ * @param window Generic window to convert.
+ * @return xdg_toplevel window object or NULL if the window is not an xdg_toplevel.
+ */
+struct wlf_xdg_toplevel_window *wlf_xdg_toplevel_window_from_window(
+	struct wlf_window *window);
+
+/**
+ * Forces or releases client-side decoration for one XDG toplevel.
+ *
+ * Enabling this destroys the per-toplevel SSD negotiation object, making CSD
+ * effective immediately. Disabling it requests SSD again when the backend
+ * exposes xdg-decoration; CSD remains visible until the compositor confirms
+ * server-side mode.
+ *
+ * @return true when the requested policy was applied. false means SSD
+ * negotiation could not be recreated and the window safely remains on CSD.
+ */
+bool wlf_xdg_toplevel_window_set_force_client_side_decorations(
+	struct wlf_xdg_toplevel_window *window, bool force);
+
+/** @return true when this window currently renders client-side decoration. */
+bool wlf_xdg_toplevel_window_uses_client_side_decorations(
+	const struct wlf_xdg_toplevel_window *window);
+
+/**
+ * Returns the active CSD titlebar, or NULL before scene creation and while SSD
+ * or fullscreen mode is active. The returned object is owned by the scene.
+ */
+struct wlf_titlebar *wlf_xdg_toplevel_window_get_titlebar(
+	struct wlf_xdg_toplevel_window *window);
+
+#endif /* WAYLAND_XDG_TOPLEVEL_WINDOW_H */

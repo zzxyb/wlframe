@@ -34,6 +34,7 @@ struct wl_region;
 struct wl_surface;
 struct wlf_wl_compositor;
 struct wlf_wl_region;
+struct wlf_window;
 
 /**
  * @brief Payload for wlf_wl_surface enter/leave events.
@@ -53,6 +54,10 @@ struct wlf_wl_surface_output_event {
 struct wlf_wl_surface {
 	struct wl_surface *wl_surface;        /**< Underlying Wayland surface object. */
 	struct wl_compositor *wl_compositor;  /**< Compositor used to create regions. */
+	struct wl_callback *throttle_callback; /**< Pending display sync callback used to throttle commits. */
+	struct wl_callback *frame_callback; /**< Pending compositor frame callback. */
+	struct wlf_window *frame_window; /**< Window notified when frame_callback fires. */
+	struct wlf_window *window; /**< Owning window used for input event routing. */
 	int32_t preferred_buffer_scale;       /**< Current preferred buffer scale factor. */
 	uint32_t preferred_buffer_transform;  /**< Current preferred buffer transform. */
 	uint32_t version;                     /**< Bound wl_surface protocol version. */
@@ -63,6 +68,7 @@ struct wlf_wl_surface {
 		struct wlf_signal leave;                      /**< Emitted when the surface leaves an output. Payload: wlf_wl_surface_output_event. */
 		struct wlf_signal preferred_buffer_scale;     /**< Emitted when preferred_buffer_scale changes. Payload: wlf_wl_surface. */
 		struct wlf_signal preferred_buffer_transform; /**< Emitted when preferred_buffer_transform changes. Payload: wlf_wl_surface. */
+		struct wlf_signal throttle_done;              /**< Emitted when the pending throttle sync callback completes. Payload: wlf_wl_surface. */
 	} events;
 };
 
@@ -72,6 +78,13 @@ struct wlf_wl_surface {
  * @return Pointer to the newly created wlf_wl_surface, or NULL on failure.
  */
 struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *compositor);
+
+/** Associates the native surface with its owning wlframe window. */
+void wlf_wl_surface_set_window(struct wlf_wl_surface *surface,
+	struct wlf_window *window);
+
+/** Resolves a wlframe window from a native Wayland surface. */
+struct wlf_window *wlf_wl_surface_get_window(struct wl_surface *surface);
 
 /**
  * @brief Destroys a wlf_wl_surface.
@@ -120,6 +133,14 @@ void wlf_wl_surface_damage_buffer(struct wlf_wl_surface *surface,
  * @return Raw wl_callback that will be called before the next repaint, or NULL on failure.
  */
 struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface);
+
+/** Arms one compositor-paced expose event without committing the surface. */
+bool wlf_wl_surface_arm_frame(struct wlf_wl_surface *surface,
+	struct wlf_window *window);
+
+/** Schedules one compositor-paced expose event, committing when newly armed. */
+bool wlf_wl_surface_schedule_frame(struct wlf_wl_surface *surface,
+	struct wlf_window *window);
 
 /**
  * @brief Sets the opaque region of the surface.

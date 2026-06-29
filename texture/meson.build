@@ -3,5 +3,6 @@ wlf_files += files(
 )
 
 if is_linux
+	subdir('gles')
 	subdir('pixman')
 endif

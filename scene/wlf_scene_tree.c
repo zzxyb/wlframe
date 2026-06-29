@@ -1,20 +1,12 @@
 #include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/window/wlf_window.h"
 
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
 static void scene_node_destroy(struct wlf_scene_node *node) {
-	struct wlf_window *window = node->window;
 	struct wlf_scene_tree *tree = wlf_scene_tree_from_node(node);
-
-	if (tree == window->tree) {
-		assert(!node->parent);
-	} else {
-		assert(node->parent);
-	}
 
 	struct wlf_scene_node *child, *child_tmp;
 	wlf_linked_list_for_each_safe(child, child_tmp,
@@ -49,7 +41,7 @@ static void scene_node_visibility(struct wlf_scene_node *node,
 }
 
 static bool scene_node_at_iterator(struct wlf_scene_node *node,
-		double lx, double ly, void *data) {
+		int lx, int ly, void *data) {
 	struct wlf_node_at_data *at_data = data;
 
 	double rx = at_data->lx - lx;
@@ -75,7 +67,8 @@ static struct wlf_scene_node *scene_node_at(struct wlf_scene_node *node,
 		.ly = ly
 	};
 
-	if (wlf_scene_node_in_box(node, &box, scene_node_at_iterator, &data)) {
+	if (wlf_scene_node_nodes_in_box(node, &box,
+			scene_node_at_iterator, &data)) {
 		if (nx) {
 			*nx = data.rx;
 		}
@@ -89,7 +82,7 @@ static struct wlf_scene_node *scene_node_at(struct wlf_scene_node *node,
 }
 
 static void scene_node_bounds(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *visible) {
+		int x, int y, pixman_region32_t *visible) {
 	if (!node->state.enabled) {
 		return;
 	}
@@ -103,7 +96,7 @@ static void scene_node_bounds(struct wlf_scene_node *node,
 
 static bool scene_nodes_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
 		scene_node_box_iterator_func_t iterator, void *user_data) {
-	double x, y;
+	int x, y;
 	wlf_scene_node_coords(node, &x, &y);
 
 	// return _scene_nodes_in_box(node, box, iterator, user_data, x, y);
@@ -114,7 +107,7 @@ static bool scene_nodes_in_box(struct wlf_scene_node *node, struct wlf_frect *bo
 	struct wlf_scene_tree *tree = wlf_scene_tree_from_node(node);
 	struct wlf_scene_node *child;
 	wlf_linked_list_for_each_reverse(child, &tree->children, link) {
-		if (wlf_scene_node_in_box(child, box, iterator, user_data)) {
+		if (wlf_scene_node_nodes_in_box(child, box, iterator, user_data)) {
 			return true;
 		}
 	}
@@ -130,7 +123,7 @@ static const struct wlf_scene_node_impl scene_node_impl = {
 	.set_opacity = NULL,
 	.get_size = NULL,
 	.get_children = scene_node_get_children,
-	.get_opaque_region = NULL,
+	.opaque_region = NULL,
 	.invisible = scene_node_invisible,
 	.visibility = scene_node_visibility,
 	.at = scene_node_at,

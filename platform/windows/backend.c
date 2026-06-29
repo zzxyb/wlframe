@@ -51,6 +51,7 @@ struct wlf_backend *windows_backend_create(void) {
 	}
 
 	wlf_backend_init(&backend->base, &windows_backend_impl);
+	backend->base.features.server_side_decorations = true;
 	backend->instance = GetModuleHandleW(NULL);
 	backend->thread_id = GetCurrentThreadId();
 

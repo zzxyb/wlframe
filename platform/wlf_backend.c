@@ -1,5 +1,6 @@
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/config.h"
+#include "wlf/platform/wlf_theme.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_env.h"
@@ -58,7 +59,24 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 	}
 #endif
 
+	if (backend != NULL) {
+		(void)wlf_backend_init_theme(backend);
+	}
 	return backend;
+}
+
+bool wlf_backend_init_theme(struct wlf_backend *backend) {
+	assert(backend != NULL);
+	if (backend->theme != NULL) {
+		return true;
+	}
+
+	backend->theme = wlf_theme_autocreate();
+	if (backend->theme == NULL) {
+		wlf_log(WLF_INFO, "No system theme backend is available");
+		return false;
+	}
+	return true;
 }
 
 void wlf_backend_destroy(struct wlf_backend *backend) {
@@ -69,6 +87,8 @@ void wlf_backend_destroy(struct wlf_backend *backend) {
 	wlf_log(WLF_DEBUG, "Destroying backend %s", backend->impl->name);
 
 	wlf_signal_emit_mutable(&backend->events.destroy, backend);
+	wlf_theme_destroy(backend->theme);
+	backend->theme = NULL;
 	free(backend->event_sources);
 	backend->event_sources = NULL;
 	backend->event_source_count = 0;
@@ -141,4 +161,10 @@ bool wlf_backend_remove_event_source(struct wlf_backend *backend,
 
 void wlf_backend_quit(struct wlf_backend *backend) {
 	backend->running = false;
+}
+
+bool wlf_backend_supports_server_side_decorations(
+		const struct wlf_backend *backend) {
+	assert(backend != NULL);
+	return backend->features.server_side_decorations;
 }

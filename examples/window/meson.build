@@ -3,6 +3,14 @@ window_examples = {
 		'src': ['window_test.c'],
 		'dep': [],
 	},
+	'scene_damage_test': {
+		'src': ['scene_damage_test.c'],
+		'dep': [],
+	},
+	'svg_node_test': {
+		'src': ['svg_node_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : window_examples
@@ -10,6 +18,12 @@ foreach example, info : window_examples
 		example,
 		info.get('src', []),
 		dependencies: [wlframe] + info.get('dep', []),
+		c_args: [
+			'-DWLF_WINDOW_TEST_IMAGE="' + meson.project_source_root() /
+				'examples/image/resources/png/pngtest.png' + '"',
+			'-DWLF_SVG_NODE_TEST_IMAGE="' + meson.project_source_root() /
+				'examples/svg/resources/svg_node_test.svg' + '"',
+		],
 		install: false,
 	)
 endforeach

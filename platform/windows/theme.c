@@ -81,6 +81,7 @@ static struct wlf_color windows_theme_default_accent(
 static void windows_theme_fill_palette(
 		struct wlf_color palette[WLF_THEME_COLOR_COUNT],
 		enum wlf_theme_appearance appearance) {
+	wlf_theme_fill_default_palette(palette, appearance);
 	DWORD accent_color;
 
 	palette[WLF_THEME_COLOR_HIGHLIGHT] =

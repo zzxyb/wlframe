@@ -1,9 +1,6 @@
 #ifndef WLF_CONFIG_H
 #define WLF_CONFIG_H
 
-#mesondefine WLF_HAS_WAYlAND_BACKEND
-#mesondefine WLF_HAS_X11_BACKEND
-
 #mesondefine WLF_HAS_VULKAN_RENDER
 #mesondefine WLF_HAS_PIXMAN_RENDER
 #mesondefine WLF_HAS_DIRECTX12_RENDER

@@ -15,6 +15,7 @@ wlf_files += files(
 	'wlf_xdg_wm_base.c',
 	'wlf_xdg_wm_dialog_v1.c',
 	'wlf_wp_fractional_scale_v1.c',
+	'wlf_wl_keyboard.c',
 )
 
 subdir('protocols')

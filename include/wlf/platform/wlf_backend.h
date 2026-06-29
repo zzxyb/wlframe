@@ -29,6 +29,7 @@
 #include <stddef.h>
 
 struct wlf_backend;
+struct wlf_theme;
 
 typedef void (*wlf_backend_event_source_dispatch_t)(
 	struct wlf_backend *backend, int fd, uint32_t revents, void *data);
@@ -74,7 +75,12 @@ struct wlf_backend_impl {
  */
 struct wlf_backend {
 	const struct wlf_backend_impl *impl;  /**< Backend implementation */
+	struct wlf_theme *theme; /**< Host appearance and semantic color palette. */
 	bool running;  /**< True while backend event loop is running */
+	struct {
+		/** Whether the platform can provide server-side window decorations. */
+		bool server_side_decorations;
+	} features;
 
 	struct {
 		int fd;  /**< File descriptor to monitor */
@@ -107,6 +113,13 @@ struct wlf_backend {
  */
 void wlf_backend_init(struct wlf_backend *backend,
 	const struct wlf_backend_impl *impl);
+
+/**
+ * Creates and attaches the host platform theme to a backend.
+ * Calling this more than once is harmless.
+ * @return true when a theme is available.
+ */
+bool wlf_backend_init_theme(struct wlf_backend *backend);
 
 /**
  * @brief Auto-create the best available backend for the current environment
@@ -155,5 +168,13 @@ bool wlf_backend_remove_event_source(struct wlf_backend *backend,
  * @param backend Pointer to backend
  */
 void wlf_backend_quit(struct wlf_backend *backend);
+
+/**
+ * @brief Reports whether the backend can provide server-side decorations.
+ * @param backend Backend to query.
+ * @return true when native/server-side window decorations are available.
+ */
+bool wlf_backend_supports_server_side_decorations(
+	const struct wlf_backend *backend);
 
 #endif // PLATFORM_WLF_BACKEND_H

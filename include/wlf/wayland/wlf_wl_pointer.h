@@ -27,6 +27,9 @@
 struct wl_seat;
 struct wl_pointer;
 struct wl_surface;
+struct wl_compositor;
+struct wl_shm;
+struct wp_cursor_shape_manager_v1;
 
 /**
  * @brief Per-axis accumulated state for a single wl_pointer frame.
@@ -54,6 +57,7 @@ struct wlf_wl_pointer_axis_frame {
 struct wlf_wl_pointer {
 	struct wlf_pointer base;          /**< Generic pointer base (must be first). */
 	struct wl_pointer *pointer;       /**< Underlying Wayland pointer object. */
+	struct wl_seat *seat;             /**< Seat used for interactive requests. */
 	struct wl_surface *focus_surface; /**< Currently focused Wayland surface. */
 	uint32_t enter_serial;            /**< Serial from the last enter event. */
 
@@ -83,5 +87,10 @@ bool wlf_pointer_is_wayland(const struct wlf_pointer *pointer);
  * @return Wayland-specific struct, or NULL if not Wayland-backed.
  */
 struct wlf_wl_pointer *wlf_wl_pointer_from_pointer(struct wlf_pointer *pointer);
+
+/** Recreates the pointer cursor controller from the currently bound globals. */
+void wlf_wl_pointer_configure_cursor(struct wlf_wl_pointer *pointer,
+	struct wp_cursor_shape_manager_v1 *shape_manager,
+	struct wl_compositor *compositor, struct wl_shm *shm);
 
 #endif // WAYLAND_WLF_WL_POINTER_H

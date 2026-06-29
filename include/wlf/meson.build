@@ -24,7 +24,15 @@ ver_h = configure_file(
 
 install_headers(conf_h, ver_h, subdir: versioned_name / 'wlf')
 
-subdirs = ['image', 'math', 'platform', 'utils', 'renderer', 'buffer']
+subdirs = [
+	'image',
+	'math',
+	'platform',
+	'utils',
+	'renderer',
+	'buffer',
+	'swapchain',
+]
 
 if is_linux
 	subdirs += [
@@ -32,7 +40,10 @@ if is_linux
 		'platform/wayland',
 		'renderer/vulkan',
 		'dmabuf',
-		'renderer/pixman'
+		'renderer/pixman',
+		'swapchain/shm',
+		'swapchain/egl',
+		'swapchain/vulkan',
 	]
 endif
 

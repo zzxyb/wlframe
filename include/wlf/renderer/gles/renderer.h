@@ -40,6 +40,7 @@ struct wlf_gles_renderer {
 	struct wlf_renderer base; /**< Embedded base renderer; must be the first member. */
 
 	struct wlf_egl *egl;      /**< EGL context used by this renderer. */
+	struct wlf_linked_list textures; /**< Owned wlf_gles_texture objects. */
 	const char *exts_str;     /**< Raw GL extensions string returned by glGetString(GL_EXTENSIONS). */
 
 	struct {

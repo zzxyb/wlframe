@@ -9,6 +9,7 @@
 #include "wlf/utils/wlf_compat.h"
 
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 void wlf_image_init(struct wlf_image *image,

@@ -24,6 +24,7 @@
 #include <pixman.h>
 
 struct wlf_texture;
+struct wlf_image;
 
 /**
  * @brief Options for reading pixels back from a texture.
@@ -151,6 +152,20 @@ uint32_t wlf_texture_preferred_read_format(struct wlf_texture *texture);
 struct wlf_texture *wlf_texture_from_pixels(struct wlf_renderer *renderer,
 	uint32_t fmt, uint32_t stride, uint32_t width, uint32_t height,
 	const void *data);
+
+/**
+ * @brief Creates a texture from an 8-bit wlframe image.
+ *
+ * Uses the image's native 8-bit format when supported by the renderer.
+ * Images with straight alpha, or formats unsupported by the renderer, are
+ * converted to premultiplied ABGR8888 before upload.
+ *
+ * @param renderer The renderer to create the texture on.
+ * @param image    Source image to upload.
+ * @return Pointer to the newly created texture, or NULL on failure.
+ */
+struct wlf_texture *wlf_texture_from_image(struct wlf_renderer *renderer,
+	const struct wlf_image *image);
 
 /**
  * @brief Updates the texture contents from a damaged region of a buffer.

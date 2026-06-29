@@ -16,6 +16,7 @@
 #define TYPES_WLF_POINTER_H
 
 #include "wlf/utils/wlf_signal.h"
+#include "wlf/types/wlf_cursor.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -23,7 +24,15 @@
 
 #define WLF_POINTER_BUTTONS_CAP 16
 
+/** Common evdev button codes delivered by Wayland wl_pointer.button. */
+enum wlf_pointer_button_code {
+	WLF_POINTER_BUTTON_LEFT = 0x110,
+	WLF_POINTER_BUTTON_RIGHT = 0x111,
+	WLF_POINTER_BUTTON_MIDDLE = 0x112,
+};
+
 struct wlf_pointer;
+struct wlf_cursor;
 
 /**
  * @brief Pointer button state.
@@ -79,6 +88,8 @@ struct wlf_pointer_impl {
  */
 struct wlf_pointer {
 	const struct wlf_pointer_impl *impl; /**< Virtual method table. */
+	struct wlf_cursor *cursor; /**< Cursor image/shape controller, when available. */
+	uint32_t cursor_serial; /**< Latest native pointer-enter serial. */
 
 	uint32_t buttons[WLF_POINTER_BUTTONS_CAP]; /**< Currently pressed button codes. */
 	size_t button_count; /**< Number of valid entries in buttons. */
@@ -86,6 +97,8 @@ struct wlf_pointer {
 	struct {
 		struct wlf_signal destroy; /**< Emitted before pointer is destroyed. */
 
+		struct wlf_signal enter; /**< Payload: wlf_pointer_enter_event. */
+		struct wlf_signal leave; /**< Payload: wlf_pointer_leave_event. */
 		struct wlf_signal motion; /**< Payload: wlf_pointer_motion_event. */
 		struct wlf_signal motion_absolute; /**< Payload: wlf_pointer_motion_absolute_event. */
 		struct wlf_signal button; /**< Payload: wlf_pointer_button_event. */
@@ -107,6 +120,25 @@ struct wlf_pointer {
 	void *data; /**< User-defined data pointer. */
 };
 
+/** Sets this pointer's cursor using its latest valid enter serial. */
+bool wlf_pointer_set_cursor_shape(struct wlf_pointer *pointer,
+	enum wlf_cursor_shape shape);
+
+/** Pointer entered a native surface. Coordinates are surface-local. */
+struct wlf_pointer_enter_event {
+	struct wlf_pointer *pointer;
+	uint32_t serial;
+	void *surface;
+	double x, y;
+};
+
+/** Pointer left a native surface. */
+struct wlf_pointer_leave_event {
+	struct wlf_pointer *pointer;
+	uint32_t serial;
+	void *surface;
+};
+
 /**
  * @brief Relative motion event payload.
  */
@@ -122,8 +154,9 @@ struct wlf_pointer_motion_event {
  */
 struct wlf_pointer_motion_absolute_event {
 	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
+	void *surface; /**< Currently focused native surface, when available. */
 	uint32_t time_msec; /**< Timestamp in milliseconds. */
-	double x, y; /**< Normalized absolute position in [0, 1]. */
+	double x, y; /**< Backend coordinates; surface-local for Wayland. */
 };
 
 /**
@@ -131,6 +164,7 @@ struct wlf_pointer_motion_absolute_event {
  */
 struct wlf_pointer_button_event {
 	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
+	uint32_t serial; /**< Wayland serial, or zero when unavailable. */
 	uint32_t time_msec; /**< Timestamp in milliseconds. */
 	uint32_t button; /**< Button code. */
 	enum wlf_pointer_button_state state; /**< Pressed or released state. */

@@ -9,6 +9,8 @@
 static void render_target_info_destroy(struct wlf_render_target_info *render_target) {
 	struct wlf_pixman_render_target_info *target_info =
 		wlf_pixman_render_target_info_from_info(render_target);
+	wlf_buffer_end_data_ptr_access(target_info->buffer->buffer);
+	wlf_buffer_unlock(target_info->buffer->buffer);
 	free(target_info);
 }
 
@@ -35,6 +37,10 @@ struct wlf_pixman_render_target_info *wlf_pixman_begin_pixman_render_pass(
 	}
 
 	wlf_render_target_info_init(&pass->base, &render_target_info_impl);
+	pass->base.logical_width = buffer->buffer->width;
+	pass->base.logical_height = buffer->buffer->height;
+	pass->base.buffer_width = buffer->buffer->width;
+	pass->base.buffer_height = buffer->buffer->height;
 
 	if (!begin_pixman_data_ptr_access(buffer->buffer, &buffer->image,
 			WLF_BUFFER_DATA_PTR_ACCESS_READ | WLF_BUFFER_DATA_PTR_ACCESS_WRITE)) {

@@ -2,6 +2,7 @@
 #include "wlf/wayland/wlf_wl_compositor.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
+#include "wlf/window/wlf_window.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -58,6 +59,38 @@ static const struct wl_surface_listener wl_surface_listener = {
 	.preferred_buffer_transform = surface_handle_preferred_buffer_transform,
 };
 
+static void wayland_throttle_callback(void *data,
+		struct wl_callback *callback, uint32_t time) {
+	WLF_UNUSED(time);
+
+	struct wlf_wl_surface *surface = data;
+
+	surface->throttle_callback = NULL;
+	wlf_signal_emit_mutable(&surface->events.throttle_done, surface);
+	wl_callback_destroy(callback);
+}
+
+static const struct wl_callback_listener throttle_listener = {
+	.done = wayland_throttle_callback,
+};
+
+static void wayland_frame_callback(void *data,
+		struct wl_callback *callback, uint32_t time) {
+	WLF_UNUSED(time);
+	struct wlf_wl_surface *surface = data;
+	struct wlf_window *window = surface->frame_window;
+	surface->frame_callback = NULL;
+	surface->frame_window = NULL;
+	wl_callback_destroy(callback);
+	if (window != NULL) {
+		wlf_signal_emit_mutable(&window->events.expose, window);
+	}
+}
+
+static const struct wl_callback_listener frame_listener = {
+	.done = wayland_frame_callback,
+};
+
 struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *compositor) {
 	assert(compositor != NULL);
 
@@ -85,10 +118,25 @@ struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *composito
 	wlf_signal_init(&surface->events.leave);
 	wlf_signal_init(&surface->events.preferred_buffer_scale);
 	wlf_signal_init(&surface->events.preferred_buffer_transform);
+	wlf_signal_init(&surface->events.throttle_done);
 
 	wl_surface_add_listener(surface->wl_surface, &wl_surface_listener, surface);
 
 	return surface;
+}
+
+void wlf_wl_surface_set_window(struct wlf_wl_surface *surface,
+		struct wlf_window *window) {
+	assert(surface != NULL);
+	surface->window = window;
+}
+
+struct wlf_window *wlf_wl_surface_get_window(struct wl_surface *surface) {
+	if (surface == NULL) {
+		return NULL;
+	}
+	struct wlf_wl_surface *wlf_surface = wl_surface_get_user_data(surface);
+	return wlf_surface != NULL ? wlf_surface->window : NULL;
 }
 
 void wlf_wl_surface_destroy(struct wlf_wl_surface *surface) {
@@ -103,8 +151,19 @@ void wlf_wl_surface_destroy(struct wlf_wl_surface *surface) {
 	assert(wlf_linked_list_empty(&surface->events.leave.listener_list));
 	assert(wlf_linked_list_empty(&surface->events.preferred_buffer_scale.listener_list));
 	assert(wlf_linked_list_empty(&surface->events.preferred_buffer_transform.listener_list));
+	assert(wlf_linked_list_empty(&surface->events.throttle_done.listener_list));
 
 	if (surface->wl_surface != NULL) {
+		if (surface->throttle_callback != NULL) {
+			wl_callback_destroy(surface->throttle_callback);
+			surface->throttle_callback = NULL;
+		}
+		if (surface->frame_callback != NULL) {
+			wl_callback_destroy(surface->frame_callback);
+			surface->frame_callback = NULL;
+			surface->frame_window = NULL;
+		}
+
 		wl_surface_destroy(surface->wl_surface);
 	}
 
@@ -140,6 +199,36 @@ struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface) {
 	assert(surface != NULL);
 
 	return wl_surface_frame(surface->wl_surface);
+}
+
+bool wlf_wl_surface_arm_frame(struct wlf_wl_surface *surface,
+		struct wlf_window *window) {
+	if (surface == NULL || window == NULL) {
+		return false;
+	}
+	if (surface->frame_callback != NULL) {
+		return true;
+	}
+
+	surface->frame_callback = wl_surface_frame(surface->wl_surface);
+	if (surface->frame_callback == NULL) {
+		return false;
+	}
+	surface->frame_window = window;
+	wl_callback_add_listener(surface->frame_callback, &frame_listener, surface);
+	return true;
+}
+
+bool wlf_wl_surface_schedule_frame(struct wlf_wl_surface *surface,
+		struct wlf_window *window) {
+	if (surface != NULL && surface->frame_callback != NULL) {
+		return true;
+	}
+	if (!wlf_wl_surface_arm_frame(surface, window)) {
+		return false;
+	}
+	wl_surface_commit(surface->wl_surface);
+	return true;
 }
 
 void wlf_wl_surface_set_opaque_region(struct wlf_wl_surface *surface,
@@ -228,4 +317,16 @@ void wlf_wl_surface_commit(struct wlf_wl_surface *surface) {
 	assert(surface != NULL);
 
 	wl_surface_commit(surface->wl_surface);
+
+	if (surface->throttle_callback == NULL) {
+		struct wl_display *display =
+			wl_proxy_get_display((struct wl_proxy *)surface->wl_surface);
+		surface->throttle_callback = wl_display_sync(display);
+		if (surface->throttle_callback == NULL) {
+			return;
+		}
+
+		wl_callback_add_listener(surface->throttle_callback,
+			&throttle_listener, surface);
+	}
 }

@@ -1,4 +1,5 @@
 #include "wlf/platform/wayland/backend.h"
+#include "wlf/wayland/wlf_wl_seat.h"
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_signal.h"
@@ -25,6 +26,7 @@
 #include "wayland/protocols/primary-selection-unstable-v1-client-protocol.h"
 #include "wayland/protocols/pointer-gestures-unstable-v1-client-protocol.h"
 #include "wayland/protocols/keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
+#include "wayland/protocols/presentation-time-client-protocol.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -56,6 +58,12 @@ static void shm_handle_format(void *data, struct wl_shm *shm,
 static const struct wl_shm_listener shm_listener = {
 	.format = shm_handle_format,
 };
+
+static void update_seat_cursor(struct wlf_wl_backend *wayland) {
+	wlf_wl_seat_configure_cursor(wayland->wl_seat.seat,
+		wayland->wp_cursor_shape_manager_v1.cursor_shape_manager_v1,
+		wayland->wl_compositor.compositor, wayland->wl_shm.shm);
+}
 
 static void destroy_wl_compositor(struct wlf_wl_backend *wayland) {
 	if (wayland->wl_compositor.compositor == NULL) {
@@ -233,6 +241,7 @@ static void destroy_zxdg_decoration_manager_v1(struct wlf_wl_backend *wayland) {
 	wayland->zxdg_decoration_manager_v1.decoration_manager = NULL;
 	wayland->zxdg_decoration_manager_v1.bind_version = 0;
 	wayland->zxdg_decoration_manager_v1.name = 0;
+	wayland->base.features.server_side_decorations = false;
 }
 
 static void destroy_wp_cursor_shape_manager_v1(struct wlf_wl_backend *wayland) {
@@ -292,13 +301,32 @@ static void destroy_zwp_keyboard_shortcuts_inhibit_manager_v1(struct wlf_wl_back
 	wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.name = 0;
 }
 
+static void destroy_wp_presentation(struct wlf_wl_backend *wayland) {
+	if (wayland->wp_presentation.presentation == NULL) {
+		return;
+	}
+
+	wp_presentation_destroy(wayland->wp_presentation.presentation);
+	wayland->wp_presentation.presentation = NULL;
+	wayland->wp_presentation.bind_version = 0;
+	wayland->wp_presentation.name = 0;
+}
+
 static void display_global_added(void *data, struct wl_registry *wl_registry,
 		uint32_t name, const char *interface, uint32_t version) {
 	wlf_log(WLF_DEBUG, "Wayland registry global: %s v%" PRIu32, interface, version);
 	struct wlf_wl_backend *wayland = data;
 	uint32_t bind_version = version;
 
-	if (strcmp(interface, wl_compositor_interface.name) == 0) {
+	if (strcmp(interface, wl_seat_interface.name) == 0) {
+		if (wayland->wl_seat.seat == NULL) {
+			wayland->wl_seat.seat = wlf_wl_seat_create(
+				wl_registry, name, version);
+			if (wayland->wl_seat.seat != NULL) {
+				wayland->wl_seat.name = name;
+			}
+		}
+	} else if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		if (version > (uint32_t)wl_compositor_interface.version) {
 			wlf_log(WLF_DEBUG, "Server %s interface version %u is higher than client version %u, "
 				"using client version", interface, version,
@@ -634,6 +662,7 @@ static void display_global_added(void *data, struct wl_registry *wl_registry,
 
 		wayland->zxdg_decoration_manager_v1.bind_version = bind_version;
 		wayland->zxdg_decoration_manager_v1.name = name;
+		wayland->base.features.server_side_decorations = true;
 		wlf_log(WLF_DEBUG, "Successfully bound interface (name: %s, version: %u)",
 			interface, bind_version);
 	} else if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
@@ -743,6 +772,27 @@ static void display_global_added(void *data, struct wl_registry *wl_registry,
 		wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.name = name;
 		wlf_log(WLF_DEBUG, "Successfully bound interface (name: %s, version: %u)",
 			interface, bind_version);
+	} else if (strcmp(interface, wp_presentation_interface.name) == 0) {
+		if (version > (uint32_t)wp_presentation_interface.version) {
+			wlf_log(WLF_DEBUG, "Server %s version %u is higher than client version %u, "
+				"using client version", interface, version,
+				(uint32_t)wp_presentation_interface.version);
+			bind_version = (uint32_t)wp_presentation_interface.version;
+		}
+
+		wayland->wp_presentation.presentation = wl_registry_bind(wl_registry,
+			name,
+			&wp_presentation_interface,
+			bind_version);
+		if (wayland->wp_presentation.presentation == NULL) {
+			wlf_log(WLF_ERROR, "Failed to bind %s interface", interface);
+			return;
+		}
+
+		wayland->wp_presentation.bind_version = bind_version;
+		wayland->wp_presentation.name = name;
+		wlf_log(WLF_DEBUG, "Successfully bound interface (name: %s, version: %u)",
+			interface, bind_version);
 	}
 
 	struct wlf_wl_interface *new_reg = wlf_wl_interface_create(interface, version, name);
@@ -752,14 +802,29 @@ static void display_global_added(void *data, struct wl_registry *wl_registry,
 
 	wlf_linked_list_insert(&wayland->interfaces, &new_reg->link);
 	wlf_signal_emit_mutable(&wayland->events.global_add, new_reg);
+	if (strcmp(interface, wl_seat_interface.name) == 0 ||
+			strcmp(interface, wl_compositor_interface.name) == 0 ||
+			strcmp(interface, wl_shm_interface.name) == 0 ||
+			strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
+		update_seat_cursor(wayland);
+	}
 }
 
 static void display_global_remove(void *data,
 		struct wl_registry *wl_registry, uint32_t name) {
 	struct wlf_wl_backend *wayland = data;
+	if (name == wayland->wl_seat.name) {
+		wlf_wl_seat_destroy(wayland->wl_seat.seat);
+		wayland->wl_seat.seat = NULL;
+		wayland->wl_seat.name = 0;
+	}
 
 	if (name == wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.name) {
 		destroy_zwp_keyboard_shortcuts_inhibit_manager_v1(wayland);
+	}
+
+	if (name == wayland->wp_presentation.name) {
+		destroy_wp_presentation(wayland);
 	}
 
 	if (name == wayland->zwp_primary_selection_device_manager_v1.name) {
@@ -775,6 +840,8 @@ static void display_global_remove(void *data,
 	}
 
 	if (name == wayland->wp_cursor_shape_manager_v1.name) {
+		wlf_wl_seat_configure_cursor(wayland->wl_seat.seat, NULL,
+			wayland->wl_compositor.compositor, wayland->wl_shm.shm);
 		destroy_wp_cursor_shape_manager_v1(wayland);
 	}
 
@@ -827,10 +894,18 @@ static void display_global_remove(void *data,
 	}
 
 	if (name == wayland->wl_shm.name) {
+		if (wayland->wp_cursor_shape_manager_v1.cursor_shape_manager_v1 == NULL) {
+			wlf_wl_seat_configure_cursor(wayland->wl_seat.seat, NULL,
+				wayland->wl_compositor.compositor, NULL);
+		}
 		destroy_wl_shm(wayland);
 	}
 
 	if (name == wayland->wl_compositor.name) {
+		if (wayland->wp_cursor_shape_manager_v1.cursor_shape_manager_v1 == NULL) {
+			wlf_wl_seat_configure_cursor(wayland->wl_seat.seat, NULL,
+				NULL, wayland->wl_shm.shm);
+		}
 		destroy_wl_compositor(wayland);
 	}
 
@@ -862,9 +937,12 @@ static void backend_destroy(struct wlf_backend *backend) {
 	wlf_log(WLF_DEBUG, "Destroying %s backend", backend->impl->name);
 
 	struct wlf_wl_backend *wayland = wlf_wl_backend_from_backend(backend);
+	wlf_wl_seat_destroy(wayland->wl_seat.seat);
+	wayland->wl_seat.seat = NULL;
 
 	destroy_zwp_keyboard_shortcuts_inhibit_manager_v1(wayland);
 	destroy_zwp_primary_selection_device_manager_v1(wayland);
+	destroy_wp_presentation(wayland);
 	destroy_wp_fractional_scale_manager_v1(wayland);
 	destroy_xdg_toplevel_icon_manager_v1(wayland);
 	destroy_wp_cursor_shape_manager_v1(wayland);
@@ -1030,6 +1108,8 @@ struct wlf_backend *wayland_backend_create(void) {
 	wlf_signal_init(&backend->events.global_remove);
 	wl_registry_add_listener(backend->registry, &wl_base_registry_listener, backend);
 	wl_display_roundtrip(backend->display);
+	backend->base.features.server_side_decorations =
+		backend->zxdg_decoration_manager_v1.decoration_manager != NULL;
 
 	wlf_log(WLF_DEBUG, "Created %s backend", backend->base.impl->name);
 

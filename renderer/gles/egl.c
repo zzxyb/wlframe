@@ -3,6 +3,8 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/config.h"
 #include "wlf/utils/wlf_env.h"
+#include "wlf/types/wlf_pixel_format.h"
+#include "wlf/types/wlf_format_set.h"
 
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
@@ -11,6 +13,175 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <inttypes.h>
+
+#if WLF_HAS_LINUX_PLATFORM
+struct egl_format_attribs {
+	EGLint red_size;
+	EGLint green_size;
+	EGLint blue_size;
+	EGLint alpha_size;
+	EGLint native_visual_id;
+};
+
+static bool get_egl_format_attribs(const struct wlf_render_format *format,
+		struct egl_format_attribs *attribs) {
+	switch (format->format) {
+	case WLF_FORMAT_ARGB8888:
+	case WLF_FORMAT_ABGR8888:
+	case WLF_FORMAT_RGBA8888:
+	case WLF_FORMAT_BGRA8888:
+		*attribs = (struct egl_format_attribs){
+			.red_size = 8,
+			.green_size = 8,
+			.blue_size = 8,
+			.alpha_size = 8,
+			.native_visual_id = (EGLint)convert_wlf_format_to_wl_shm(format->format),
+		};
+		return true;
+	case WLF_FORMAT_XRGB8888:
+	case WLF_FORMAT_XBGR8888:
+	case WLF_FORMAT_RGBX8888:
+	case WLF_FORMAT_BGRX8888:
+		*attribs = (struct egl_format_attribs){
+			.red_size = 8,
+			.green_size = 8,
+			.blue_size = 8,
+			.alpha_size = 0,
+			.native_visual_id = (EGLint)convert_wlf_format_to_wl_shm(format->format),
+		};
+		return true;
+	case WLF_FORMAT_RGB565:
+	case WLF_FORMAT_BGR565:
+		*attribs = (struct egl_format_attribs){
+			.red_size = 5,
+			.green_size = 6,
+			.blue_size = 5,
+			.alpha_size = 0,
+			.native_visual_id = (EGLint)convert_wlf_format_to_wl_shm(format->format),
+		};
+		return true;
+	case WLF_FORMAT_ARGB2101010:
+	case WLF_FORMAT_ABGR2101010:
+		*attribs = (struct egl_format_attribs){
+			.red_size = 10,
+			.green_size = 10,
+			.blue_size = 10,
+			.alpha_size = 2,
+			.native_visual_id = (EGLint)convert_wlf_format_to_wl_shm(format->format),
+		};
+		return true;
+	case WLF_FORMAT_XRGB2101010:
+	case WLF_FORMAT_XBGR2101010:
+		*attribs = (struct egl_format_attribs){
+			.red_size = 10,
+			.green_size = 10,
+			.blue_size = 10,
+			.alpha_size = 0,
+			.native_visual_id = (EGLint)convert_wlf_format_to_wl_shm(format->format),
+		};
+		return true;
+	default:
+		break;
+	}
+
+	return false;
+}
+
+static bool egl_config_matches_attribs(EGLDisplay display, EGLConfig config,
+		const struct egl_format_attribs *attribs) {
+	EGLint red_size = 0, green_size = 0, blue_size = 0, alpha_size = 0;
+	if (!eglGetConfigAttrib(display, config, EGL_RED_SIZE, &red_size) ||
+			!eglGetConfigAttrib(display, config, EGL_GREEN_SIZE, &green_size) ||
+			!eglGetConfigAttrib(display, config, EGL_BLUE_SIZE, &blue_size) ||
+			!eglGetConfigAttrib(display, config, EGL_ALPHA_SIZE, &alpha_size)) {
+		return false;
+	}
+
+	return red_size == attribs->red_size &&
+		green_size == attribs->green_size &&
+		blue_size == attribs->blue_size &&
+		alpha_size == attribs->alpha_size;
+}
+
+EGLConfig wlf_egl_choose_config(struct wlf_egl *egl,
+		const struct wlf_render_format *format) {
+	struct egl_format_attribs format_attribs;
+	if (!get_egl_format_attribs(format, &format_attribs)) {
+		wlf_log(WLF_ERROR, "unsupported EGL swapchain format 0x%"PRIx32,
+			format->format);
+		return NULL;
+	}
+
+	const EGLint config_attribs[] = {
+		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_RED_SIZE, format_attribs.red_size,
+		EGL_GREEN_SIZE, format_attribs.green_size,
+		EGL_BLUE_SIZE, format_attribs.blue_size,
+		EGL_ALPHA_SIZE, format_attribs.alpha_size,
+		EGL_NONE,
+	};
+
+	EGLint config_count = 0;
+	if (!eglChooseConfig(egl->display, config_attribs, NULL, 0,
+			&config_count) || config_count == 0) {
+		wlf_log(WLF_ERROR, "failed to query EGL configs for format 0x%"PRIx32": %s",
+			format->format, wlf_egl_error_str(eglGetError()));
+		return NULL;
+	}
+
+	EGLConfig configs[config_count];
+	if (!eglChooseConfig(egl->display, config_attribs, configs,
+			config_count, &config_count) || config_count == 0) {
+		wlf_log(WLF_ERROR, "failed to choose EGL configs for format 0x%"PRIx32": %s",
+			format->format, wlf_egl_error_str(eglGetError()));
+		return NULL;
+	}
+
+	EGLConfig fallback = NULL;
+	for (EGLint i = 0; i < config_count; i++) {
+		if (!egl_config_matches_attribs(egl->display, configs[i],
+				&format_attribs)) {
+			continue;
+		}
+		if (fallback == NULL) {
+			fallback = configs[i];
+		}
+
+		EGLint native_visual_id = 0;
+		if (eglGetConfigAttrib(egl->display, configs[i],
+				EGL_NATIVE_VISUAL_ID, &native_visual_id) &&
+				native_visual_id == format_attribs.native_visual_id) {
+			return configs[i];
+		}
+	}
+
+	if (fallback != NULL) {
+		return fallback;
+	}
+
+	wlf_log(WLF_ERROR, "no EGL config matches format 0x%"PRIx32,
+		format->format);
+	return NULL;
+}
+#endif
+
+static EGLDisplay get_egl_display(struct wlf_backend *backend,
+		const char *client_exts) {
+	void *native_display = backend->impl->native_display(backend);
+
+#if WLF_HAS_LINUX_PLATFORM
+	if (wlf_backend_is_wayland(backend) &&
+			(!wlf_egl_check_ext(client_exts, "EGL_EXT_platform_base") ||
+			!((wlf_egl_check_ext(client_exts, "EGL_EXT_platform_wayland") ||
+			 wlf_egl_check_ext(client_exts, "EGL_KHR_platform_wayland"))))) {
+		return NULL;
+	}
+#endif
+
+	return eglGetDisplay((EGLNativeDisplayType)native_display);
+}
 
 static void check_egl_exts(struct wlf_egl *egl,
 		const char *display_exts, const char *client_exts,
@@ -55,6 +226,8 @@ static void check_egl_exts(struct wlf_egl *egl,
 			wlf_egl_check_ext(display_exts, "EGL_EXT_present_opaque");
 		egl->exts.EXT_device_query =
 			wlf_egl_check_ext(display_exts, "EGL_EXT_device_query");
+		egl->exts.ANDROID_native_fence_sync =
+			wlf_egl_check_ext(display_exts, "EGL_ANDROID_native_fence_sync");
 
 		egl->exts.IMG_context_priority =
 			wlf_egl_check_ext(display_exts, "EGL_IMG_context_priority");
@@ -69,6 +242,8 @@ static void check_egl_exts(struct wlf_egl *egl,
 	if (client_exts != NULL) {
 		egl->exts.KHR_debug =
 			wlf_egl_check_ext(client_exts, "EGL_KHR_debug");
+		egl->exts.EXT_platform_base =
+			wlf_egl_check_ext(client_exts, "EGL_EXT_platform_base");
 		egl->exts.EXT_device_enumeration =
 			wlf_egl_check_ext(client_exts, "EGL_EXT_device_enumeration");
 		egl->exts.EXT_explicit_device =
@@ -103,6 +278,8 @@ static void load_egl_procs(struct wlf_egl *egl,
 		if (wlf_egl_check_ext(client_exts, "EGL_EXT_platform_base")) {
 			wlf_egl_load_proc(&egl->procs.eglGetPlatformDisplayEXT,
 				"eglGetPlatformDisplayEXT");
+			wlf_egl_load_proc(&egl->procs.eglCreatePlatformWindowSurfaceEXT,
+				"eglCreatePlatformWindowSurfaceEXT");
 		}
 		if (wlf_egl_check_ext(client_exts, "EGL_EXT_device_enumeration")) {
 			wlf_egl_load_proc(&egl->procs.eglQueryDevicesEXT,
@@ -137,6 +314,8 @@ static void load_egl_procs(struct wlf_egl *egl,
 	if (wlf_egl_check_ext(display_exts, "EGL_KHR_fence_sync")) {
 		wlf_egl_load_proc(&egl->procs.eglCreateSyncKHR, "eglCreateSyncKHR");
 		wlf_egl_load_proc(&egl->procs.eglDestroySyncKHR, "eglDestroySyncKHR");
+	}
+	if (wlf_egl_check_ext(display_exts, "EGL_KHR_wait_sync")) {
 		wlf_egl_load_proc(&egl->procs.eglWaitSyncKHR, "eglWaitSyncKHR");
 	}
 	if (wlf_egl_check_ext(display_exts, "EGL_ANDROID_native_fence_sync")) {
@@ -187,8 +366,8 @@ static void egl_log(EGLenum error, const char *command, EGLint msg_type,
 }
 
 struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
-	void *native_display = backend->impl->native_display(backend);
-	EGLDisplay egl_display = eglGetDisplay((EGLNativeDisplayType)native_display);
+	const char *client_exts = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	EGLDisplay egl_display = get_egl_display(backend, client_exts);
 	if (egl_display == EGL_NO_DISPLAY) {
 		wlf_log(WLF_ERROR, "Failed to get EGLDisplay: %s",
 			wlf_egl_error_str(eglGetError()));
@@ -214,7 +393,6 @@ struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
 	egl->display = egl_display;
 
 	const char *display_exts = eglQueryString(egl_display, EGL_EXTENSIONS);
-	const char *client_exts = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 	wlf_log(WLF_INFO, "Supported EGL display extensions: %s",
 		display_exts ? display_exts : "(none)");
 	wlf_log(WLF_INFO, "Supported EGL client extensions: %s",
@@ -233,6 +411,20 @@ struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
 		egl->procs.eglDebugMessageControlKHR(egl_log, debug_attribs);
 	}
 
+	if (!egl->exts.KHR_surfaceless_context) {
+		wlf_log(WLF_ERROR, "EGL_KHR_surfaceless_context is required");
+		goto failed;
+	}
+
+#if WLF_HAS_LINUX_PLATFORM
+	struct wlf_render_format default_format;
+	wlf_render_format_init(&default_format, WLF_FORMAT_XRGB8888);
+	egl->config = wlf_egl_choose_config(egl, &default_format);
+	wlf_render_format_finish(&default_format);
+	if (egl->config == NULL) {
+		goto failed;
+	}
+#else
 	const EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
@@ -242,6 +434,13 @@ struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
 	if (!eglChooseConfig(egl_display, config_attribs, &egl->config, 1, &matched) ||
 			matched == 0) {
 		wlf_log(WLF_ERROR, "Failed to choose EGL config: %s",
+			wlf_egl_error_str(eglGetError()));
+		goto failed;
+	}
+#endif
+
+	if (eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE) {
+		wlf_log(WLF_ERROR, "Failed to bind OpenGL ES API: %s",
 			wlf_egl_error_str(eglGetError()));
 		goto failed;
 	}
@@ -322,6 +521,10 @@ const char *wlf_egl_error_str(EGLint error) {
 }
 
 bool wlf_egl_check_ext(const char *exts, const char *ext) {
+	if (exts == NULL || ext == NULL || *ext == '\0') {
+		return false;
+	}
+
 	size_t extlen = strlen(ext);
 	const char *end = exts + strlen(exts);
 
@@ -381,7 +584,7 @@ bool wlf_egl_unset_current(struct wlf_egl *egl) {
 EGLSyncKHR wlf_egl_create_sync(struct wlf_egl *egl, int fence_fd) {
 	if (fence_fd >= 0) {
 		if (egl->procs.eglCreateSyncKHR == NULL ||
-				egl->procs.eglDupNativeFenceFDANDROID == NULL) {
+				!egl->exts.ANDROID_native_fence_sync) {
 			return EGL_NO_SYNC_KHR;
 		}
 		EGLint attribs[] = {
@@ -423,7 +626,11 @@ int wlf_egl_dup_fence_fd(struct wlf_egl *egl, EGLSyncKHR sync) {
 }
 
 bool wlf_egl_wait_sync(struct wlf_egl *egl, EGLSyncKHR sync) {
-	assert(egl->procs.eglWaitSyncKHR != NULL);
+	if (egl->procs.eglWaitSyncKHR == NULL) {
+		wlf_log(WLF_ERROR, "eglWaitSyncKHR is NULL procs");
+
+		return false;
+	}
 
 	if (egl->procs.eglWaitSyncKHR(egl->display, sync, 0) != EGL_TRUE) {
 		wlf_log(WLF_ERROR, "eglWaitSyncKHR failed: %s",
