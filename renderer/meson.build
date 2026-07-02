@@ -8,4 +8,6 @@ if is_linux
 	subdir('gles')
 elif is_macos
 	subdir('metal')
+elif is_windows
+	subdir('directx12')
 endif
