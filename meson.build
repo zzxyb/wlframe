@@ -104,6 +104,7 @@ features = {
 	'vulkan-render': false,
 	'pixman-render': true,
 	'metal-render': is_macos,
+	'directx12-render': is_windows,
 	'macos_platform': is_macos,
 	'linux_platform': is_linux,
 	'windows_platform': is_windows,
@@ -190,6 +191,10 @@ elif is_macos
 	metal = dependency('appleframeworks', modules: ['Foundation', 'Metal', 'AppKit'], required: true)
 elif is_windows
 	message('Building for Windows')
+	d3d12 = cc.find_library('d3d12', required: true)
+	dxgi = cc.find_library('dxgi', required: true)
+	dxguid = cc.find_library('dxguid', required: true)
+	user32 = cc.find_library('user32', required: true)
 	libpng = dependency('libpng', required: true)
 	libturbojpeg = dependency('libjpeg', required: true)
 	libwebp = dependency('libwebp', required: true)
@@ -241,6 +246,12 @@ elif is_linux
 		egl,
 	]
 elif is_windows
+	wlf_deps += [
+		d3d12,
+		dxgi,
+		dxguid,
+		user32,
+	]
 else
 endif
 

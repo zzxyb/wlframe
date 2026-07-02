@@ -8,6 +8,8 @@
 #include "wlf/renderer/vulkan/renderer.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
+#elif WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/renderer/directx12/renderer.h"
 #endif
 #if WLF_HAS_MACOS_PLATFORM
 #include "wlf/renderer/metal/renderer.h"
@@ -31,7 +33,7 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		render_options)];
 	bool is_auto = strcmp(render_name, "auto") == 0;
 	if (is_auto || strcmp(render_name, "gles") == 0) {
-				render = wlf_gles_renderer_create_from_backend(backend);
+		render = wlf_gles_renderer_create_from_backend(backend);
 		if (render == NULL && is_auto) {
 			wlf_log(WLF_INFO, "GLES renderer unavailable, falling back to Vulkan");
 		}
@@ -55,6 +57,12 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 	render = wlf_mtl_renderer_create_from_backend(backend);
 	if (render == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create Metal render");
+		return NULL;
+	}
+#elif WLF_HAS_WINDOWS_PLATFORM
+	render = wlf_dx12_renderer_create_from_backend(backend);
+	if (render == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create DirectX 12 renderer");
 		return NULL;
 	}
 #endif
