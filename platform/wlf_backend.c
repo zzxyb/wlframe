@@ -8,6 +8,8 @@
 #include "wlf/platform/wayland/backend.h"
 #elif WLF_HAS_MACOS_PLATFORM
 #include "wlf/platform/macos/backend.h"
+#elif WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/platform/windows/backend.h"
 #endif
 
 #include <stdlib.h>
@@ -46,6 +48,12 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 	backend = macos_backend_create();
 	if (backend == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create Mac backend");
+		return NULL;
+	}
+#elif WLF_HAS_WINDOWS_PLATFORM
+	backend = windows_backend_create();
+	if (backend == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create Windows backend");
 		return NULL;
 	}
 #endif

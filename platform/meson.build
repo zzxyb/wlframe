@@ -8,4 +8,6 @@ if is_linux
 	subdir('wayland')
 elif is_macos
 	subdir('macos')
+elif is_windows
+	subdir('windows')
 endif
