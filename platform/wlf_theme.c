@@ -53,6 +53,17 @@ void wlf_theme_destroy(struct wlf_theme *theme) {
 	}
 }
 
+const char *wlf_theme_appearance_name(
+		enum wlf_theme_appearance appearance) {
+	switch (appearance) {
+	case WLF_THEME_APPEARANCE_DARK:
+		return "dark";
+	case WLF_THEME_APPEARANCE_LIGHT:
+	default:
+		return "light";
+	}
+}
+
 struct wlf_color wlf_theme_palette_color(struct wlf_theme *theme,
 		enum wlf_theme_color_role role) {
 	return theme->impl->theme_palette_color(theme, role);

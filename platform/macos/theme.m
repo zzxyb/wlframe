@@ -17,8 +17,7 @@
 @end
 
 static void macos_theme_fill_palette(
-	struct wlf_color palette[WLF_THEME_COLOR_COUNT],
-	enum wlf_theme_appearance appearance);
+	struct wlf_color palette[WLF_THEME_COLOR_COUNT]);
 
 static bool macos_theme_parse_appearance(const char *value,
 		enum wlf_theme_appearance *appearance) {
@@ -70,51 +69,6 @@ static enum wlf_theme_appearance macos_theme_detect_appearance(void) {
 	return WLF_THEME_APPEARANCE_LIGHT;
 }
 
-static NSAppearance *macos_theme_nsappearance(
-		enum wlf_theme_appearance appearance) {
-	return appearance == WLF_THEME_APPEARANCE_DARK ?
-		[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] :
-		[NSAppearance appearanceNamed:NSAppearanceNameAqua];
-}
-
-static struct wlf_color macos_theme_color_from_nscolor(NSColor *color,
-		enum wlf_theme_appearance appearance,
-		struct wlf_color fallback) {
-	if (color == nil) {
-		return fallback;
-	}
-
-	@autoreleasepool {
-		__block NSColor *resolved = nil;
-		NSAppearance *nsappearance = macos_theme_nsappearance(appearance);
-
-		if (@available(macOS 11.0, *)) {
-			[nsappearance performAsCurrentDrawingAppearance:^{
-				resolved = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
-			}];
-		} else {
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-			NSAppearance *previous_appearance = NSAppearance.currentAppearance;
-			NSAppearance.currentAppearance = nsappearance;
-			resolved = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
-			NSAppearance.currentAppearance = previous_appearance;
-#pragma clang diagnostic pop
-		}
-
-		if (resolved == nil) {
-			return fallback;
-		}
-
-		return (struct wlf_color){
-			.r = resolved.redComponent,
-			.g = resolved.greenComponent,
-			.b = resolved.blueComponent,
-			.a = resolved.alphaComponent,
-		};
-	}
-}
-
 static struct wlf_color macos_theme_color_from_nscolor_current(NSColor *color,
 		struct wlf_color fallback) {
 	if (color == nil) {
@@ -138,23 +92,14 @@ static struct wlf_color macos_theme_color_from_nscolor_current(NSColor *color,
 }
 
 static void macos_theme_apply_system_colors(
-		struct wlf_color palette[WLF_THEME_COLOR_COUNT],
-		enum wlf_theme_appearance appearance) {
+		struct wlf_color palette[WLF_THEME_COLOR_COUNT]) {
 	@autoreleasepool {
 		[NSApplication sharedApplication];
 
-		palette[WLF_THEME_COLOR_ACCENT] = macos_theme_color_from_nscolor(
-			NSColor.controlAccentColor,
-			appearance,
-			palette[WLF_THEME_COLOR_ACCENT]);
 		palette[WLF_THEME_COLOR_HIGHLIGHT] =
 			macos_theme_color_from_nscolor_current(
 				NSColor.selectedContentBackgroundColor,
 				palette[WLF_THEME_COLOR_HIGHLIGHT]);
-		palette[WLF_THEME_COLOR_HIGHLIGHTED_TEXT] =
-			macos_theme_color_from_nscolor_current(
-				NSColor.alternateSelectedControlTextColor,
-				palette[WLF_THEME_COLOR_HIGHLIGHTED_TEXT]);
 	}
 }
 
@@ -163,15 +108,13 @@ static bool macos_theme_highlight_changed(
 		const struct wlf_color new_palette[WLF_THEME_COLOR_COUNT]) {
 	return memcmp(&old_palette[WLF_THEME_COLOR_HIGHLIGHT],
 			&new_palette[WLF_THEME_COLOR_HIGHLIGHT],
-			sizeof(struct wlf_color)) != 0 ||
-		memcmp(&old_palette[WLF_THEME_COLOR_HIGHLIGHTED_TEXT],
-			&new_palette[WLF_THEME_COLOR_HIGHLIGHTED_TEXT],
 			sizeof(struct wlf_color)) != 0;
 }
 
 void wlf_macos_theme_reload(struct wlf_macos_theme *theme) {
 	enum wlf_theme_appearance appearance;
 	struct wlf_color palette[WLF_THEME_COLOR_COUNT];
+	bool appearance_changed;
 	bool highlight_changed;
 
 	if (theme == NULL) {
@@ -179,71 +122,34 @@ void wlf_macos_theme_reload(struct wlf_macos_theme *theme) {
 	}
 
 	appearance = macos_theme_detect_appearance();
-	macos_theme_fill_palette(palette, appearance);
+	macos_theme_fill_palette(palette);
 	if (appearance == theme->base.appearance &&
 			memcmp(theme->palette, palette, sizeof(palette)) == 0) {
 		return;
 	}
 
+	appearance_changed = appearance != theme->base.appearance;
 	highlight_changed = macos_theme_highlight_changed(theme->palette, palette);
 	theme->base.appearance = appearance;
 	memcpy(theme->palette, palette, sizeof(palette));
-	wlf_signal_emit_mutable(&theme->base.events.theme_changed, &theme->base);
+	if (appearance_changed) {
+		wlf_signal_emit_mutable(&theme->base.events.theme_changed,
+			&theme->base);
+	}
 	if (highlight_changed) {
 		wlf_signal_emit_mutable(&theme->base.events.highlight_changed,
 			&theme->base);
 	}
 }
 
-static void macos_theme_fill_palette(struct wlf_color palette[WLF_THEME_COLOR_COUNT],
-		enum wlf_theme_appearance appearance) {
-	static const struct wlf_color light_palette[WLF_THEME_COLOR_COUNT] = {
-		[WLF_THEME_COLOR_WINDOW] = {1.0, 1.0, 1.0, 1.0},
-		[WLF_THEME_COLOR_WINDOW_TEXT] = {0.11, 0.11, 0.12, 1.0},
-		[WLF_THEME_COLOR_BASE] = {0.97, 0.97, 0.98, 1.0},
-		[WLF_THEME_COLOR_ALTERNATE_BASE] = {0.92, 0.93, 0.95, 1.0},
-		[WLF_THEME_COLOR_TEXT] = {0.11, 0.11, 0.12, 1.0},
-		[WLF_THEME_COLOR_BUTTON] = {0.95, 0.95, 0.96, 1.0},
-		[WLF_THEME_COLOR_BUTTON_TEXT] = {0.11, 0.11, 0.12, 1.0},
-		[WLF_THEME_COLOR_BORDER] = {0.80, 0.80, 0.82, 1.0},
-		[WLF_THEME_COLOR_SEPARATOR] = {0.84, 0.84, 0.86, 1.0},
-		[WLF_THEME_COLOR_PLACEHOLDER_TEXT] = {0.45, 0.45, 0.48, 1.0},
-		[WLF_THEME_COLOR_ACCENT] = {0.00, 0.48, 1.0, 1.0},
+static void macos_theme_fill_palette(
+		struct wlf_color palette[WLF_THEME_COLOR_COUNT]) {
+	static const struct wlf_color fallback_palette[WLF_THEME_COLOR_COUNT] = {
 		[WLF_THEME_COLOR_HIGHLIGHT] = {0.00, 0.35, 0.82, 1.0},
-		[WLF_THEME_COLOR_HIGHLIGHTED_TEXT] = {1.0, 1.0, 1.0, 1.0},
-		[WLF_THEME_COLOR_LINK] = {0.00, 0.40, 0.87, 1.0},
-		[WLF_THEME_COLOR_VISITED_LINK] = {0.44, 0.27, 0.68, 1.0},
-		[WLF_THEME_COLOR_MARK] = {1.0, 0.93, 0.60, 1.0},
-		[WLF_THEME_COLOR_SUCCESS] = {0.18, 0.69, 0.31, 1.0},
-		[WLF_THEME_COLOR_WARNING] = {1.0, 0.62, 0.04, 1.0},
-		[WLF_THEME_COLOR_ERROR] = {1.0, 0.23, 0.19, 1.0},
 	};
-	static const struct wlf_color dark_palette[WLF_THEME_COLOR_COUNT] = {
-		[WLF_THEME_COLOR_WINDOW] = {0.11, 0.11, 0.12, 1.0},
-		[WLF_THEME_COLOR_WINDOW_TEXT] = {0.93, 0.93, 0.94, 1.0},
-		[WLF_THEME_COLOR_BASE] = {0.16, 0.16, 0.17, 1.0},
-		[WLF_THEME_COLOR_ALTERNATE_BASE] = {0.20, 0.20, 0.22, 1.0},
-		[WLF_THEME_COLOR_TEXT] = {0.93, 0.93, 0.94, 1.0},
-		[WLF_THEME_COLOR_BUTTON] = {0.19, 0.19, 0.20, 1.0},
-		[WLF_THEME_COLOR_BUTTON_TEXT] = {0.93, 0.93, 0.94, 1.0},
-		[WLF_THEME_COLOR_BORDER] = {0.31, 0.31, 0.34, 1.0},
-		[WLF_THEME_COLOR_SEPARATOR] = {0.27, 0.27, 0.29, 1.0},
-		[WLF_THEME_COLOR_PLACEHOLDER_TEXT] = {0.58, 0.58, 0.61, 1.0},
-		[WLF_THEME_COLOR_ACCENT] = {0.04, 0.52, 1.0, 1.0},
-		[WLF_THEME_COLOR_HIGHLIGHT] = {0.00, 0.35, 0.82, 1.0},
-		[WLF_THEME_COLOR_HIGHLIGHTED_TEXT] = {1.0, 1.0, 1.0, 1.0},
-		[WLF_THEME_COLOR_LINK] = {0.35, 0.67, 1.0, 1.0},
-		[WLF_THEME_COLOR_VISITED_LINK] = {0.67, 0.51, 0.96, 1.0},
-		[WLF_THEME_COLOR_MARK] = {0.47, 0.38, 0.03, 1.0},
-		[WLF_THEME_COLOR_SUCCESS] = {0.19, 0.82, 0.35, 1.0},
-		[WLF_THEME_COLOR_WARNING] = {1.0, 0.74, 0.10, 1.0},
-		[WLF_THEME_COLOR_ERROR] = {1.0, 0.41, 0.38, 1.0},
-	};
-	const struct wlf_color *source = appearance == WLF_THEME_APPEARANCE_DARK ?
-		dark_palette : light_palette;
 
-	memcpy(palette, source, sizeof(light_palette));
-	macos_theme_apply_system_colors(palette, appearance);
+	memcpy(palette, fallback_palette, sizeof(fallback_palette));
+	macos_theme_apply_system_colors(palette);
 }
 
 @implementation WLFMacOSThemeObserver {
@@ -351,7 +257,7 @@ struct wlf_macos_theme *wlf_macos_theme_create(void) {
 
 	wlf_theme_init(&theme->base, &macos_theme_impl);
 	theme->base.appearance = macos_theme_detect_appearance();
-	macos_theme_fill_palette(theme->palette, theme->base.appearance);
+	macos_theme_fill_palette(theme->palette);
 	macos_theme_register_observer(theme);
 
 	return theme;

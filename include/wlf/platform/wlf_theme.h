@@ -32,29 +32,11 @@ enum wlf_theme_appearance {
 /**
  * @brief Semantic color roles for wlframe themes.
  *
- * These roles provide semantic access to colors so rendering code can request
- * "window", "text", or "highlight" colors without depending on fixed values.
+ * These roles provide semantic access to colors exposed directly by the
+ * platform theme backend.
  */
 enum wlf_theme_color_role {
-	WLF_THEME_COLOR_WINDOW = 0,  /**< Main window background color. */
-	WLF_THEME_COLOR_WINDOW_TEXT,  /**< Primary text color shown on window backgrounds. */
-	WLF_THEME_COLOR_BASE,  /**< Default content or input background color. */
-	WLF_THEME_COLOR_ALTERNATE_BASE,  /**< Alternate content background for striped or secondary surfaces. */
-	WLF_THEME_COLOR_TEXT,  /**< Primary foreground text color for content areas. */
-	WLF_THEME_COLOR_BUTTON,  /**< Default button background color. */
-	WLF_THEME_COLOR_BUTTON_TEXT,  /**< Text color shown on button surfaces. */
-	WLF_THEME_COLOR_BORDER,  /**< Border or outline color for controls and surfaces. */
-	WLF_THEME_COLOR_SEPARATOR,  /**< Divider or separator line color. */
-	WLF_THEME_COLOR_PLACEHOLDER_TEXT,  /**< Placeholder or hint text color. */
-	WLF_THEME_COLOR_ACCENT,  /**< Primary system accent or tint color. */
-	WLF_THEME_COLOR_HIGHLIGHT,  /**< Active selection or highlight background color. */
-	WLF_THEME_COLOR_HIGHLIGHTED_TEXT,  /**< Foreground color shown on highlighted content. */
-	WLF_THEME_COLOR_LINK,  /**< Hyperlink color for unvisited links. */
-	WLF_THEME_COLOR_VISITED_LINK,  /**< Hyperlink color for visited links. */
-	WLF_THEME_COLOR_MARK,  /**< Marked or emphasized annotation background color. */
-	WLF_THEME_COLOR_SUCCESS,  /**< Positive status or success feedback color. */
-	WLF_THEME_COLOR_WARNING,  /**< Warning or caution feedback color. */
-	WLF_THEME_COLOR_ERROR,  /**< Error or destructive feedback color. */
+	WLF_THEME_COLOR_HIGHLIGHT = 0,  /**< Active selection or highlight color. */
 	WLF_THEME_COLOR_COUNT,  /**< Total number of semantic theme color roles. */
 };
 
@@ -77,13 +59,13 @@ struct wlf_theme_impl {
  * @brief Theme object with platform and appearance metadata.
  *
  * A theme exposes the current appearance state and emits lifecycle,
- * palette-change, and highlight-change notifications that renderers or
+ * appearance-change, and highlight-change notifications that renderers or
  * widgets can observe.
  *
  * @code
  * struct wlf_theme *theme = wlf_theme_autocreate();
- * struct wlf_color accent =
- * 	wlf_theme_palette_color(theme, WLF_THEME_COLOR_ACCENT);
+ * struct wlf_color highlight =
+ * 	wlf_theme_palette_color(theme, WLF_THEME_COLOR_HIGHLIGHT);
  * @endcode
  */
 struct wlf_theme {
@@ -93,8 +75,8 @@ struct wlf_theme {
 
 	struct {
 		struct wlf_signal destroy;        /**< Emitted before the theme is destroyed. */
-		struct wlf_signal theme_changed;  /**< Emitted when system appearance or palette changes. */
-		struct wlf_signal highlight_changed;  /**< Emitted when highlight background or foreground colors change. */
+		struct wlf_signal theme_changed;  /**< Emitted when the resolved appearance changes between light and dark. */
+		struct wlf_signal highlight_changed;  /**< Emitted when the highlight color changes. */
 	} events;
 };
 
@@ -129,6 +111,15 @@ struct wlf_theme *wlf_theme_autocreate(void);
  * @param theme Theme to destroy. NULL is allowed.
  */
 void wlf_theme_destroy(struct wlf_theme *theme);
+
+/**
+ * @brief Returns a stable string for a theme appearance value.
+ *
+ * @param appearance Appearance enum value to stringify.
+ * @return `"light"` or `"dark"`.
+ */
+const char *wlf_theme_appearance_name(
+	enum wlf_theme_appearance appearance);
 
 /**
  * @brief Resolves a color for a semantic theme role.
