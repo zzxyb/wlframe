@@ -12,33 +12,17 @@ struct wlf_listener theme_destroy_listener;
 struct wlf_listener theme_changed_listener;
 struct wlf_listener highlight_changed_listener;
 
-static const char *appearance_name(enum wlf_theme_appearance appearance) {
-	switch (appearance) {
-	case WLF_THEME_APPEARANCE_DARK:
-		return "dark";
-	case WLF_THEME_APPEARANCE_LIGHT:
-	default:
-		return "light";
-	}
-}
-
 static const char *role_name(enum wlf_theme_color_role role);
 
 static void print_theme_summary(struct wlf_theme *theme) {
 	static const enum wlf_theme_color_role roles[] = {
-		WLF_THEME_COLOR_WINDOW,
-		WLF_THEME_COLOR_WINDOW_TEXT,
-		WLF_THEME_COLOR_BASE,
-		WLF_THEME_COLOR_TEXT,
-		WLF_THEME_COLOR_BUTTON,
-		WLF_THEME_COLOR_ACCENT,
 		WLF_THEME_COLOR_HIGHLIGHT,
-		WLF_THEME_COLOR_ERROR,
 	};
 	size_t i;
 
 	wlf_log(WLF_INFO, "theme implementation: %s", theme->impl->name);
-	wlf_log(WLF_INFO, "appearance: %s", appearance_name(theme->appearance));
+	wlf_log(WLF_INFO, "appearance: %s",
+		wlf_theme_appearance_name(theme->appearance));
 
 	for (i = 0; i < sizeof(roles) / sizeof(roles[0]); ++i) {
 		struct wlf_color color = wlf_theme_palette_color(theme, roles[i]);
@@ -57,13 +41,10 @@ static void theme_destroy_notify(struct wlf_listener *listener, void *data) {
 
 static void theme_changed_notify(struct wlf_listener *listener, void *data) {
 	struct wlf_theme *theme = data;
-	struct wlf_color highlight =
-		wlf_theme_palette_color(theme, WLF_THEME_COLOR_HIGHLIGHT);
 	(void)listener;
 
-	wlf_log(WLF_INFO, "theme_changed: appearance=%s highlight=#%06X",
-		appearance_name(theme->appearance),
-		wlf_color_to_hex_rgb(&highlight));
+	wlf_log(WLF_INFO, "theme_changed: appearance=%s",
+		wlf_theme_appearance_name(theme->appearance));
 }
 
 static void highlight_changed_notify(struct wlf_listener *listener, void *data) {
@@ -86,22 +67,8 @@ static void handle_sigint(int signo) {
 
 static const char *role_name(enum wlf_theme_color_role role) {
 	switch (role) {
-	case WLF_THEME_COLOR_WINDOW:
-		return "window";
-	case WLF_THEME_COLOR_WINDOW_TEXT:
-		return "window_text";
-	case WLF_THEME_COLOR_BASE:
-		return "base";
-	case WLF_THEME_COLOR_TEXT:
-		return "text";
-	case WLF_THEME_COLOR_BUTTON:
-		return "button";
-	case WLF_THEME_COLOR_ACCENT:
-		return "accent";
 	case WLF_THEME_COLOR_HIGHLIGHT:
 		return "highlight";
-	case WLF_THEME_COLOR_ERROR:
-		return "error";
 	default:
 		return "other";
 	}
