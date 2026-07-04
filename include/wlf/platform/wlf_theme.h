@@ -36,26 +36,26 @@ enum wlf_theme_appearance {
  * "window", "text", or "highlight" colors without depending on fixed values.
  */
 enum wlf_theme_color_role {
-	WLF_THEME_COLOR_WINDOW = 0,
-	WLF_THEME_COLOR_WINDOW_TEXT,
-	WLF_THEME_COLOR_BASE,
-	WLF_THEME_COLOR_ALTERNATE_BASE,
-	WLF_THEME_COLOR_TEXT,
-	WLF_THEME_COLOR_BUTTON,
-	WLF_THEME_COLOR_BUTTON_TEXT,
-	WLF_THEME_COLOR_BORDER,
-	WLF_THEME_COLOR_SEPARATOR,
-	WLF_THEME_COLOR_PLACEHOLDER_TEXT,
-	WLF_THEME_COLOR_ACCENT,
-	WLF_THEME_COLOR_HIGHLIGHT,
-	WLF_THEME_COLOR_HIGHLIGHTED_TEXT,
-	WLF_THEME_COLOR_LINK,
-	WLF_THEME_COLOR_VISITED_LINK,
-	WLF_THEME_COLOR_MARK,
-	WLF_THEME_COLOR_SUCCESS,
-	WLF_THEME_COLOR_WARNING,
-	WLF_THEME_COLOR_ERROR,
-	WLF_THEME_COLOR_COUNT,
+	WLF_THEME_COLOR_WINDOW = 0,  /**< Main window background color. */
+	WLF_THEME_COLOR_WINDOW_TEXT,  /**< Primary text color shown on window backgrounds. */
+	WLF_THEME_COLOR_BASE,  /**< Default content or input background color. */
+	WLF_THEME_COLOR_ALTERNATE_BASE,  /**< Alternate content background for striped or secondary surfaces. */
+	WLF_THEME_COLOR_TEXT,  /**< Primary foreground text color for content areas. */
+	WLF_THEME_COLOR_BUTTON,  /**< Default button background color. */
+	WLF_THEME_COLOR_BUTTON_TEXT,  /**< Text color shown on button surfaces. */
+	WLF_THEME_COLOR_BORDER,  /**< Border or outline color for controls and surfaces. */
+	WLF_THEME_COLOR_SEPARATOR,  /**< Divider or separator line color. */
+	WLF_THEME_COLOR_PLACEHOLDER_TEXT,  /**< Placeholder or hint text color. */
+	WLF_THEME_COLOR_ACCENT,  /**< Primary system accent or tint color. */
+	WLF_THEME_COLOR_HIGHLIGHT,  /**< Active selection or highlight background color. */
+	WLF_THEME_COLOR_HIGHLIGHTED_TEXT,  /**< Foreground color shown on highlighted content. */
+	WLF_THEME_COLOR_LINK,  /**< Hyperlink color for unvisited links. */
+	WLF_THEME_COLOR_VISITED_LINK,  /**< Hyperlink color for visited links. */
+	WLF_THEME_COLOR_MARK,  /**< Marked or emphasized annotation background color. */
+	WLF_THEME_COLOR_SUCCESS,  /**< Positive status or success feedback color. */
+	WLF_THEME_COLOR_WARNING,  /**< Warning or caution feedback color. */
+	WLF_THEME_COLOR_ERROR,  /**< Error or destructive feedback color. */
+	WLF_THEME_COLOR_COUNT,  /**< Total number of semantic theme color roles. */
 };
 
 struct wlf_theme;
@@ -76,8 +76,9 @@ struct wlf_theme_impl {
 /**
  * @brief Theme object with platform and appearance metadata.
  *
- * A theme exposes the current appearance state and emits lifecycle and
- * palette-change notifications that renderers or widgets can observe.
+ * A theme exposes the current appearance state and emits lifecycle,
+ * palette-change, and highlight-change notifications that renderers or
+ * widgets can observe.
  *
  * @code
  * struct wlf_theme *theme = wlf_theme_autocreate();
@@ -93,6 +94,7 @@ struct wlf_theme {
 	struct {
 		struct wlf_signal destroy;        /**< Emitted before the theme is destroyed. */
 		struct wlf_signal theme_changed;  /**< Emitted when system appearance or palette changes. */
+		struct wlf_signal highlight_changed;  /**< Emitted when highlight background or foreground colors change. */
 	} events;
 };
 

@@ -16,6 +16,10 @@
 
 @end
 
+static void macos_theme_fill_palette(
+	struct wlf_color palette[WLF_THEME_COLOR_COUNT],
+	enum wlf_theme_appearance appearance);
+
 static bool macos_theme_parse_appearance(const char *value,
 		enum wlf_theme_appearance *appearance) {
 	if (value == NULL || appearance == NULL) {
@@ -66,6 +70,131 @@ static enum wlf_theme_appearance macos_theme_detect_appearance(void) {
 	return WLF_THEME_APPEARANCE_LIGHT;
 }
 
+static NSAppearance *macos_theme_nsappearance(
+		enum wlf_theme_appearance appearance) {
+	return appearance == WLF_THEME_APPEARANCE_DARK ?
+		[NSAppearance appearanceNamed:NSAppearanceNameDarkAqua] :
+		[NSAppearance appearanceNamed:NSAppearanceNameAqua];
+}
+
+static struct wlf_color macos_theme_color_from_nscolor(NSColor *color,
+		enum wlf_theme_appearance appearance,
+		struct wlf_color fallback) {
+	if (color == nil) {
+		return fallback;
+	}
+
+	@autoreleasepool {
+		__block NSColor *resolved = nil;
+		NSAppearance *nsappearance = macos_theme_nsappearance(appearance);
+
+		if (@available(macOS 11.0, *)) {
+			[nsappearance performAsCurrentDrawingAppearance:^{
+				resolved = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+			}];
+		} else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+			NSAppearance *previous_appearance = NSAppearance.currentAppearance;
+			NSAppearance.currentAppearance = nsappearance;
+			resolved = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+			NSAppearance.currentAppearance = previous_appearance;
+#pragma clang diagnostic pop
+		}
+
+		if (resolved == nil) {
+			return fallback;
+		}
+
+		return (struct wlf_color){
+			.r = resolved.redComponent,
+			.g = resolved.greenComponent,
+			.b = resolved.blueComponent,
+			.a = resolved.alphaComponent,
+		};
+	}
+}
+
+static struct wlf_color macos_theme_color_from_nscolor_current(NSColor *color,
+		struct wlf_color fallback) {
+	if (color == nil) {
+		return fallback;
+	}
+
+	@autoreleasepool {
+		NSColor *resolved = [color colorUsingColorSpace:NSColorSpace.sRGBColorSpace];
+
+		if (resolved == nil) {
+			return fallback;
+		}
+
+		return (struct wlf_color){
+			.r = resolved.redComponent,
+			.g = resolved.greenComponent,
+			.b = resolved.blueComponent,
+			.a = resolved.alphaComponent,
+		};
+	}
+}
+
+static void macos_theme_apply_system_colors(
+		struct wlf_color palette[WLF_THEME_COLOR_COUNT],
+		enum wlf_theme_appearance appearance) {
+	@autoreleasepool {
+		[NSApplication sharedApplication];
+
+		palette[WLF_THEME_COLOR_ACCENT] = macos_theme_color_from_nscolor(
+			NSColor.controlAccentColor,
+			appearance,
+			palette[WLF_THEME_COLOR_ACCENT]);
+		palette[WLF_THEME_COLOR_HIGHLIGHT] =
+			macos_theme_color_from_nscolor_current(
+				NSColor.selectedContentBackgroundColor,
+				palette[WLF_THEME_COLOR_HIGHLIGHT]);
+		palette[WLF_THEME_COLOR_HIGHLIGHTED_TEXT] =
+			macos_theme_color_from_nscolor_current(
+				NSColor.alternateSelectedControlTextColor,
+				palette[WLF_THEME_COLOR_HIGHLIGHTED_TEXT]);
+	}
+}
+
+static bool macos_theme_highlight_changed(
+		const struct wlf_color old_palette[WLF_THEME_COLOR_COUNT],
+		const struct wlf_color new_palette[WLF_THEME_COLOR_COUNT]) {
+	return memcmp(&old_palette[WLF_THEME_COLOR_HIGHLIGHT],
+			&new_palette[WLF_THEME_COLOR_HIGHLIGHT],
+			sizeof(struct wlf_color)) != 0 ||
+		memcmp(&old_palette[WLF_THEME_COLOR_HIGHLIGHTED_TEXT],
+			&new_palette[WLF_THEME_COLOR_HIGHLIGHTED_TEXT],
+			sizeof(struct wlf_color)) != 0;
+}
+
+void wlf_macos_theme_reload(struct wlf_macos_theme *theme) {
+	enum wlf_theme_appearance appearance;
+	struct wlf_color palette[WLF_THEME_COLOR_COUNT];
+	bool highlight_changed;
+
+	if (theme == NULL) {
+		return;
+	}
+
+	appearance = macos_theme_detect_appearance();
+	macos_theme_fill_palette(palette, appearance);
+	if (appearance == theme->base.appearance &&
+			memcmp(theme->palette, palette, sizeof(palette)) == 0) {
+		return;
+	}
+
+	highlight_changed = macos_theme_highlight_changed(theme->palette, palette);
+	theme->base.appearance = appearance;
+	memcpy(theme->palette, palette, sizeof(palette));
+	wlf_signal_emit_mutable(&theme->base.events.theme_changed, &theme->base);
+	if (highlight_changed) {
+		wlf_signal_emit_mutable(&theme->base.events.highlight_changed,
+			&theme->base);
+	}
+}
+
 static void macos_theme_fill_palette(struct wlf_color palette[WLF_THEME_COLOR_COUNT],
 		enum wlf_theme_appearance appearance) {
 	static const struct wlf_color light_palette[WLF_THEME_COLOR_COUNT] = {
@@ -80,7 +209,7 @@ static void macos_theme_fill_palette(struct wlf_color palette[WLF_THEME_COLOR_CO
 		[WLF_THEME_COLOR_SEPARATOR] = {0.84, 0.84, 0.86, 1.0},
 		[WLF_THEME_COLOR_PLACEHOLDER_TEXT] = {0.45, 0.45, 0.48, 1.0},
 		[WLF_THEME_COLOR_ACCENT] = {0.00, 0.48, 1.0, 1.0},
-		[WLF_THEME_COLOR_HIGHLIGHT] = {0.00, 0.48, 1.0, 1.0},
+		[WLF_THEME_COLOR_HIGHLIGHT] = {0.00, 0.35, 0.82, 1.0},
 		[WLF_THEME_COLOR_HIGHLIGHTED_TEXT] = {1.0, 1.0, 1.0, 1.0},
 		[WLF_THEME_COLOR_LINK] = {0.00, 0.40, 0.87, 1.0},
 		[WLF_THEME_COLOR_VISITED_LINK] = {0.44, 0.27, 0.68, 1.0},
@@ -101,7 +230,7 @@ static void macos_theme_fill_palette(struct wlf_color palette[WLF_THEME_COLOR_CO
 		[WLF_THEME_COLOR_SEPARATOR] = {0.27, 0.27, 0.29, 1.0},
 		[WLF_THEME_COLOR_PLACEHOLDER_TEXT] = {0.58, 0.58, 0.61, 1.0},
 		[WLF_THEME_COLOR_ACCENT] = {0.04, 0.52, 1.0, 1.0},
-		[WLF_THEME_COLOR_HIGHLIGHT] = {0.04, 0.52, 1.0, 1.0},
+		[WLF_THEME_COLOR_HIGHLIGHT] = {0.00, 0.35, 0.82, 1.0},
 		[WLF_THEME_COLOR_HIGHLIGHTED_TEXT] = {1.0, 1.0, 1.0, 1.0},
 		[WLF_THEME_COLOR_LINK] = {0.35, 0.67, 1.0, 1.0},
 		[WLF_THEME_COLOR_VISITED_LINK] = {0.67, 0.51, 0.96, 1.0},
@@ -114,23 +243,7 @@ static void macos_theme_fill_palette(struct wlf_color palette[WLF_THEME_COLOR_CO
 		dark_palette : light_palette;
 
 	memcpy(palette, source, sizeof(light_palette));
-}
-
-static void macos_theme_reload(struct wlf_macos_theme *theme) {
-	enum wlf_theme_appearance appearance;
-
-	if (theme == NULL) {
-		return;
-	}
-
-	appearance = macos_theme_detect_appearance();
-	if (appearance == theme->base.appearance) {
-		return;
-	}
-
-	theme->base.appearance = appearance;
-	macos_theme_fill_palette(theme->palette, appearance);
-	wlf_signal_emit_mutable(&theme->base.events.theme_changed, &theme->base);
+	macos_theme_apply_system_colors(palette, appearance);
 }
 
 @implementation WLFMacOSThemeObserver {
@@ -152,7 +265,7 @@ static void macos_theme_reload(struct wlf_macos_theme *theme) {
 		return;
 	}
 
-	macos_theme_reload(_theme);
+	wlf_macos_theme_reload(_theme);
 }
 
 @end
@@ -180,6 +293,9 @@ static void macos_theme_unregister_observer(struct wlf_macos_theme *theme) {
 
 		[center removeObserver:observer
 			name:@"AppleInterfaceThemeChangedNotification"
+			object:nil];
+		[[NSNotificationCenter defaultCenter] removeObserver:observer
+			name:NSSystemColorsDidChangeNotification
 			object:nil];
 		[observer release];
 	}
@@ -211,6 +327,10 @@ static void macos_theme_register_observer(struct wlf_macos_theme *theme) {
 			name:@"AppleInterfaceThemeChangedNotification"
 			object:nil
 			suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
+		[[NSNotificationCenter defaultCenter] addObserver:observer
+			selector:@selector(appearanceChanged:)
+			name:NSSystemColorsDidChangeNotification
+			object:nil];
 
 		theme->observer = (__bridge void *)observer;
 		theme->observer_registered = true;
