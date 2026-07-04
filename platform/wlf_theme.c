@@ -1,7 +1,9 @@
 #include "wlf/platform/wlf_theme.h"
 #include "wlf/config.h"
 
-#if WLF_HAS_MACOS_PLATFORM
+#if WLF_HAS_LINUX_PLATFORM
+#include "wlf/platform/linux/theme.h"
+#elif WLF_HAS_MACOS_PLATFORM
 #include "wlf/platform/macos/theme.h"
 #endif
 
@@ -23,6 +25,13 @@ void wlf_theme_init(struct wlf_theme *theme,
 }
 
 struct wlf_theme *wlf_theme_autocreate(void) {
+#if WLF_HAS_LINUX_PLATFORM
+	struct wlf_linux_theme *gtk_theme = wlf_linux_theme_create();
+	if (gtk_theme != NULL) {
+		return &gtk_theme->base;
+	}
+#endif
+
 #if WLF_HAS_MACOS_PLATFORM
 	struct wlf_macos_theme *macos_theme = wlf_macos_theme_create();
 	if (macos_theme == NULL) {

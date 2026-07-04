@@ -47,6 +47,7 @@ jobs:
           libwebp \
           wlr-protocols \
           giflib \
+          glib2 \
 
     - name: Build with GCC
       run: |

@@ -148,6 +148,7 @@ if is_linux
 	glesv2 = dependency('glesv2', required: true)
 	wayland_egl = dependency('wayland-egl', required: true)
 	egl = dependency('egl', version: '>= 1.5', required: true)
+	gio = dependency('gio-2.0', required: true)
 elif is_macos
 	message('Building for macOS')
 
@@ -244,6 +245,7 @@ elif is_linux
 		glesv2,
 		wayland_egl,
 		egl,
+		gio,
 	]
 elif is_windows
 	wlf_deps += [
