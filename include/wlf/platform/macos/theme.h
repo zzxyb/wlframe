@@ -21,7 +21,9 @@
  * @brief macOS theme specific data.
  *
  * Extends the generic theme object with the resolved semantic palette and
- * AppKit notification observer state.
+ * AppKit notification observer state. The palette maps wlframe accent to the
+ * resolved theme accent color, while the highlight roles track the current
+ * macOS selection colors independently from the light/dark theme palette.
  */
 struct wlf_macos_theme {
 	struct wlf_theme base;  /**< Base theme structure. */
@@ -33,12 +35,24 @@ struct wlf_macos_theme {
 /**
  * @brief Creates a macOS-backed theme object.
  *
- * The returned theme uses AppKit to detect the current effective appearance
- * and listens for system appearance changes so `theme_changed` can be emitted.
+ * The returned theme uses AppKit to detect the current effective appearance,
+ * resolves the current system accent and highlight colors, and listens for
+ * appearance and system color changes so `theme_changed` can be emitted.
  *
  * @return A newly allocated macOS theme, or NULL on failure.
  */
 struct wlf_macos_theme *wlf_macos_theme_create(void);
+
+/**
+ * @brief Reloads the macOS theme from current system settings.
+ *
+ * Re-resolves appearance and system colors, then emits `theme_changed` when
+ * any palette role changes and `highlight_changed` when the highlight roles
+ * change.
+ *
+ * @param theme macOS theme to refresh. NULL is allowed.
+ */
+void wlf_macos_theme_reload(struct wlf_macos_theme *theme);
 
 /**
  * @brief Checks whether a theme is backed by the macOS theme implementation.

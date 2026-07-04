@@ -19,6 +19,7 @@ void wlf_theme_init(struct wlf_theme *theme,
 
 	wlf_signal_init(&theme->events.destroy);
 	wlf_signal_init(&theme->events.theme_changed);
+	wlf_signal_init(&theme->events.highlight_changed);
 }
 
 struct wlf_theme *wlf_theme_autocreate(void) {
@@ -40,6 +41,10 @@ void wlf_theme_destroy(struct wlf_theme *theme) {
 	}
 
 	wlf_signal_emit_mutable(&theme->events.destroy, theme);
+
+	assert(wlf_linked_list_empty(&theme->events.destroy.listener_list));
+	assert(wlf_linked_list_empty(&theme->events.theme_changed.listener_list));
+	assert(wlf_linked_list_empty(&theme->events.highlight_changed.listener_list));
 
 	if (theme->impl && theme->impl->destroy) {
 		theme->impl->destroy(theme);
