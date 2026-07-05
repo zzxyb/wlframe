@@ -192,6 +192,7 @@ elif is_macos
 	metal = dependency('appleframeworks', modules: ['Foundation', 'Metal', 'AppKit'], required: true)
 elif is_windows
 	message('Building for Windows')
+	advapi32 = cc.find_library('advapi32', required: true)
 	d3d12 = cc.find_library('d3d12', required: true)
 	dxgi = cc.find_library('dxgi', required: true)
 	dxguid = cc.find_library('dxguid', required: true)
@@ -249,6 +250,7 @@ elif is_linux
 	]
 elif is_windows
 	wlf_deps += [
+		advapi32,
 		d3d12,
 		dxgi,
 		dxguid,
