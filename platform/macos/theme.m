@@ -19,33 +19,7 @@
 static void macos_theme_fill_palette(
 	struct wlf_color palette[WLF_THEME_COLOR_COUNT]);
 
-static bool macos_theme_parse_appearance(const char *value,
-		enum wlf_theme_appearance *appearance) {
-	if (value == NULL || appearance == NULL) {
-		return false;
-	}
-
-	if (strcasecmp(value, "dark") == 0) {
-		*appearance = WLF_THEME_APPEARANCE_DARK;
-		return true;
-	}
-
-	if (strcasecmp(value, "light") == 0) {
-		*appearance = WLF_THEME_APPEARANCE_LIGHT;
-		return true;
-	}
-
-	return false;
-}
-
 static enum wlf_theme_appearance macos_theme_detect_appearance(void) {
-	enum wlf_theme_appearance appearance;
-	const char *env = wlf_get_env("WLF_THEME_APPEARANCE");
-
-	if (macos_theme_parse_appearance(env, &appearance)) {
-		return appearance;
-	}
-
 	@autoreleasepool {
 		NSAppearance *effective_appearance;
 		NSString *best_match;
