@@ -14,6 +14,7 @@
 
 #include <BaseTsd.h>
 #include <io.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -54,9 +55,24 @@ static inline char *wlf_strndup(const char *src, size_t len) {
 #ifndef STDERR_FILENO
 #define STDERR_FILENO 2
 #endif
+
+#include <stdbool.h>
+
+static inline bool wlf_mul_overflow(size_t a, size_t b, size_t *result) {
+	if (b != 0 && a > SIZE_MAX / b) {
+		return true;
+	}
+	*result = a * b;
+	return false;
+}
 #else
+#include <stdbool.h>
 #include <strings.h>
 #include <unistd.h>
+
+static inline bool wlf_mul_overflow(size_t a, size_t b, size_t *result) {
+	return __builtin_mul_overflow(a, b, result);
+}
 #endif
 
 #endif // UTILS_WLF_COMPAT_H

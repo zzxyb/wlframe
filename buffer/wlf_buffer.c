@@ -1,4 +1,5 @@
 #include "wlf/buffer/wlf_buffer.h"
+#include "wlf/utils/wlf_compat.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 #include "wlf/utils/wlf_linked_list.h"
@@ -72,7 +73,7 @@ bool wlf_readonly_data_buffer_drop(struct wlf_readonly_data_buffer *buffer) {
 
 	if (buffer->base.n_locks > 0) {
 		size_t size;
-		if (__builtin_mul_overflow(buffer->stride, (size_t)buffer->base.height, &size)) {
+		if (wlf_mul_overflow(buffer->stride, (size_t)buffer->base.height, &size)) {
 			wlf_log(WLF_ERROR, "Buffer size overflow in saved_data allocation");
 			ok = false;
 			buffer->data = NULL;
