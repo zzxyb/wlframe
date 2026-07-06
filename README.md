@@ -16,6 +16,10 @@ pacman -S \
 ```shell
     meson build/ --prefix=/usr --buildtype=debug
     ninja -C build/
+
+    // for windows
+    meson setup build-windows --buildtype=debug --fatal-meson-warnings --default-library=static
+    meson compile -C build-windows
 ```
 
 ## Documentation
