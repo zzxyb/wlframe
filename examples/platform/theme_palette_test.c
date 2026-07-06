@@ -25,7 +25,7 @@ static void print_theme_summary(struct wlf_theme *theme) {
 		wlf_theme_appearance_name(theme->appearance));
 
 	for (i = 0; i < sizeof(roles) / sizeof(roles[0]); ++i) {
-		struct wlf_color color = wlf_theme_palette_color(theme, roles[i]);
+		struct wlf_color color = theme->palette[roles[i]];
 
 		wlf_log(WLF_INFO, "%-12s #%06X",
 			role_name(roles[i]),
@@ -49,8 +49,7 @@ static void theme_changed_notify(struct wlf_listener *listener, void *data) {
 
 static void highlight_changed_notify(struct wlf_listener *listener, void *data) {
 	struct wlf_theme *theme = data;
-	struct wlf_color highlight =
-		wlf_theme_palette_color(theme, WLF_THEME_COLOR_HIGHLIGHT);
+	struct wlf_color highlight = theme->palette[WLF_THEME_COLOR_HIGHLIGHT];
 	(void)listener;
 
 	wlf_log(WLF_INFO, "highlight_changed: highlight=#%06X",

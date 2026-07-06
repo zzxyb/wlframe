@@ -303,18 +303,18 @@ void wlf_linux_theme_reload(struct wlf_linux_theme *theme) {
 	appearance = linux_theme_detect_appearance(theme);
 	linux_theme_fill_palette(theme, palette, appearance);
 	if (appearance == theme->base.appearance &&
-			memcmp(theme->palette, palette, sizeof(palette)) == 0) {
+			memcmp(theme->base.palette, palette, sizeof(palette)) == 0) {
 		return;
 	}
 
 	appearance_changed = appearance != theme->base.appearance;
 	highlight_changed = memcmp(
-		&theme->palette[WLF_THEME_COLOR_HIGHLIGHT],
+		&theme->base.palette[WLF_THEME_COLOR_HIGHLIGHT],
 		&palette[WLF_THEME_COLOR_HIGHLIGHT],
 		sizeof(struct wlf_color)) != 0;
 
 	theme->base.appearance = appearance;
-	memcpy(theme->palette, palette, sizeof(palette));
+	memcpy(theme->base.palette, palette, sizeof(palette));
 
 	if (appearance_changed) {
 		wlf_signal_emit_mutable(&theme->base.events.theme_changed,
@@ -412,21 +412,9 @@ static void linux_theme_destroy(struct wlf_theme *theme) {
 	free(linux_theme);
 }
 
-static struct wlf_color linux_theme_palette_color(struct wlf_theme *theme,
-		enum wlf_theme_color_role role) {
-	struct wlf_linux_theme *linux_theme = wlf_linux_theme_from_theme(theme);
-
-	if (role >= WLF_THEME_COLOR_COUNT) {
-		return WLF_COLOR_TRANSPARENT;
-	}
-
-	return linux_theme->palette[role];
-}
-
 static const struct wlf_theme_impl linux_theme_impl = {
 	.name = "linux",
 	.destroy = linux_theme_destroy,
-	.theme_palette_color = linux_theme_palette_color,
 };
 
 struct wlf_linux_theme *wlf_linux_theme_create(void) {
@@ -439,7 +427,7 @@ struct wlf_linux_theme *wlf_linux_theme_create(void) {
 	wlf_theme_init(&theme->base, &linux_theme_impl);
 	theme->use_portal = linux_theme_portal_available();
 	theme->base.appearance = linux_theme_detect_appearance(theme);
-	linux_theme_fill_palette(theme, theme->palette, theme->base.appearance);
+	linux_theme_fill_palette(theme, theme->base.palette, theme->base.appearance);
 	if (theme->use_portal) {
 		theme->monitor_context = g_main_context_new();
 		theme->monitor_loop = g_main_loop_new(theme->monitor_context, FALSE);

@@ -79,8 +79,3 @@ const char *wlf_theme_appearance_name(
 		return "light";
 	}
 }
-
-struct wlf_color wlf_theme_palette_color(struct wlf_theme *theme,
-		enum wlf_theme_color_role role) {
-	return theme->impl->theme_palette_color(theme, role);
-}

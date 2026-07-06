@@ -112,18 +112,18 @@ void wlf_windows_theme_reload(struct wlf_windows_theme *theme) {
 	appearance = windows_theme_detect_appearance();
 	windows_theme_fill_palette(palette, appearance);
 	if (appearance == theme->base.appearance &&
-			memcmp(theme->palette, palette, sizeof(palette)) == 0) {
+			memcmp(theme->base.palette, palette, sizeof(palette)) == 0) {
 		return;
 	}
 
 	appearance_changed = appearance != theme->base.appearance;
 	highlight_changed = memcmp(
-		&theme->palette[WLF_THEME_COLOR_HIGHLIGHT],
+		&theme->base.palette[WLF_THEME_COLOR_HIGHLIGHT],
 		&palette[WLF_THEME_COLOR_HIGHLIGHT],
 		sizeof(struct wlf_color)) != 0;
 
 	theme->base.appearance = appearance;
-	memcpy(theme->palette, palette, sizeof(palette));
+	memcpy(theme->base.palette, palette, sizeof(palette));
 
 	if (appearance_changed) {
 		wlf_signal_emit_mutable(&theme->base.events.theme_changed,
@@ -228,18 +228,6 @@ static DWORD WINAPI windows_theme_monitor_thread(void *data) {
 	return 0;
 }
 
-static struct wlf_color windows_theme_palette_color(struct wlf_theme *theme,
-		enum wlf_theme_color_role role) {
-	struct wlf_windows_theme *windows_theme =
-		wlf_windows_theme_from_theme(theme);
-
-	if (role >= WLF_THEME_COLOR_COUNT) {
-		return WLF_COLOR_TRANSPARENT;
-	}
-
-	return windows_theme->palette[role];
-}
-
 static void windows_theme_destroy(struct wlf_theme *theme) {
 	struct wlf_windows_theme *windows_theme =
 		wlf_windows_theme_from_theme(theme);
@@ -263,7 +251,6 @@ static void windows_theme_destroy(struct wlf_theme *theme) {
 static const struct wlf_theme_impl windows_theme_impl = {
 	.name = "windows",
 	.destroy = windows_theme_destroy,
-	.theme_palette_color = windows_theme_palette_color,
 };
 
 struct wlf_windows_theme *wlf_windows_theme_create(void) {
@@ -276,7 +263,7 @@ struct wlf_windows_theme *wlf_windows_theme_create(void) {
 
 	wlf_theme_init(&theme->base, &windows_theme_impl);
 	theme->base.appearance = windows_theme_detect_appearance();
-	windows_theme_fill_palette(theme->palette, theme->base.appearance);
+	windows_theme_fill_palette(theme->base.palette, theme->base.appearance);
 
 	theme->stop_event = CreateEventW(NULL, TRUE, FALSE, NULL);
 	if (theme->stop_event != NULL) {

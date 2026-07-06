@@ -26,7 +26,6 @@
  */
 struct wlf_macos_theme {
 	struct wlf_theme base;  /**< Base theme structure. */
-	struct wlf_color palette[WLF_THEME_COLOR_COUNT];  /**< Resolved palette colors. */
 	bool observer_registered;  /**< Whether the AppKit observer is registered. */
 	void *observer;  /**< Opaque AppKit observer object. */
 };

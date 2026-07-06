@@ -33,8 +33,6 @@
  */
 struct wlf_windows_theme {
 	struct wlf_theme base;  /**< Base theme structure. */
-	/** Resolved palette colors. */
-	struct wlf_color palette[WLF_THEME_COLOR_COUNT];
 	HANDLE stop_event;  /**< Event used to stop the settings monitor thread. */
 	/** Thread waiting for Windows theme setting changes. */
 	HANDLE monitor_thread;

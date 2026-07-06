@@ -98,14 +98,14 @@ void wlf_macos_theme_reload(struct wlf_macos_theme *theme) {
 	appearance = macos_theme_detect_appearance();
 	macos_theme_fill_palette(palette);
 	if (appearance == theme->base.appearance &&
-			memcmp(theme->palette, palette, sizeof(palette)) == 0) {
+			memcmp(theme->base.palette, palette, sizeof(palette)) == 0) {
 		return;
 	}
 
 	appearance_changed = appearance != theme->base.appearance;
-	highlight_changed = macos_theme_highlight_changed(theme->palette, palette);
+	highlight_changed = macos_theme_highlight_changed(theme->base.palette, palette);
 	theme->base.appearance = appearance;
-	memcpy(theme->palette, palette, sizeof(palette));
+	memcpy(theme->base.palette, palette, sizeof(palette));
 	if (appearance_changed) {
 		wlf_signal_emit_mutable(&theme->base.events.theme_changed,
 			&theme->base);
@@ -149,17 +149,6 @@ static void macos_theme_fill_palette(
 }
 
 @end
-
-static struct wlf_color macos_theme_palette_color(struct wlf_theme *theme,
-		enum wlf_theme_color_role role) {
-	struct wlf_macos_theme *macos_theme = (struct wlf_macos_theme *)theme;
-
-	if (role >= WLF_THEME_COLOR_COUNT) {
-		return WLF_COLOR_TRANSPARENT;
-	}
-
-	return macos_theme->palette[role];
-}
 
 static void macos_theme_unregister_observer(struct wlf_macos_theme *theme) {
 	if (theme == NULL || !theme->observer_registered) {
@@ -220,7 +209,6 @@ static void macos_theme_register_observer(struct wlf_macos_theme *theme) {
 static const struct wlf_theme_impl macos_theme_impl = {
 	.name = "macos",
 	.destroy = macos_theme_destroy,
-	.theme_palette_color = macos_theme_palette_color,
 };
 
 struct wlf_macos_theme *wlf_macos_theme_create(void) {
@@ -231,7 +219,7 @@ struct wlf_macos_theme *wlf_macos_theme_create(void) {
 
 	wlf_theme_init(&theme->base, &macos_theme_impl);
 	theme->base.appearance = macos_theme_detect_appearance();
-	macos_theme_fill_palette(theme->palette);
+	macos_theme_fill_palette(theme->base.palette);
 	macos_theme_register_observer(theme);
 
 	return theme;

@@ -32,7 +32,6 @@ typedef unsigned long gulong;
  */
 struct wlf_linux_theme {
 	struct wlf_theme base;  /**< Base theme structure. */
-	struct wlf_color palette[WLF_THEME_COLOR_COUNT];  /**< Resolved palette colors. */
 	bool use_portal;  /**< Whether the xdg-desktop-portal settings backend is active. */
 	GMainContext *monitor_context;  /**< GLib context used by the settings monitor thread. */
 	GMainLoop *monitor_loop;  /**< GLib loop used by the settings monitor thread. */
