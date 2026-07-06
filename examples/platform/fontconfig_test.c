@@ -2,20 +2,6 @@
 
 #include <stdio.h>
 
-static const char *platform_name(enum wlf_fontconfig_platform platform) {
-	switch (platform) {
-	case WLF_FONTCONFIG_PLATFORM_MACOS:
-		return "macos";
-	case WLF_FONTCONFIG_PLATFORM_WINDOWS:
-		return "windows";
-	case WLF_FONTCONFIG_PLATFORM_LINUX:
-		return "linux";
-	case WLF_FONTCONFIG_PLATFORM_UNKNOWN:
-	default:
-		return "unknown";
-	}
-}
-
 static const char *role_name(enum wlf_font_role role) {
 	switch (role) {
 	case WLF_FONT_ROLE_UI:
@@ -57,7 +43,6 @@ int main(void) {
 	}
 
 	printf("fontconfig implementation: %s\n", config->impl->name);
-	printf("platform: %s\n", platform_name(config->platform));
 	printf("ui_scale: %.2f\n", config->ui_scale);
 
 	for (i = 0; i < sizeof(roles) / sizeof(roles[0]); ++i) {

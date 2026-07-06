@@ -134,7 +134,6 @@ static void macos_fontconfig_destroy(struct wlf_fontconfig *config) {
 
 static const struct wlf_fontconfig_impl macos_fontconfig_impl = {
 	.name = "macos",
-	.platform = WLF_FONTCONFIG_PLATFORM_MACOS,
 	.destroy = macos_fontconfig_destroy,
 };
 

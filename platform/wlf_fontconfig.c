@@ -3,6 +3,8 @@
 
 #if WLF_HAS_MACOS_PLATFORM
 #include "wlf/platform/macos/fontconfig.h"
+#elif WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/platform/windows/fontconfig.h"
 #endif
 
 #include "wlf/utils/wlf_compat.h"
@@ -41,7 +43,6 @@ void wlf_fontconfig_init(struct wlf_fontconfig *config,
 
 	*config = (struct wlf_fontconfig){
 		.impl = impl,
-		.platform = impl->platform,
 		.ui_scale = 1.0,
 	};
 }
@@ -54,6 +55,14 @@ struct wlf_fontconfig *wlf_fontconfig_autocreate(void) {
 	}
 
 	return &macos_fontconfig->base;
+#elif WLF_HAS_WINDOWS_PLATFORM
+	struct wlf_windows_fontconfig *windows_fontconfig =
+		wlf_windows_fontconfig_create();
+	if (windows_fontconfig == NULL) {
+		return NULL;
+	}
+
+	return &windows_fontconfig->base;
 #endif
 
 	return NULL;

@@ -36,16 +36,6 @@ enum wlf_font_role {
 	WLF_FONT_ROLE_COUNT,
 };
 
-/**
- * @brief Platform identifier used by the font configuration module.
- */
-enum wlf_fontconfig_platform {
-	WLF_FONTCONFIG_PLATFORM_UNKNOWN = 0,
-	WLF_FONTCONFIG_PLATFORM_MACOS,
-	WLF_FONTCONFIG_PLATFORM_LINUX,
-	WLF_FONTCONFIG_PLATFORM_WINDOWS,
-};
-
 struct wlf_fontconfig;
 
 /**
@@ -56,7 +46,6 @@ struct wlf_fontconfig;
  */
 struct wlf_fontconfig_impl {
 	const char *name;  /**< Backend name, for example "macos". */
-	enum wlf_fontconfig_platform platform;  /**< Platform this backend targets. */
 	void (*destroy)(struct wlf_fontconfig *config);  /**< Destroy backend-specific resources. */
 };
 
@@ -67,7 +56,6 @@ struct wlf_fontconfig_impl {
  */
 struct wlf_fontconfig {
 	const struct wlf_fontconfig_impl *impl;
-	enum wlf_fontconfig_platform platform;
 	double ui_scale;
 	char families[WLF_FONT_ROLE_COUNT][WLF_FONTCONFIG_MAX_FALLBACKS][WLF_FONTCONFIG_FAMILY_NAME_MAX];
 	size_t counts[WLF_FONT_ROLE_COUNT];
