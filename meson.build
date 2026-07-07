@@ -149,6 +149,7 @@ if is_linux
 	wayland_egl = dependency('wayland-egl', required: true)
 	egl = dependency('egl', version: '>= 1.5', required: true)
 	gio = dependency('gio-2.0', required: true)
+	fontconfig = dependency('fontconfig', required: true)
 elif is_macos
 	message('Building for macOS')
 
@@ -247,6 +248,7 @@ elif is_linux
 		wayland_egl,
 		egl,
 		gio,
+		fontconfig,
 	]
 elif is_windows
 	wlf_deps += [

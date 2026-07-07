@@ -3,6 +3,8 @@
 
 #if WLF_HAS_MACOS_PLATFORM
 #include "wlf/platform/macos/fontconfig.h"
+#elif WLF_HAS_LINUX_PLATFORM
+#include "wlf/platform/linux/fontconfig.h"
 #elif WLF_HAS_WINDOWS_PLATFORM
 #include "wlf/platform/windows/fontconfig.h"
 #endif
@@ -55,6 +57,13 @@ struct wlf_fontconfig *wlf_fontconfig_autocreate(void) {
 	}
 
 	return &macos_fontconfig->base;
+#elif WLF_HAS_LINUX_PLATFORM
+	struct wlf_linux_fontconfig *linux_fontconfig = wlf_linux_fontconfig_create();
+	if (linux_fontconfig == NULL) {
+		return NULL;
+	}
+
+	return &linux_fontconfig->base;
 #elif WLF_HAS_WINDOWS_PLATFORM
 	struct wlf_windows_fontconfig *windows_fontconfig =
 		wlf_windows_fontconfig_create();
