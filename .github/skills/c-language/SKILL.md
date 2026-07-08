@@ -17,13 +17,13 @@ Produce C code that is easy to read, easy to review, and easy to maintain over t
 - Prefer ordinary declarations over macro-generated declarations.
 - Prefer `enum`, `static const`, and normal helper functions over `#define` when they express the intent more clearly.
 - If memory allocation may fail, the call site must check it immediately.
-- Allocation failure in wlframe-style code must log with `wlf_log_errno()` before returning or unwinding.
+- Allocation failure should either be reported through the project's error-reporting path or propagated through a documented failure contract before returning or unwinding.
 - Partial initialization must unwind in reverse order without leaking resources.
 - Ownership transfer and nullable-return contracts must remain obvious.
 
 ## Design Goal
 
-Use this skill to push the codebase toward a simple, readable cross-platform UI library:
+Use this skill to push C code toward simple, readable, cross-platform systems-library design:
 - Public APIs should read like plain C, not macro DSLs.
 - Type names, ownership, and lifecycle should be visible directly in the code.
 - Common cases should be obvious from the first read.
@@ -69,7 +69,7 @@ Borrow the strongest parts of Linux-kernel-style C judgment without copying kern
 
 ### 2) Avoid `typedef struct` Aliasing By Default
 
-- Prefer `struct wlf_output`, `struct wlf_renderer`, and similar explicit type names instead of aliasing them away with `typedef`.
+- Prefer `struct renderer`, `struct output`, and similar explicit type names instead of aliasing them away with `typedef`.
 - Do not introduce `typedef struct foo foo;` just to save a few characters.
 - Keep pointer-ness visible in declarations; do not use typedefs that hide whether something is a pointer.
 - Only use typedefs when wrapping function-pointer signatures, scalar aliases with real domain meaning, or other cases where they materially improve the API.
@@ -97,7 +97,7 @@ Borrow the strongest parts of Linux-kernel-style C judgment without copying kern
 
 - Check the result of `malloc()`, `calloc()`, `realloc()`, `strdup()`, and similar nullable-returning allocation APIs immediately.
 - Do not dereference, assign dependent fields, register listeners, or continue initialization before the `NULL` check.
-- In wlframe code, allocation failure must call `wlf_log_errno(WLF_ERROR, ...)` with a specific message before returning `NULL` or unwinding.
+- Report allocation failure consistently with the surrounding project: use the local errno-aware logger when one exists, return an error code, or propagate `NULL` according to the API contract.
 - Make the failure message name the object or resource that failed to allocate.
 
 ### 5) `realloc()` Discipline
@@ -116,14 +116,14 @@ Borrow the strongest parts of Linux-kernel-style C judgment without copying kern
 ### 7) Nullable API Results
 
 - Treat any API that may return `NULL` as a failure point that must be checked at the call site.
-- If the failure is allocator-backed or errno-bearing, log with `wlf_log_errno()` where wlframe logging is available.
+- If the failure is allocator-backed or errno-bearing, preserve useful failure context through the project's error-reporting mechanism.
 - If the API contract does not use errno, log with the normal error logger and keep the reason explicit.
 - Do not collapse nullable failure into silent continuation.
 
 ### 8) Logging Rules
 
-- Use `wlf_log_errno()` for allocation or resource-acquisition failures that rely on errno-backed APIs.
-- Prefer messages such as `failed to allocate wlf_curve_back` over vague messages such as `allocation failed`.
+- Use the project's errno-aware logging or error-propagation convention for allocation or resource-acquisition failures that rely on errno-backed APIs.
+- Prefer messages such as `failed to allocate renderer` over vague messages such as `allocation failed`.
 - Log once at the failure point; do not spam repeated logs for the same failing allocation unless multiple layers need separate context.
 
 ### 9) Control Flow And Readability
@@ -153,7 +153,7 @@ Prioritize findings in this order:
 - `#define` use where `enum`, `static const`, or a normal helper would be clearer.
 - Platform leakage into generic APIs.
 - Missing `NULL` checks after allocation or nullable API calls.
-- Missing `wlf_log_errno()` on allocator failure in wlframe-style code.
+- Missing error reporting or documented propagation on allocator failure.
 - Leaks or double-frees in partial initialization paths.
 - `realloc()` misuse that can lose the original pointer.
 - Vague or non-actionable failure logs.
@@ -164,17 +164,25 @@ Review questions to answer:
 - Are constants and simple helpers expressed with the least surprising language construct?
 - Does the API stay platform-neutral at the right boundary?
 - Is every nullable allocation result checked immediately?
-- Does allocator failure log with `wlf_log_errno()` before returning or unwinding?
+- Does allocator failure report or propagate enough context before returning or unwinding?
 - Does cleanup release previously acquired resources in reverse order?
 - Is `realloc()` handled with a temporary pointer?
 
 ## Good Pattern
 
 ```c
-struct wlf_curve_back *curve = malloc(sizeof(*curve));
-if (curve == NULL) {
-	wlf_log_errno(WLF_ERROR, "failed to allocate wlf_curve_back");
-	return NULL;
+struct renderer *renderer_create(enum renderer_error *error)
+{
+	struct renderer *renderer = malloc(sizeof(*renderer));
+
+	if (renderer == NULL) {
+		if (error != NULL) {
+			*error = RENDERER_ERROR_NO_MEMORY;
+		}
+		return NULL;
+	}
+
+	return renderer;
 }
 ```
 

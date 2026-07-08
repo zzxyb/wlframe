@@ -28,7 +28,7 @@
 
 1. Allocate into a named pointer.
 2. Check for `NULL` immediately.
-3. Log with `wlf_log_errno(WLF_ERROR, ...)` if wlframe logging is available.
+3. Report the failure through the project's errno-aware logging or error-propagation convention.
 4. Return failure or jump to cleanup before touching dependent state.
 
 ### Extend A Multi-Step Constructor
@@ -67,7 +67,7 @@
 - `typedef struct` is not being used just to shorten names.
 - Platform details do not leak into generic interfaces.
 - Every allocation result is checked immediately.
-- Allocator failures use `wlf_log_errno()` where applicable.
+- Allocator failures report or propagate useful context.
 - Failure logs name the object or resource that failed.
 - Cleanup paths unwind in reverse order.
 - `realloc()` does not clobber the original pointer on failure.
@@ -79,6 +79,6 @@
 - Typedefs that hide whether a declaration is a struct or a pointer.
 - Platform types leaking into supposedly generic headers.
 - Calling into follow-up initialization before checking allocation results.
-- Returning `NULL` without any errno-aware log on allocation failure.
+- Returning `NULL` without any error context when the API contract expects diagnostics.
 - Leaking early allocations when a later step fails.
 - Overwriting the only pointer with `realloc()` before checking the result.
