@@ -1,4 +1,5 @@
 #include "wlf/buffer/wlf_buffer.h"
+#include "wlf/utils/wlf_compat.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 #include "wlf/utils/wlf_linked_list.h"
@@ -71,15 +72,21 @@ bool wlf_readonly_data_buffer_drop(struct wlf_readonly_data_buffer *buffer) {
 		bool ok = true;
 
 	if (buffer->base.n_locks > 0) {
-		size_t size = buffer->stride * buffer->base.height;
-		buffer->saved_data = malloc(size);
-		if (buffer->saved_data == NULL) {
-			wlf_log_errno(WLF_ERROR, "Failed to allocate saved_data");
+		size_t size;
+		if (wlf_mul_overflow(buffer->stride, (size_t)buffer->base.height, &size)) {
+			wlf_log(WLF_ERROR, "Buffer size overflow in saved_data allocation");
 			ok = false;
 			buffer->data = NULL;
 		} else {
-			memcpy(buffer->saved_data, buffer->data, size);
-			buffer->data = buffer->saved_data;
+			buffer->saved_data = malloc(size);
+			if (buffer->saved_data == NULL) {
+				wlf_log_errno(WLF_ERROR, "Failed to allocate saved_data");
+				ok = false;
+				buffer->data = NULL;
+			} else {
+				memcpy(buffer->saved_data, buffer->data, size);
+				buffer->data = buffer->saved_data;
+			}
 		}
 	}
 
