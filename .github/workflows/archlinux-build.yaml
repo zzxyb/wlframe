@@ -48,6 +48,7 @@ jobs:
           wlr-protocols \
           giflib \
           glib2 \
+          fontconfig \
 
     - name: Build with GCC
       run: |
