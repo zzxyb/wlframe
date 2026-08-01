@@ -18,10 +18,10 @@
 
 #include "wlf/buffer/wlf_buffer.h"
 #include "wlf/renderer/wlf_renderer.h"
-#include "wlf/math/wlf_region.h"
 #include "wlf/math/wlf_rect.h"
 
 #include <stdint.h>
+#include <pixman.h>
 
 struct wlf_texture;
 
@@ -55,7 +55,7 @@ struct wlf_texture_impl {
 	 * @return true on success, false on failure.
 	 */
 	bool (*update_from_buffer)(struct wlf_texture *texture,
-		struct wlf_buffer *buffer, const struct wlf_region *damage);
+		struct wlf_buffer *buffer, const pixman_region32_t *damage);
 
 	/**
 	 * @brief Reads pixels from the texture into CPU memory.
@@ -164,7 +164,7 @@ struct wlf_texture *wlf_texture_from_pixels(struct wlf_renderer *renderer,
  * @return true on success, false on failure.
  */
 bool wlf_texture_update_from_buffer(struct wlf_texture *texture,
-	struct wlf_buffer *buffer, const struct wlf_region *damage);
+	struct wlf_buffer *buffer, const pixman_region32_t *damage);
 
 /**
  * @brief Creates a texture by importing the contents of a wlf_buffer.

@@ -2,6 +2,7 @@
 #include "wlf/utils/wlf_linked_list.h"
 
 #include <assert.h>
+#include <stdlib.h>
 
 void wlf_render_rect_pass_init(struct wlf_rect_pass *pass,
 		const struct wlf_rect_pass_impl *impl) {

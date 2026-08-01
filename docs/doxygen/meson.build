@@ -50,7 +50,6 @@ src_files = files([
 		'../../include/wlf/math/wlf_ray2.h',
 		'../../include/wlf/math/wlf_ray3.h',
 		'../../include/wlf/math/wlf_rect.h',
-		'../../include/wlf/math/wlf_region.h',
 		'../../include/wlf/math/wlf_size.h',
 		'../../include/wlf/math/wlf_vector2.h',
 		'../../include/wlf/math/wlf_vector3.h',

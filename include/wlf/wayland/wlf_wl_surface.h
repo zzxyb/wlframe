@@ -22,9 +22,10 @@
 #define WAYLAND_WLF_WL_SURFACE_H
 
 #include "wlf/utils/wlf_signal.h"
-#include "wlf/math/wlf_region.h"
 
 #include <stdint.h>
+
+#include <pixman.h>
 
 struct wl_buffer;
 struct wl_callback;
@@ -126,7 +127,7 @@ struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface);
  * @param region The opaque region, or NULL/an empty region to clear it.
  */
 void wlf_wl_surface_set_opaque_region(struct wlf_wl_surface *surface,
-	struct wlf_region *region);
+	const pixman_region32_t *region);
 
 /**
  * @brief Sets the input region of the surface.
@@ -134,7 +135,7 @@ void wlf_wl_surface_set_opaque_region(struct wlf_wl_surface *surface,
  * @param region The input region, or NULL/an empty region to clear it.
  */
 void wlf_wl_surface_set_input_region(struct wlf_wl_surface *surface,
-	struct wlf_region *region);
+	const pixman_region32_t *region);
 
 /**
  * @brief Sets the buffer transform.

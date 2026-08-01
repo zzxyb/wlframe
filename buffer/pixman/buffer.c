@@ -3,6 +3,8 @@
 #include "wlf/utils/wlf_linked_list.h"
 
 #include <inttypes.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <drm_fourcc.h>
 

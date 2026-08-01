@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 static void scene_node_destroy(struct wlf_scene_node *node) {
 	struct wlf_window *window = node->window;
@@ -34,7 +35,7 @@ static bool scene_node_invisible(struct wlf_scene_node *node) {
 }
 
 static void scene_node_visibility(struct wlf_scene_node *node,
-		struct wlf_region *visible) {
+		pixman_region32_t *visible) {
 	if (!node->state.enabled) {
 		return;
 	}
@@ -88,7 +89,7 @@ static struct wlf_scene_node *scene_node_at(struct wlf_scene_node *node,
 }
 
 static void scene_node_bounds(struct wlf_scene_node *node,
-		double x, double y, struct wlf_region *visible) {
+		double x, double y, pixman_region32_t *visible) {
 	if (!node->state.enabled) {
 		return;
 	}

@@ -27,10 +27,10 @@
 #include "wlf/math/wlf_rect.h"
 #include "wlf/math/wlf_size.h"
 #include "wlf/types/wlf_color.h"
-#include "wlf/math/wlf_region.h"
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <pixman.h>
 
 struct wlf_window;
 struct wlf_scene_tree;
@@ -88,10 +88,10 @@ struct wlf_window_impl {
 	void (*set_position)(struct wlf_window *window, int x, int y);                          /**< Set the window position */
 	void (*set_state)(struct wlf_window *window, enum wlf_window_state_flags state);        /**< Set the window state */
 	void (*set_flags)(struct wlf_window *window, uint32_t flags);                            /**< Set window behavior flags */
-	void (*set_input_region)(struct wlf_window *window, const struct wlf_region *region);    /**< Set the input region */
-	void (*set_opaque_region)(struct wlf_window *window, const struct wlf_region *region);   /**< Set the opaque region */
+	void (*set_input_region)(struct wlf_window *window, const pixman_region32_t *region);    /**< Set the input region */
+	void (*set_opaque_region)(struct wlf_window *window, const pixman_region32_t *region);   /**< Set the opaque region */
 	void (*set_opacity)(struct wlf_window *window, float opacity);                           /**< Set the window opacity */
-	void (*set_mask)(struct wlf_window *window, const struct wlf_region *mask);              /**< Set the shape mask */
+	void (*set_mask)(struct wlf_window *window, const pixman_region32_t *mask);              /**< Set the shape mask */
 	void (*set_background_color)(struct wlf_window *window, const struct wlf_color *color);  /**< Set the background color */
 };
 
@@ -240,14 +240,14 @@ void wlf_window_set_flags(struct wlf_window *window, uint32_t flags);
  * @param window Pointer to the window.
  * @param region New input region.
  */
-void wlf_window_set_input_region(struct wlf_window *window, const struct wlf_region *region);
+void wlf_window_set_input_region(struct wlf_window *window, const pixman_region32_t *region);
 
 /**
  * @brief Set the window opaque region for compositor optimization.
  * @param window Pointer to the window.
  * @param region New opaque region.
  */
-void wlf_window_set_opaque_region(struct wlf_window *window, const struct wlf_region *region);
+void wlf_window_set_opaque_region(struct wlf_window *window, const pixman_region32_t *region);
 
 /**
  * @brief Set the window opacity.
@@ -261,7 +261,7 @@ void wlf_window_set_opacity(struct wlf_window *window, float opacity);
  * @param window Pointer to the window.
  * @param mask New shape mask region.
  */
-void wlf_window_set_mask(struct wlf_window *window, const struct wlf_region *mask);
+void wlf_window_set_mask(struct wlf_window *window, const pixman_region32_t *mask);
 
 /**
  * @brief Set the window background color.

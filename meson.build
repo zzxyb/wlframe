@@ -160,6 +160,7 @@ elif is_macos
 	libwebp = dependency('libwebp', required: true, method: 'pkg-config')
 	libwebpdemux = dependency('libwebpdemux', required: true, method: 'pkg-config')
 	libwebpmux = dependency('libwebpmux', required: true, method: 'pkg-config')
+	pixman = dependency('pixman-1', version: '>=0.42', required: true, method: 'pkg-config')
 	brew = find_program('brew', required: false)
 	if not brew.found()
 		error('brew not found on macOS. Please install Homebrew and run: brew install giflib')
@@ -202,6 +203,7 @@ elif is_windows
 	libwebp = dependency('libwebp', required: true)
 	libwebpdemux = dependency('libwebpdemux', required: true)
 	libwebpmux = dependency('libwebpmux', required: true)
+	pixman = dependency('pixman-1', version: '>=0.42', required: true)
 	giflib = dependency('giflib', required: false)
 	if not giflib.found()
 		giflib_lib = cc.find_library('gif', required: true)
@@ -225,6 +227,7 @@ wlf_deps = [
 	libwebpdemux,
 	libwebpmux,
 	giflib,
+	pixman,
 ]
 
 if is_macos
@@ -242,7 +245,6 @@ elif is_linux
 		vulkan,
 		gbm,
 		drm,
-		pixman,
 		glesv2,
 		wayland_egl,
 		egl,
