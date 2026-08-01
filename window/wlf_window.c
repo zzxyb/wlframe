@@ -155,14 +155,14 @@ void wlf_window_set_flags(struct wlf_window *window, uint32_t flags) {
 }
 
 void wlf_window_set_input_region(struct wlf_window *window,
-		const struct wlf_region *region) {
+		const pixman_region32_t *region) {
 	if (window->impl->set_input_region) {
 		window->impl->set_input_region(window, region);
 	}
 }
 
 void wlf_window_set_opaque_region(struct wlf_window *window,
-		const struct wlf_region *region) {
+		const pixman_region32_t *region) {
 	if (window->impl->set_opaque_region) {
 		window->impl->set_opaque_region(window, region);
 	}
@@ -177,7 +177,7 @@ void wlf_window_set_opacity(struct wlf_window *window, float opacity) {
 }
 
 void wlf_window_set_mask(struct wlf_window *window,
-		const struct wlf_region *mask) {
+		const pixman_region32_t *mask) {
 	if (window->impl->set_mask) {
 		window->impl->set_mask(window, mask);
 	}

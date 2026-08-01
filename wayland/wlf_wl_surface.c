@@ -5,6 +5,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <wayland-client-protocol.h>
 
@@ -142,16 +143,20 @@ struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface) {
 }
 
 void wlf_wl_surface_set_opaque_region(struct wlf_wl_surface *surface,
-		struct wlf_region *region) {
+		const pixman_region32_t *region) {
 	assert(surface != NULL);
 
 	struct wl_region *wl_region = NULL;
 
-	if (!wlf_region_is_nil(region)) {
+	if (region != NULL && pixman_region32_not_empty((pixman_region32_t *)region)) {
 		wl_region = wl_compositor_create_region(surface->wl_compositor);
-		for (long i = 0; i < region->data->numRects; ++i) {
-			const struct wlf_frect *r = &region->data->rects[i];
-			wl_region_add(wl_region, r->x, r->y, r->width, r->height);
+		int n_rects = 0;
+		const pixman_box32_t *rects =
+			pixman_region32_rectangles((pixman_region32_t *)region, &n_rects);
+		for (int i = 0; i < n_rects; ++i) {
+			const pixman_box32_t *r = &rects[i];
+			wl_region_add(wl_region, r->x1, r->y1,
+				r->x2 - r->x1, r->y2 - r->y1);
 		}
 	}
 
@@ -163,15 +168,19 @@ void wlf_wl_surface_set_opaque_region(struct wlf_wl_surface *surface,
 }
 
 void wlf_wl_surface_set_input_region(struct wlf_wl_surface *surface,
-		struct wlf_region *region) {
+		const pixman_region32_t *region) {
 	assert(surface != NULL);
 
 	struct wl_region *wl_region = NULL;
-	if (!wlf_region_is_nil(region)) {
+	if (region != NULL && pixman_region32_not_empty((pixman_region32_t *)region)) {
 		wl_region = wl_compositor_create_region(surface->wl_compositor);
-		for (long i = 0; i < region->data->numRects; ++i) {
-			const struct wlf_frect *r = &region->data->rects[i];
-			wl_region_add(wl_region, r->x, r->y, r->width, r->height);
+		int n_rects = 0;
+		const pixman_box32_t *rects =
+			pixman_region32_rectangles((pixman_region32_t *)region, &n_rects);
+		for (int i = 0; i < n_rects; ++i) {
+			const pixman_box32_t *r = &rects[i];
+			wl_region_add(wl_region, r->x1, r->y1,
+				r->x2 - r->x1, r->y2 - r->y1);
 		}
 	}
 

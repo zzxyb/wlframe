@@ -15,11 +15,11 @@
 #define BUFFER_WLF_BUFFER_H
 
 #include "wlf/utils/wlf_signal.h"
-#include "wlf/math/wlf_region.h"
 #include "wlf/utils/wlf_addon.h"
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <pixman.h>
 
 struct wlf_buffer;
 
@@ -66,7 +66,7 @@ struct wlf_buffer_impl {
 	 * @param buffer Buffer to query.
 	 * @return Opaque region or NULL if no specific region is opaque.
 	 */
-	const struct wlf_region *(*opaque_region)(struct wlf_buffer *buffer);
+	const pixman_region32_t *(*opaque_region)(struct wlf_buffer *buffer);
 };
 
 /**

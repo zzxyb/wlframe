@@ -5,6 +5,8 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 static void buffer_consider_destroy(struct wlf_buffer *buffer) {
 	if (!buffer->dropped || buffer->n_locks > 0) {

@@ -4,6 +4,7 @@
 #include "wlf/math/wlf_rect.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <inttypes.h>
 
 static void texture_destroy(struct wlf_texture *wlf_texture) {

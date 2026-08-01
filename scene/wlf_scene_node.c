@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 void wlf_scene_node_place_above(struct wlf_scene_node *node,
 		struct wlf_scene_node *sibling) {
@@ -70,8 +71,8 @@ void wlf_scene_node_reparent(struct wlf_scene_node *node,
 	}
 
 	double x, y;
-	struct wlf_region visible;
-	wlf_region_init(&visible);
+	pixman_region32_t visible;
+	pixman_region32_init(&visible);
 	if (wlf_scene_node_coords(node, &x, &y)) {
 		wlf_scene_node_visibility(node, &visible);
 	}
@@ -81,6 +82,7 @@ void wlf_scene_node_reparent(struct wlf_scene_node *node,
 	struct wlf_linked_list *children = wlf_scene_node_get_children(new_parent);
 	wlf_linked_list_insert(children->prev, &node->link);
 	wlf_scene_node_update(node, &visible);
+	pixman_region32_fini(&visible);
 }
 
 void wlf_scene_node_init(struct wlf_scene_node *node,
@@ -103,9 +105,9 @@ void wlf_scene_node_init(struct wlf_scene_node *node,
 
 	wlf_signal_init(&node->events.destroy);
 
-	wlf_region_init(&node->state.visible);
-	wlf_region_init(&node->state.transparent_region);
-	wlf_region_init(&node->state.input_passthrough_region);
+	pixman_region32_init(&node->state.visible);
+	pixman_region32_init(&node->state.transparent_region);
+	pixman_region32_init(&node->state.input_passthrough_region);
 
 	if (parent != NULL) {
 		wlf_linked_list_insert(parent->impl->get_children(parent)->prev, &node->link);
@@ -126,9 +128,9 @@ void wlf_scene_node_destroy(struct wlf_scene_node *node) {
 
 	wlf_scene_node_set_enabled(node, false);
 	wlf_linked_list_remove(&node->link);
-	wlf_region_fini(&node->state.visible);
-	wlf_region_fini(&node->state.transparent_region);
-	wlf_region_fini(&node->state.input_passthrough_region);
+	pixman_region32_fini(&node->state.visible);
+	pixman_region32_fini(&node->state.transparent_region);
+	pixman_region32_fini(&node->state.input_passthrough_region);
 	if (node->impl->destroy != NULL) {
 		node->impl->destroy(node);
 	} else {
@@ -143,8 +145,8 @@ void wlf_scene_node_set_enabled(struct wlf_scene_node *node, bool enabled) {
 
 	if (node->impl->set_enabled == NULL) {
 		double x, y;
-		struct wlf_region visible;
-		wlf_region_init(&visible);
+		pixman_region32_t visible;
+		pixman_region32_init(&visible);
 		if (wlf_scene_node_coords(node, &x, &y)) {
 			wlf_scene_node_visibility(node, &visible);
 		}
@@ -152,6 +154,7 @@ void wlf_scene_node_set_enabled(struct wlf_scene_node *node, bool enabled) {
 		node->state.enabled = enabled;
 
 		wlf_scene_node_update(node, &visible);
+		pixman_region32_fini(&visible);
 		return;
 	}
 
@@ -215,7 +218,7 @@ struct wlf_linked_list *wlf_scene_node_get_children(struct wlf_scene_node *node)
 }
 
 void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
-		double y, struct wlf_region *opaque) {
+		double y, pixman_region32_t *opaque) {
 	if (node->impl->get_opaque_region == NULL) {
 		if (node->state.opacity != 1) {
 			return;
@@ -223,14 +226,9 @@ void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
 
 		double width, height;
 		wlf_scene_node_get_size(node, &width, &height);
-		wlf_region_fini(opaque);
-		const struct wlf_frect rect = {
-			.x = x,
-			.y = y,
-			.width = width,
-			.height = height,
-		};
-		wlf_region_init_rect(opaque, &rect);
+		pixman_region32_fini(opaque);
+		pixman_region32_init_rect(opaque, (int)x, (int)y,
+			(uint32_t)width, (uint32_t)height);
 		return;
 	}
 
@@ -245,7 +243,7 @@ bool wlf_scene_node_invisible(struct wlf_scene_node *node) {
 	return node->impl->invisible(node);
 }
 
-void wlf_scene_node_visibility(struct wlf_scene_node *node, struct wlf_region *visible) {
+void wlf_scene_node_visibility(struct wlf_scene_node *node, pixman_region32_t *visible) {
 	if (node->impl->visibility == NULL) {
 		return;
 	}
@@ -286,7 +284,7 @@ bool wlf_scene_node_coords(struct wlf_scene_node *node,
 	return node->impl->coords(node, lx_ptr, ly_ptr);
 }
 
-void wlf_scene_node_update(struct wlf_scene_node *node, struct wlf_region *damage) {
+void wlf_scene_node_update(struct wlf_scene_node *node, pixman_region32_t *damage) {
 	if (node->impl->update == NULL) {
 		return;
 	}
@@ -295,7 +293,7 @@ void wlf_scene_node_update(struct wlf_scene_node *node, struct wlf_region *damag
 }
 
 void wlf_scene_node_bounds(struct wlf_scene_node *node,
-		double x, double y, struct wlf_region *visible) {
+		double x, double y, pixman_region32_t *visible) {
 	if (node->impl->bounds == NULL) {
 		if (!node->state.enabled) {
 			return;
@@ -303,13 +301,8 @@ void wlf_scene_node_bounds(struct wlf_scene_node *node,
 
 		double width, height;
 		wlf_scene_node_get_size(node, &width, &height);
-		const struct wlf_frect rect = {
-			.x = x,
-			.y = y,
-			.width = width,
-			.height = height,
-		};
-		wlf_region_union_rect(visible, visible, &rect);
+		pixman_region32_union_rect(visible, visible, (int)x, (int)y,
+			(uint32_t)width, (uint32_t)height);
 		return;
 	}
 

@@ -16,10 +16,11 @@
 
 #include "wlf/types/wlf_color.h"
 #include "wlf/utils/wlf_signal.h"
-#include "wlf/math/wlf_region.h"
 #include "wlf/pass/wlf_pass.h"
 #include "wlf/math/wlf_frect.h"
 #include "wlf/pass/wlf_render_target_info.h"
+
+#include <pixman.h>
 
 /**
  * @brief Configuration options for rendering a rectangle.
@@ -27,7 +28,7 @@
 struct wlf_render_rect_options {
 	struct wlf_frect box;                  /**< Rectangle coordinates and dimensions */
 	struct wlf_color color;                /**< Source fill color */
-	const struct wlf_region *clip;         /**< Clip region, leave NULL to disable clipping */
+	const pixman_region32_t *clip;         /**< Clip region, leave NULL to disable clipping */
 	enum wlf_render_blend_mode blend_mode; /**< Color blend mode */
 };
 

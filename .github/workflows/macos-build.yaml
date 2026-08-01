@@ -43,6 +43,7 @@ jobs:
           libxml2 \
           webp \
           giflib \
+          pixman \
 
     - name: Setup build
       run: |

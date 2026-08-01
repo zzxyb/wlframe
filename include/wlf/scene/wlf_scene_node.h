@@ -15,12 +15,13 @@
 #ifndef SCENE_WLF_SCENE_NODE_H
 #define SCENE_WLF_SCENE_NODE_H
 
-#include "wlf/math/wlf_region.h"
+#include "wlf/math/wlf_frect.h"
 #include "wlf/utils/wlf_addon.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_signal.h"
 
 #include <stdbool.h>
+#include <pixman.h>
 
 struct wlf_window;
 struct wlf_scene_node;
@@ -114,7 +115,7 @@ struct wlf_scene_node_impl {
 	 * @param opaque Region to store opaque area
 	 */
 	void (*get_opaque_region)(struct wlf_scene_node *node, double x, double y,
-		struct wlf_region *opaque);
+		pixman_region32_t *opaque);
 
 	/**
 	 * @brief Checks if the scene node is invisible
@@ -129,7 +130,7 @@ struct wlf_scene_node_impl {
 	 * @param visible Visible region
 	 */
 	void (*visibility)(struct wlf_scene_node *node,
-		struct wlf_region *visible);
+		pixman_region32_t *visible);
 
 	/**
 	 * @brief Finds the scene node at a given position
@@ -158,7 +159,7 @@ struct wlf_scene_node_impl {
 	 * @param node The scene node
 	 * @param damage Damage region
 	 */
-	void (*update)(struct wlf_scene_node *node, struct wlf_region *damage);
+	void (*update)(struct wlf_scene_node *node, pixman_region32_t *damage);
 
 	/**
 	 * @brief Calculates and accumulates the bounding region of a scene node.
@@ -170,7 +171,7 @@ struct wlf_scene_node_impl {
 	 * @param visible Pointer to an existing region structure.
 	 */
 	void (*bounds)(struct wlf_scene_node *node,
-		double x, double y, struct wlf_region *visible);
+		double x, double y, pixman_region32_t *visible);
 
 	/**
 	 * @brief Iterates over child nodes or sub-elements intersecting a bounding box.
@@ -198,9 +199,9 @@ struct wlf_scene_node_state {
 	float opacity;                          /**< Opacity level (0.0 to 1.0) */
 
 	enum wlf_focus_policy focus_policy;     /**< Focus policy for the node */
-	struct wlf_region visible;              /**< Visible region */
-	struct wlf_region transparent_region;   /**< Transparent region */
-	struct wlf_region input_passthrough_region; /**< Input passthrough region */
+	pixman_region32_t visible;              /**< Visible region */
+	pixman_region32_t transparent_region;   /**< Transparent region */
+	pixman_region32_t input_passthrough_region; /**< Input passthrough region */
 };
 
 /**
@@ -362,7 +363,7 @@ struct wlf_linked_list *wlf_scene_node_get_children(struct wlf_scene_node *node)
  * @param opaque Region to store opaque area.
  */
 void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
-	double y, struct wlf_region *opaque);
+	double y, pixman_region32_t *opaque);
 
 /**
  * @brief Checks if a scene node is invisible.
@@ -379,7 +380,7 @@ bool wlf_scene_node_invisible(struct wlf_scene_node *node);
  * @param visible Visible region.
  */
 void wlf_scene_node_visibility(struct wlf_scene_node *node,
-	struct wlf_region *visible);
+	pixman_region32_t *visible);
 
 /**
  * @brief Finds the scene node at a given position.
@@ -411,7 +412,7 @@ bool wlf_scene_node_coords(struct wlf_scene_node *node,
  * @param node Node to update.
  * @param damage Damage region.
  */
-void wlf_scene_node_update(struct wlf_scene_node *node, struct wlf_region *damage);
+void wlf_scene_node_update(struct wlf_scene_node *node, pixman_region32_t *damage);
 
 /**
  * @brief Calculates and accumulates the bounding region of a scene node.
@@ -435,7 +436,7 @@ void wlf_scene_node_update(struct wlf_scene_node *node, struct wlf_region *damag
  *                 this region remains unmodified.
  */
 void wlf_scene_node_bounds(struct wlf_scene_node *node,
-	double x, double y, struct wlf_region *visible);
+	double x, double y, pixman_region32_t *visible);
 
 /**
  * @brief Traverses and evaluates scene graph elements within a specified bounding box.

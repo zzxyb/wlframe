@@ -64,7 +64,7 @@ struct wlf_texture *wlf_texture_from_pixels(struct wlf_renderer *renderer,
 }
 
 bool wlf_texture_update_from_buffer(struct wlf_texture *texture,
-		struct wlf_buffer *buffer, const struct wlf_region *damage) {
+		struct wlf_buffer *buffer, const pixman_region32_t *damage) {
 	if (!texture->impl->update_from_buffer) {
 		return false;
 	}
@@ -74,9 +74,12 @@ bool wlf_texture_update_from_buffer(struct wlf_texture *texture,
 		return false;
 	}
 
-	struct wlf_frect extents = wlf_region_bounding_rect(damage);
-	if (extents.x < 0 || extents.y < 0 || extents.x + extents.width > buffer->width ||
-		extents.y + extents.height > buffer->height) {
+	const pixman_box32_t *extents = damage != NULL ?
+		pixman_region32_extents((pixman_region32_t *)damage) : NULL;
+	if (extents != NULL &&
+			(extents->x1 < 0 || extents->y1 < 0 ||
+			(uint32_t)extents->x2 > buffer->width ||
+			(uint32_t)extents->y2 > buffer->height)) {
 		return false;
 	}
 
