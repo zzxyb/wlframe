@@ -3,6 +3,14 @@ utils_examples = {
 		'src': ['utils_cmd_parser_test.c'],
 		'dep': [],
 	},
+	'utils_map_test': {
+		'src': ['utils_map_test.c'],
+		'dep': [],
+	},
+	'utils_hash_test': {
+		'src': ['utils_hash_test.c'],
+		'dep': [],
+	},
 }
 
 foreach example, info : utils_examples
