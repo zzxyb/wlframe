@@ -281,6 +281,7 @@ subdir('allocator')
 subdir('scene')
 subdir('shapes')
 subdir('svg')
+subdir('swapchain')
 
 wlf_inc = include_directories('include')
 

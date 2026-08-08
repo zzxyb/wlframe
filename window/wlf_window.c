@@ -1,18 +1,29 @@
 #include "wlf/window/wlf_window.h"
+#include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
 
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
+static uint32_t get_render_format(bool has_alpha) {
+	if (has_alpha) {
+		return WLF_FORMAT_ARGB8888;
+	}
+
+	return WLF_FORMAT_XRGB8888;
+}
+
 void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
-		const struct wlf_window_impl *impl, uint32_t width, uint32_t height) {
+		const struct wlf_window_impl *impl, struct wlf_backend *backend,
+		uint32_t width, uint32_t height) {
 	assert(impl->destroy);
 
 	*window = (struct wlf_window){
 		.impl = impl,
 		.state.type = type,
 		.state.opacity = 1.0f,
+		.state.backend = backend,
 		.state.geometry = {
 			.width = (int)width,
 			.height = (int)height,
@@ -23,6 +34,8 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 			.enable_set_max_size = impl->set_max_size != NULL,
 		},
 	};
+
+	wlf_render_format_init(&window->state.format, get_render_format(false));
 
 	wlf_signal_init(&window->events.destroy);
 	wlf_signal_init(&window->events.expose);
@@ -42,7 +55,7 @@ void wlf_window_destroy(struct wlf_window *window) {
 
 	wlf_signal_emit_mutable(&window->events.destroy, window);
 	free(window->state.title);
-
+	wlf_render_format_finish(&window->state.format);
 	if (window->impl->destroy) {
 		window->impl->destroy(window);
 	} else {
@@ -190,4 +203,19 @@ void wlf_window_set_background_color(struct wlf_window *window,
 	if (window->impl->set_background_color) {
 		window->impl->set_background_color(window, &window->state.background_color);
 	}
+}
+
+void *wlf_window_native_handle(struct wlf_window *window) {
+	if (window == NULL || window->impl->native_handle == NULL) {
+		return NULL;
+	}
+
+	return window->impl->native_handle(window);
+}
+
+void wlf_window_init_renderer(struct wlf_window *window, struct wlf_renderer *renderer) {
+	window->state.renderer = renderer;
+	window->state.swapchain =
+		wlf_swapchain_auto_create(window, window->state.geometry.width,
+			window->state.geometry.height, &window->state.format);
 }

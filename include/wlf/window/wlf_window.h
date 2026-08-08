@@ -27,6 +27,10 @@
 #include "wlf/math/wlf_rect.h"
 #include "wlf/math/wlf_size.h"
 #include "wlf/types/wlf_color.h"
+#include "wlf/allocator/wlf_allocator.h"
+#include "wlf/renderer/wlf_renderer.h"
+#include "wlf/platform/wlf_backend.h"
+#include "wlf/swapchain/wlf_swapchain.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -58,6 +62,7 @@ enum wlf_window_type {
 	WLF_WINDOW_TYPE_POPUP,     /**< Popup window */
 	WLF_WINDOW_TYPE_DIALOG,    /**< Dialog window */
 	WLF_WINDOW_TYPE_TOOLTIP,   /**< Tooltip window */
+	WLF_WINDOW_TYPE_LAYER,     /**< wlr-layer-shell window */
 };
 
 /**
@@ -93,11 +98,17 @@ struct wlf_window_impl {
 	void (*set_opacity)(struct wlf_window *window, float opacity);                           /**< Set the window opacity */
 	void (*set_mask)(struct wlf_window *window, const pixman_region32_t *mask);              /**< Set the shape mask */
 	void (*set_background_color)(struct wlf_window *window, const struct wlf_color *color);  /**< Set the background color */
+	void *(*native_handle)(struct wlf_window *window);
 };
 
 struct wlf_window_state {
+	struct wlf_renderer *renderer;
+	struct wlf_backend *backend;
+	struct wlf_swapchain *swapchain;
+
 	char *title;                        /**< Window title */
 
+	struct wlf_render_format format;
 	struct wlf_color background_color;  /**< Background color (RGBA doubles) */
 	struct wlf_rect geometry;           /**< Window geometry (position and size) */
 	struct wlf_size min_size;           /**< Minimum window size */
@@ -149,7 +160,8 @@ struct wlf_window {
  * @param height Initial window height.
  */
 void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
-	const struct wlf_window_impl *impl, uint32_t width, uint32_t height);
+	const struct wlf_window_impl *impl, struct wlf_backend *backend,
+	uint32_t width, uint32_t height);
 
 /**
  * @brief Destroy a window and free all associated resources.
@@ -269,5 +281,9 @@ void wlf_window_set_mask(struct wlf_window *window, const pixman_region32_t *mas
  * @param color New background color.
  */
 void wlf_window_set_background_color(struct wlf_window *window, const struct wlf_color *color);
+
+void *wlf_window_native_handle(struct wlf_window *window);
+
+void wlf_window_init_renderer(struct wlf_window *window, struct wlf_renderer *renderer);
 
 #endif // WINDOW_WLF_WINDOW_H
