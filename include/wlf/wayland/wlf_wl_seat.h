@@ -28,6 +28,9 @@ struct wlf_pointer;
 struct wlf_keyboard;
 struct wlf_touch;
 struct wlf_window;
+struct wl_compositor;
+struct wl_shm;
+struct wp_cursor_shape_manager_v1;
 
 /** @brief Seat capabilities bitmask (mirrors wl_seat_capability). */
 enum wlf_wl_seat_capability {
@@ -50,6 +53,9 @@ struct wlf_wl_seat {
 	struct wlf_window *pointer_window;
 	struct wlf_window *keyboard_window;
 	struct wlf_window *touch_window;
+	struct wp_cursor_shape_manager_v1 *cursor_shape_manager;
+	struct wl_compositor *cursor_compositor;
+	struct wl_shm *cursor_shm;
 	struct {
 		struct wlf_listener pointer_enter, pointer_leave, pointer_motion;
 		struct wlf_listener pointer_button, pointer_axis, pointer_frame;
@@ -85,5 +91,10 @@ struct wlf_wl_seat *wlf_wl_seat_create(struct wl_registry *wl_registry,
  * @brief Destroys a wlf_wl_seat. Passing NULL is a no-op.
  */
 void wlf_wl_seat_destroy(struct wlf_wl_seat *seat);
+
+/** Updates the globals used for cursor-shape or themed cursor rendering. */
+void wlf_wl_seat_configure_cursor(struct wlf_wl_seat *seat,
+	struct wp_cursor_shape_manager_v1 *shape_manager,
+	struct wl_compositor *compositor, struct wl_shm *shm);
 
 #endif /* WAYLAND_WLF_WL_SEAT_H */

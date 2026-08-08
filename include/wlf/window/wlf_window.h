@@ -83,6 +83,19 @@ enum wlf_window_flags {
 	WLF_WINDOW_FLAG_MODAL        = 1 << 4, /**< Window is modal */
 };
 
+/** Edge/corner used for native interactive resize requests. */
+enum wlf_window_resize_edge {
+	WLF_WINDOW_RESIZE_EDGE_NONE = 0,
+	WLF_WINDOW_RESIZE_EDGE_TOP = 1,
+	WLF_WINDOW_RESIZE_EDGE_BOTTOM = 2,
+	WLF_WINDOW_RESIZE_EDGE_LEFT = 4,
+	WLF_WINDOW_RESIZE_EDGE_TOP_LEFT = 5,
+	WLF_WINDOW_RESIZE_EDGE_BOTTOM_LEFT = 6,
+	WLF_WINDOW_RESIZE_EDGE_RIGHT = 8,
+	WLF_WINDOW_RESIZE_EDGE_TOP_RIGHT = 9,
+	WLF_WINDOW_RESIZE_EDGE_BOTTOM_RIGHT = 10,
+};
+
 /**
  * @brief Window implementation interface for platform-specific operations.
  */
@@ -99,6 +112,8 @@ struct wlf_window_impl {
 	void (*set_position)(struct wlf_window *window, int x, int y);                          /**< Set the window position */
 	void (*begin_move)(struct wlf_window *window, struct wlf_pointer *pointer,
 		uint32_t serial); /**< Begin compositor/native interactive move. */
+	void (*begin_resize)(struct wlf_window *window, struct wlf_pointer *pointer,
+		uint32_t serial, enum wlf_window_resize_edge edge);
 	void (*set_state)(struct wlf_window *window, enum wlf_window_state_flags state);        /**< Set the window state */
 	void (*set_flags)(struct wlf_window *window, uint32_t flags);                            /**< Set window behavior flags */
 	void (*set_input_region)(struct wlf_window *window, const pixman_region32_t *region);    /**< Set the input region */
@@ -281,6 +296,11 @@ void wlf_window_set_position(struct wlf_window *window, int x, int y);
 /** Starts a native interactive move from a pointer press serial. */
 void wlf_window_begin_move(struct wlf_window *window,
 	struct wlf_pointer *pointer, uint32_t serial);
+
+/** Starts a native interactive resize from a pointer press serial. */
+void wlf_window_begin_resize(struct wlf_window *window,
+	struct wlf_pointer *pointer, uint32_t serial,
+	enum wlf_window_resize_edge edge);
 
 /** Changes the logical-to-buffer pixel scale and schedules a full repaint. */
 void wlf_window_set_scale(struct wlf_window *window, double scale);

@@ -16,6 +16,7 @@
 #define TYPES_WLF_POINTER_H
 
 #include "wlf/utils/wlf_signal.h"
+#include "wlf/types/wlf_cursor.h"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -31,6 +32,7 @@ enum wlf_pointer_button_code {
 };
 
 struct wlf_pointer;
+struct wlf_cursor;
 
 /**
  * @brief Pointer button state.
@@ -86,6 +88,8 @@ struct wlf_pointer_impl {
  */
 struct wlf_pointer {
 	const struct wlf_pointer_impl *impl; /**< Virtual method table. */
+	struct wlf_cursor *cursor; /**< Cursor image/shape controller, when available. */
+	uint32_t cursor_serial; /**< Latest native pointer-enter serial. */
 
 	uint32_t buttons[WLF_POINTER_BUTTONS_CAP]; /**< Currently pressed button codes. */
 	size_t button_count; /**< Number of valid entries in buttons. */
@@ -115,6 +119,10 @@ struct wlf_pointer {
 
 	void *data; /**< User-defined data pointer. */
 };
+
+/** Sets this pointer's cursor using its latest valid enter serial. */
+bool wlf_pointer_set_cursor_shape(struct wlf_pointer *pointer,
+	enum wlf_cursor_shape shape);
 
 /** Pointer entered a native surface. Coordinates are surface-local. */
 struct wlf_pointer_enter_event {

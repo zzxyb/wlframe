@@ -10,4 +10,5 @@ wlf_files += files(
 	'wlf_pointer.c',
 	'wlf_touch.c',
 	'wlf_keyboard.c',
+	'wlf_cursor.c',
 )

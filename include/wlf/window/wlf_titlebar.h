@@ -17,6 +17,7 @@
 #include "wlf/utils/wlf_signal.h"
 
 #include <stdbool.h>
+#include <stdint.h>
 
 struct wlf_rect_node;
 struct wlf_event_node;
@@ -35,6 +36,14 @@ enum wlf_titlebar_button_type {
 
 enum {
 	WLF_TITLEBAR_HEIGHT = 28,
+	WLF_TITLEBAR_RESIZE_HANDLE_COUNT = 8,
+};
+
+struct wlf_titlebar_resize_handle {
+	struct wlf_titlebar *titlebar;
+	uint32_t edge;
+	struct wlf_event_node *event_node;
+	struct wlf_listener pointer_button;
 };
 
 /** One titlebar control, represented by a dedicated scene subtree. */
@@ -69,6 +78,8 @@ struct wlf_titlebar {
 	struct wlf_titlebar_button minimize_button;
 	struct wlf_titlebar_button maximize_button;
 	struct wlf_titlebar_button close_button;
+	struct wlf_titlebar_resize_handle resize_handles[
+		WLF_TITLEBAR_RESIZE_HANDLE_COUNT];
 	struct {
 		struct wlf_listener resize;
 		struct wlf_listener focus_in;

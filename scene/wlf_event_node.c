@@ -120,6 +120,7 @@ struct wlf_event_node *wlf_event_node_create(struct wlf_scene_node *parent,
 	node->base.state.x = x;
 	node->base.state.y = y;
 	pixman_region32_init_rect(&node->input_region, 0, 0, width, height);
+	node->cursor_shape = WLF_CURSOR_SHAPE_DEFAULT;
 
 	struct wlf_signal *signals[] = {
 		&node->events.pointer_enter, &node->events.pointer_leave,
@@ -137,6 +138,14 @@ struct wlf_event_node *wlf_event_node_create(struct wlf_scene_node *parent,
 		wlf_signal_init(signals[i]);
 	}
 	return node;
+}
+
+void wlf_event_node_set_cursor_shape(struct wlf_event_node *node,
+		enum wlf_cursor_shape shape) {
+	assert(node != NULL);
+	assert(shape >= WLF_CURSOR_SHAPE_DEFAULT &&
+		shape <= WLF_CURSOR_SHAPE_ALL_RESIZE);
+	node->cursor_shape = shape;
 }
 
 void wlf_event_node_set_input_region(struct wlf_event_node *node,
