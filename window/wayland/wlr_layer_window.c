@@ -51,14 +51,6 @@ static void handle_layer_surface_configure(struct wlf_listener *listener,
 		wlf_signal_emit_mutable(&window->base.events.resize, &window->base);
 	}
 
-	if (window->base.state.swapchain != NULL) {
-		pixman_region32_t damage;
-		pixman_region32_init_rect(&damage, 0, 0,
-			window->base.state.geometry.width,
-			window->base.state.geometry.height);
-		wlf_swapchain_present(window->base.state.swapchain, &damage);
-		pixman_region32_fini(&damage);
-	}
 	wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
 }
 
