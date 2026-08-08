@@ -4,6 +4,9 @@
  * @author      YaoBing Xiao
  * @date        2026-03-21
  * @version     v1.0
+ * @par Copyright(c):
+ * @par History:
+ *      version: v1.0, YaoBing Xiao, 2026-03-21, initial version\n
  */
 
 #ifndef TYPES_WLF_MESH_GRADIENT_H
