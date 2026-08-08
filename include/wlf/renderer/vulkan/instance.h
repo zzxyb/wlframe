@@ -21,7 +21,18 @@
 #ifndef VULKAN_INSTANCE_H
 #define VULKAN_INSTANCE_H
 
+#include "wlf/config.h"
+
+#if WLF_HAS_LINUX_PLATFORM
+#ifndef VK_USE_PLATFORM_WAYLAND_KHR
+#define VK_USE_PLATFORM_WAYLAND_KHR
+#endif
+#endif
+
 #include <vulkan/vulkan.h>
+#if WLF_HAS_LINUX_PLATFORM
+#include <vulkan/vulkan_wayland.h>
+#endif
 #include <stdbool.h>
 
 /**
@@ -47,6 +58,10 @@ struct wlf_vk_instance {
 	struct {
 		PFN_vkCreateDebugUtilsMessengerEXT createDebugUtilsMessengerEXT;   /**< Function pointer to `vkCreateDebugUtilsMessengerEXT`. */
 		PFN_vkDestroyDebugUtilsMessengerEXT destroyDebugUtilsMessengerEXT; /**< Function pointer to `vkDestroyDebugUtilsMessengerEXT`. */
+		PFN_vkDestroySurfaceKHR destroySurfaceKHR;
+#if WLF_HAS_LINUX_PLATFORM
+		PFN_vkCreateWaylandSurfaceKHR createWaylandSurfaceKHR;
+#endif
 	} api;
 };
 

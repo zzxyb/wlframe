@@ -9,6 +9,8 @@
 static void render_target_info_destroy(struct wlf_render_target_info *render_target) {
 	struct wlf_pixman_render_target_info *target_info =
 		wlf_pixman_render_target_info_from_info(render_target);
+	wlf_buffer_end_data_ptr_access(target_info->buffer->buffer);
+	wlf_buffer_unlock(target_info->buffer->buffer);
 	free(target_info);
 }
 

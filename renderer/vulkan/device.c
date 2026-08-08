@@ -85,6 +85,7 @@ struct wlf_vk_device *wlf_vk_device_create(struct wlf_vk_instance *instance,
 	extensions[extensions_len++] = VK_EXT_IMAGE_DRM_FORMAT_MODIFIER_EXTENSION_NAME;
 	extensions[extensions_len++] = VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME; // or vulkan 1.2
 	extensions[extensions_len++] = VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME; // or vulkan 1.3
+	extensions[extensions_len++] = VK_KHR_SWAPCHAIN_EXTENSION_NAME;
 
 	for (size_t i = 0; i < extensions_len; i++) {
 		if (!check_extension(avail_ext_props, avail_extc, extensions[i])) {
@@ -250,6 +251,15 @@ struct wlf_vk_device *wlf_vk_device_create(struct wlf_vk_instance *instance,
 	load_device_proc(dev, "vkGetSemaphoreCounterValueKHR",
 		&dev->api.vkGetSemaphoreCounterValueKHR);
 	load_device_proc(dev, "vkQueueSubmit2KHR", &dev->api.vkQueueSubmit2KHR);
+	load_device_proc(dev, "vkCreateSwapchainKHR",
+		&dev->api.vkCreateSwapchainKHR);
+	load_device_proc(dev, "vkDestroySwapchainKHR",
+		&dev->api.vkDestroySwapchainKHR);
+	load_device_proc(dev, "vkGetSwapchainImagesKHR",
+		&dev->api.vkGetSwapchainImagesKHR);
+	load_device_proc(dev, "vkAcquireNextImageKHR",
+		&dev->api.vkAcquireNextImageKHR);
+	load_device_proc(dev, "vkQueuePresentKHR", &dev->api.vkQueuePresentKHR);
 
 	if (has_external_semaphore_fd) {
 		load_device_proc(dev, "vkGetSemaphoreFdKHR", &dev->api.vkGetSemaphoreFdKHR);
