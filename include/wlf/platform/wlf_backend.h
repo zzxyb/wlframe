@@ -29,6 +29,7 @@
 #include <stddef.h>
 
 struct wlf_backend;
+struct wlf_theme;
 
 typedef void (*wlf_backend_event_source_dispatch_t)(
 	struct wlf_backend *backend, int fd, uint32_t revents, void *data);
@@ -74,6 +75,7 @@ struct wlf_backend_impl {
  */
 struct wlf_backend {
 	const struct wlf_backend_impl *impl;  /**< Backend implementation */
+	struct wlf_theme *theme; /**< Host appearance and semantic color palette. */
 	bool running;  /**< True while backend event loop is running */
 	struct {
 		/** Whether the platform can provide server-side window decorations. */
@@ -111,6 +113,13 @@ struct wlf_backend {
  */
 void wlf_backend_init(struct wlf_backend *backend,
 	const struct wlf_backend_impl *impl);
+
+/**
+ * Creates and attaches the host platform theme to a backend.
+ * Calling this more than once is harmless.
+ * @return true when a theme is available.
+ */
+bool wlf_backend_init_theme(struct wlf_backend *backend);
 
 /**
  * @brief Auto-create the best available backend for the current environment

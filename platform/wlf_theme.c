@@ -12,6 +12,43 @@
 #include <assert.h>
 #include <stdlib.h>
 
+void wlf_theme_fill_default_palette(
+		struct wlf_color palette[WLF_THEME_COLOR_COUNT],
+		enum wlf_theme_appearance appearance) {
+	if (appearance == WLF_THEME_APPEARANCE_DARK) {
+		palette[WLF_THEME_COLOR_HIGHLIGHT] =
+			(struct wlf_color){0.35, 0.67, 1.0, 1.0};
+		palette[WLF_THEME_COLOR_WINDOW_BACKGROUND] =
+			(struct wlf_color){0.12, 0.12, 0.13, 1.0};
+		palette[WLF_THEME_COLOR_TITLEBAR_ACTIVE] =
+			(struct wlf_color){0.16, 0.16, 0.17, 1.0};
+		palette[WLF_THEME_COLOR_TITLEBAR_INACTIVE] =
+			(struct wlf_color){0.13, 0.13, 0.14, 1.0};
+		palette[WLF_THEME_COLOR_TITLEBAR_TEXT_ACTIVE] =
+			(struct wlf_color){0.95, 0.95, 0.95, 1.0};
+		palette[WLF_THEME_COLOR_TITLEBAR_TEXT_INACTIVE] =
+			(struct wlf_color){0.68, 0.68, 0.68, 1.0};
+		palette[WLF_THEME_COLOR_TITLEBAR_SEPARATOR] =
+			(struct wlf_color){1.0, 1.0, 1.0, 0.12};
+		return;
+	}
+
+	palette[WLF_THEME_COLOR_HIGHLIGHT] =
+		(struct wlf_color){0.00, 0.40, 0.87, 1.0};
+	palette[WLF_THEME_COLOR_WINDOW_BACKGROUND] =
+		(struct wlf_color){0.97, 0.97, 0.97, 1.0};
+	palette[WLF_THEME_COLOR_TITLEBAR_ACTIVE] =
+		(struct wlf_color){0.88, 0.88, 0.87, 1.0};
+	palette[WLF_THEME_COLOR_TITLEBAR_INACTIVE] =
+		(struct wlf_color){0.94, 0.94, 0.95, 1.0};
+	palette[WLF_THEME_COLOR_TITLEBAR_TEXT_ACTIVE] =
+		(struct wlf_color){0.08, 0.08, 0.08, 1.0};
+	palette[WLF_THEME_COLOR_TITLEBAR_TEXT_INACTIVE] =
+		(struct wlf_color){0.25, 0.25, 0.25, 0.72};
+	palette[WLF_THEME_COLOR_TITLEBAR_SEPARATOR] =
+		(struct wlf_color){0.0, 0.0, 0.0, 0.14};
+}
+
 void wlf_theme_init(struct wlf_theme *theme,
 		const struct wlf_theme_impl *impl) {
 	assert(impl->destroy != NULL &&

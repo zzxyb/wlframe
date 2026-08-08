@@ -118,11 +118,8 @@ void wlf_macos_theme_reload(struct wlf_macos_theme *theme) {
 
 static void macos_theme_fill_palette(
 		struct wlf_color palette[WLF_THEME_COLOR_COUNT]) {
-	static const struct wlf_color fallback_palette[WLF_THEME_COLOR_COUNT] = {
-		[WLF_THEME_COLOR_HIGHLIGHT] = {0.00, 0.35, 0.82, 1.0},
-	};
-
-	memcpy(palette, fallback_palette, sizeof(fallback_palette));
+	enum wlf_theme_appearance appearance = macos_theme_detect_appearance();
+	wlf_theme_fill_default_palette(palette, appearance);
 	macos_theme_apply_system_colors(palette);
 }
 
