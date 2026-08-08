@@ -6,8 +6,8 @@
 bool wlf_shape_node_common_init(struct wlf_scene_node *node,
 	const struct wlf_scene_node_impl *impl, struct wlf_scene_node *parent,
 	double x, double y, double minx, double miny, double maxx, double maxy);
-bool wlf_shape_node_common_refresh(struct wlf_scene_node *node,
-	double minx, double miny, double maxx, double maxy,
+bool wlf_shape_node_common_refresh_at(struct wlf_scene_node *node,
+	double minx, double miny, double maxx, double maxy, double x, double y,
 	double *offset_x, double *offset_y);
 void wlf_shape_node_common_get_size(struct wlf_scene_node *node,
 	double *width, double *height);
@@ -20,5 +20,7 @@ void wlf_shape_node_common_bounds(struct wlf_scene_node *node,
 	double x, double y, pixman_region32_t *visible);
 bool wlf_shape_node_common_in_box(struct wlf_scene_node *node,
 	struct wlf_frect *box, scene_node_box_iterator_func_t iterator, void *data);
+bool wlf_shape_node_common_construct_render_list_iterator(
+	struct wlf_scene_node *node, double lx, double ly, void *data);
 
 #endif

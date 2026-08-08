@@ -3,6 +3,7 @@
 
 #include "wlf/utils/wlf_signal.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/utils/wlf_array.h"
 
 #include <stdbool.h>
 #include <pixman.h>
@@ -34,7 +35,13 @@ struct wlf_scene {
 	/** Damage from the previous swapchain buffer, used to repair double buffering. */
 	pixman_region32_t previous_damage;
 	enum wlf_scene_debug_damage_option debug_damage_option;
+	/** Whether opaque nodes cull scene content below them. */
+	bool calculate_visibility;
+	/** Whether translucent portions are highlighted for debugging. */
+	bool highlight_transparent_region;
 	struct wlf_linked_list damage_highlight_regions;
+	/** Reused array of struct wlf_render_list_entry. */
+	struct wlf_array render_list;
 
 	struct wlf_rect_pass *rect_pass;
 	struct wlf_texture_pass *texture_pass;

@@ -1,4 +1,5 @@
 #include "wlf_shape_node_common.h"
+#include "wlf_scene_node_internal.h"
 
 #include <math.h>
 
@@ -17,14 +18,14 @@ bool wlf_shape_node_common_init(struct wlf_scene_node *node,
 	return true;
 }
 
-bool wlf_shape_node_common_refresh(struct wlf_scene_node *node,
-		double minx, double miny, double maxx, double maxy,
+bool wlf_shape_node_common_refresh_at(struct wlf_scene_node *node,
+		double minx, double miny, double maxx, double maxy, double x, double y,
 		double *offset_x, double *offset_y) {
-	if (!isfinite(minx) || !isfinite(miny) || maxx < minx || maxy < miny) return false;
+	if (!isfinite(minx) || !isfinite(miny) || maxx < minx || maxy < miny) {
+		return false;
+	}
 	node->state.width = ceil(maxx - minx);
 	node->state.height = ceil(maxy - miny);
-	double x, y;
-	if (!wlf_scene_node_coords(node, &x, &y)) return false;
 	*offset_x = x - minx;
 	*offset_y = y - miny;
 	return true;
@@ -43,11 +44,10 @@ bool wlf_shape_node_common_invisible(struct wlf_scene_node *node) {
 
 void wlf_shape_node_common_visibility(struct wlf_scene_node *node,
 		pixman_region32_t *visible) {
-	if (wlf_shape_node_common_invisible(node)) return;
-	double x, y;
-	if (wlf_scene_node_coords(node, &x, &y))
-		pixman_region32_union_rect(visible, visible, (int)x, (int)y,
-			(uint32_t)node->state.width, (uint32_t)node->state.height);
+	if (!node->state.enabled) {
+		return;
+	}
+	pixman_region32_union(visible, visible, &node->state.visible);
 }
 
 struct wlf_scene_node *wlf_shape_node_common_at(struct wlf_scene_node *node,
@@ -74,4 +74,9 @@ bool wlf_shape_node_common_in_box(struct wlf_scene_node *node,
 	if (x >= box->x + box->width || x + node->state.width <= box->x ||
 			y >= box->y + box->height || y + node->state.height <= box->y) return false;
 	return iterator(node, x, y, data);
+}
+
+bool wlf_shape_node_common_construct_render_list_iterator(
+		struct wlf_scene_node *node, double lx, double ly, void *data) {
+	return wlf_scene_node_add_render_list_entry(node, lx, ly, data);
 }

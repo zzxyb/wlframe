@@ -1,20 +1,12 @@
 #include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/window/wlf_window.h"
 
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
 
 static void scene_node_destroy(struct wlf_scene_node *node) {
-	struct wlf_window *window = node->window;
 	struct wlf_scene_tree *tree = wlf_scene_tree_from_node(node);
-
-	if (tree == window->tree) {
-		assert(!node->parent);
-	} else {
-		assert(node->parent);
-	}
 
 	struct wlf_scene_node *child, *child_tmp;
 	wlf_linked_list_for_each_safe(child, child_tmp,
@@ -75,7 +67,8 @@ static struct wlf_scene_node *scene_node_at(struct wlf_scene_node *node,
 		.ly = ly
 	};
 
-	if (wlf_scene_node_in_box(node, &box, scene_node_at_iterator, &data)) {
+	if (wlf_scene_node_nodes_in_box(node, &box,
+			scene_node_at_iterator, &data)) {
 		if (nx) {
 			*nx = data.rx;
 		}
@@ -114,7 +107,7 @@ static bool scene_nodes_in_box(struct wlf_scene_node *node, struct wlf_frect *bo
 	struct wlf_scene_tree *tree = wlf_scene_tree_from_node(node);
 	struct wlf_scene_node *child;
 	wlf_linked_list_for_each_reverse(child, &tree->children, link) {
-		if (wlf_scene_node_in_box(child, box, iterator, user_data)) {
+		if (wlf_scene_node_nodes_in_box(child, box, iterator, user_data)) {
 			return true;
 		}
 	}
@@ -130,7 +123,7 @@ static const struct wlf_scene_node_impl scene_node_impl = {
 	.set_opacity = NULL,
 	.get_size = NULL,
 	.get_children = scene_node_get_children,
-	.get_opaque_region = NULL,
+	.opaque_region = NULL,
 	.invisible = scene_node_invisible,
 	.visibility = scene_node_visibility,
 	.at = scene_node_at,

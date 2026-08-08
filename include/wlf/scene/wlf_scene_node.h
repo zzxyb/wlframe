@@ -18,13 +18,19 @@
 #include "wlf/math/wlf_frect.h"
 #include "wlf/utils/wlf_addon.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/utils/wlf_array.h"
 #include "wlf/utils/wlf_signal.h"
 
 #include <stdbool.h>
 #include <pixman.h>
 
 struct wlf_window;
+struct wlf_scene;
 struct wlf_scene_node;
+struct wlf_render_target_info;
+struct wlf_render_list_entry;
+struct wlf_render_data;
+struct wlf_render_list_constructor_data;
 
 /**
  * @brief Callback function type for scene node bounding box iterations.
@@ -114,7 +120,7 @@ struct wlf_scene_node_impl {
 	 * @param y Y offset
 	 * @param opaque Region to store opaque area
 	 */
-	void (*get_opaque_region)(struct wlf_scene_node *node, double x, double y,
+	void (*opaque_region)(struct wlf_scene_node *node, double x, double y,
 		pixman_region32_t *opaque);
 
 	/**
@@ -185,6 +191,18 @@ struct wlf_scene_node_impl {
 	 */
 	bool (*in_box)(struct wlf_scene_node *node, struct wlf_frect *box,
 		scene_node_box_iterator_func_t iterator, void *user_data);
+
+	/** Adds this node to a render list when it is eligible for rendering. */
+	bool (*construct_render_list_iterator)(struct wlf_scene_node *node,
+		double lx, double ly, void *data);
+
+	/**
+	 * Submits this leaf node's rendering commands.
+	 * @param entry Render-list entry containing stable scene coordinates.
+	 * @param data Per-frame scene render context.
+	 */
+	void (*render)(struct wlf_render_list_entry *entry,
+		const struct wlf_render_data *data);
 };
 
 /**
@@ -215,6 +233,7 @@ struct wlf_scene_node {
 	const struct wlf_scene_node_impl *impl; /**< Implementation interface */
 
 	struct wlf_scene_node *parent;          /**< Parent node in the hierarchy */
+	struct wlf_scene *scene;                /**< Owning scene, may be NULL */
 	struct wlf_window *window;              /**< Associated window */
 
 	struct wlf_linked_list link;            /**< Link in scene tree children list */
@@ -234,10 +253,27 @@ struct wlf_scene_node {
  * Used during the rendering process to specify how a scene node should be rendered,
  * including its position and whether to highlight transparent regions.
  */
-struct wlf_scene_node_render_entry {
+struct wlf_render_list_entry {
 	struct wlf_scene_node *node;             /**< Node to render */
 	bool highlight_transparent_region;       /**< Whether to highlight transparent regions */
 	double x, y;                             /**< Rendering position */
+};
+
+/** Data used while scene nodes construct a render list. */
+struct wlf_render_list_constructor_data {
+	struct wlf_frect box;       /**< Logical area being rendered */
+	struct wlf_array *render_list; /**< Array of wlf_render_list_entry */
+	bool calculate_visibility;  /**< Whether opaque occlusion is enabled */
+	bool highlight_transparent_region; /**< Highlight translucent regions */
+	bool failed;                /**< Set when growing render_list fails */
+};
+
+/** Per-frame context passed to scene-node render callbacks. */
+struct wlf_render_data {
+	struct wlf_scene *scene;              /**< Scene being rendered */
+	struct wlf_render_target_info *target; /**< Active render target */
+	struct wlf_frect logical;             /**< Logical render area */
+	pixman_region32_t damage;             /**< Buffer damage to render */
 };
 
 /**
@@ -362,6 +398,10 @@ struct wlf_linked_list *wlf_scene_node_get_children(struct wlf_scene_node *node)
  * @param y Y offset.
  * @param opaque Region to store opaque area.
  */
+void wlf_scene_node_opaque_region(struct wlf_scene_node *node, double x,
+	double y, pixman_region32_t *opaque);
+
+/** Compatibility name for wlf_scene_node_opaque_region(). */
 void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
 	double y, pixman_region32_t *opaque);
 
@@ -453,7 +493,19 @@ void wlf_scene_node_bounds(struct wlf_scene_node *node,
  * @return True if the traversal successfully finished without interruption; 
  *         false if a callback returned false to prematurely stop the search (e.g., upon a successful hit-test).
  */
+bool wlf_scene_node_nodes_in_box(struct wlf_scene_node *node,
+	struct wlf_frect *box,
+	scene_node_box_iterator_func_t iterator, void *user_data);
+
+/** Compatibility name for wlf_scene_node_nodes_in_box(). */
 bool wlf_scene_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
 	scene_node_box_iterator_func_t iterator, void *user_data);
+
+bool wlf_scene_node_construct_render_list_iterator(
+	struct wlf_scene_node *node, double lx, double ly, void *data);
+
+/** Dispatches a render-list entry through its node implementation. */
+void wlf_scene_node_render(struct wlf_render_list_entry *entry,
+	const struct wlf_render_data *data);
 
 #endif // SCENE_WLF_SCENE_NODE_H
