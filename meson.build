@@ -99,8 +99,6 @@ else
 endif
 
 features = {
-	'wayland-backend': false,
-	'x11-backend': false,
 	'vulkan-render': false,
 	'pixman-render': true,
 	'metal-render': is_macos,
@@ -112,6 +110,9 @@ features = {
 
 if is_linux
 	message('Building for Linux')
+	features += {
+		'vulkan-render': true,
+	}
 
 	math = cc.find_library('m')
 	rt = cc.find_library('rt')
