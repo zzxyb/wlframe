@@ -137,6 +137,7 @@ struct wlf_texture_node *wlf_texture_node_create(
 	wlf_linked_list_init(&node->renderer_destroy.link);
 	node->texture = texture;
 	wlf_signal_add(&texture->renderer->events.destroy, &node->renderer_destroy);
+	wlf_scene_node_update(&node->base, NULL);
 	return node;
 }
 

@@ -243,6 +243,13 @@ static void *xdg_toplevel_window_native_handle(struct wlf_window *base) {
 	return window != NULL ? window->surface->wl_surface : NULL;
 }
 
+static void xdg_toplevel_window_schedule_frame(struct wlf_window *base) {
+	struct wlf_xdg_toplevel_window *window = toplevel_from_window(base);
+	if (window != NULL) {
+		wlf_wl_surface_schedule_frame(window->surface, base);
+	}
+}
+
 static const struct wlf_window_impl xdg_toplevel_window_impl = {
 	.destroy = xdg_toplevel_window_destroy,
 	.close = xdg_toplevel_window_close,
@@ -262,6 +269,7 @@ static const struct wlf_window_impl xdg_toplevel_window_impl = {
 	.set_mask = NULL,
 	.set_background_color = NULL,
 	.native_handle = xdg_toplevel_window_native_handle,
+	.schedule_frame = xdg_toplevel_window_schedule_frame,
 };
 
 struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(

@@ -59,6 +59,31 @@ static void swapchain_present(struct wlf_swapchain *swapchain,
 
 static bool swapchain_resize(struct wlf_swapchain *swapchain, int width,
 		int height) {
+	if (width <= 0 || height <= 0) {
+		return false;
+	}
+	if (swapchain->width == width && swapchain->height == height) {
+		return true;
+	}
+
+	struct wlf_shm_swapchain *shm_swapchain =
+		wlf_shm_swapchain_from_swapchain(swapchain);
+	struct wlf_buffer *front = wlf_allocator_create_buffer(
+		swapchain->allocator, width, height, &swapchain->format);
+	if (front == NULL) {
+		return false;
+	}
+	struct wlf_buffer *back = wlf_allocator_create_buffer(
+		swapchain->allocator, width, height, &swapchain->format);
+	if (back == NULL) {
+		wlf_buffer_drop(front);
+		return false;
+	}
+
+	wlf_buffer_drop(shm_swapchain->front);
+	wlf_buffer_drop(shm_swapchain->back);
+	shm_swapchain->front = front;
+	shm_swapchain->back = back;
 	swapchain->width = width;
 	swapchain->height = height;
 

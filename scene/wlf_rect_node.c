@@ -17,6 +17,16 @@ static void rect_node_get_size(struct wlf_scene_node *node,
 	*height = node->state.height;
 }
 
+static void rect_node_get_opaque_region(struct wlf_scene_node *node,
+		double x, double y, pixman_region32_t *opaque) {
+	struct wlf_rect_node *rect = wlf_rect_node_from_node(node);
+	if (node->state.opacity != 1.0f || rect->color.a != 1.0) {
+		return;
+	}
+	pixman_region32_union_rect(opaque, opaque, (int)x, (int)y,
+		(uint32_t)node->state.width, (uint32_t)node->state.height);
+}
+
 static bool rect_node_invisible(struct wlf_scene_node *node) {
 	struct wlf_rect_node *rect = wlf_rect_node_from_node(node);
 
@@ -97,7 +107,7 @@ static const struct wlf_scene_node_impl rect_node_impl = {
 	.set_opacity = NULL,
 	.get_size = rect_node_get_size,
 	.get_children = NULL,
-	.get_opaque_region = NULL,
+	.get_opaque_region = rect_node_get_opaque_region,
 	.invisible = rect_node_invisible,
 	.visibility = rect_node_visibility,
 	.at = rect_node_at,
@@ -123,6 +133,7 @@ struct wlf_rect_node *wlf_rect_node_create(struct wlf_scene_node *parent,
 	rect->base.state.height = height;
 	rect->color = color != NULL ? *color : WLF_COLOR_WHITE;
 	rect->blend_mode = WLF_RENDER_BLEND_MODE_PREMULTIPLIED;
+	wlf_scene_node_update(&rect->base, NULL);
 
 	return rect;
 }
