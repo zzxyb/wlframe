@@ -2,7 +2,6 @@
 
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf_scene_node_internal.h"
 
 #include <assert.h>
 #include <stdlib.h>

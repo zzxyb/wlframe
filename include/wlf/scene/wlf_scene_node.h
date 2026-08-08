@@ -504,6 +504,14 @@ bool wlf_scene_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
 bool wlf_scene_node_construct_render_list_iterator(
 	struct wlf_scene_node *node, double lx, double ly, void *data);
 
+/** Adds an eligible node to the render list in data. */
+bool wlf_scene_node_add_render_list_entry(struct wlf_scene_node *node,
+	double lx, double ly, void *data);
+
+/** Initializes render_region with the node-visible portion of frame damage. */
+bool wlf_scene_node_init_render_region(struct wlf_render_list_entry *entry,
+	const struct wlf_render_data *data, pixman_region32_t *render_region);
+
 /** Dispatches a render-list entry through its node implementation. */
 void wlf_scene_node_render(struct wlf_render_list_entry *entry,
 	const struct wlf_render_data *data);

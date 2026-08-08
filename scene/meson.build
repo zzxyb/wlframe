@@ -12,4 +12,5 @@ wlf_files += files(
 	'wlf_line_node.c',
 	'wlf_poly_node.c',
 	'wlf_path_node.c',
+	'wlf_svg_node.c',
 )

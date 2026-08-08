@@ -7,15 +7,24 @@ window_examples = {
 		'src': ['scene_damage_test.c'],
 		'dep': [],
 	},
+	'svg_node_test': {
+		'src': ['svg_node_test.c'],
+		'dep': [],
+	},
 }
 
 if is_linux
-	# The current window example uses Wayland, wl_shm, and Pixman APIs.
 	foreach example, info : window_examples
 		executable(
 			example,
 			info.get('src', []),
 			dependencies: [wlframe] + info.get('dep', []),
+			c_args: [
+				'-DWLF_WINDOW_TEST_IMAGE="' + meson.project_source_root() /
+					'examples/image/resources/png/pngtest.png' + '"',
+				'-DWLF_SVG_NODE_TEST_IMAGE="' + meson.project_source_root() /
+					'examples/svg/resources/svg_node_test.svg' + '"',
+			],
 			install: false,
 		)
 	endforeach

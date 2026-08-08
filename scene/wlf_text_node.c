@@ -4,7 +4,6 @@
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wlf_window.h"
-#include "wlf_scene_node_internal.h"
 
 #include <assert.h>
 #include <math.h>
