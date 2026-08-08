@@ -22,10 +22,13 @@
 #ifndef GLES_EGL_H
 #define GLES_EGL_H
 
+#include "wlf/config.h"
+
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 
 struct wlf_backend;
+struct wlf_render_format;
 
 /**
  * @struct wlf_egl
@@ -62,6 +65,7 @@ struct wlf_egl {
 		bool EXT_buffer_age;                     /**< EGL_EXT_buffer_age: buffer age for incremental rendering. */
 		bool EXT_present_opaque;                 /**< EGL_EXT_present_opaque: present without alpha blending. */
 		bool EXT_device_query;                   /**< EGL_EXT_device_query: query the underlying EGL device. */
+		bool ANDROID_native_fence_sync;          /**< EGL_ANDROID_native_fence_sync: native fence FD sync objects. */
 
 		bool IMG_context_priority;        /**< EGL_IMG_context_priority: request high-priority GPU context. */
 		bool EXT_create_context_robustness;/**< EGL_EXT_create_context_robustness: robust context creation. */
@@ -70,6 +74,7 @@ struct wlf_egl {
 		bool MESA_query_driver;           /**< EGL_MESA_query_driver: query Mesa driver name and config. */
 
 		bool KHR_debug;                   /**< EGL_KHR_debug: EGL debug callbacks. */
+		bool EXT_platform_base;           /**< EGL_EXT_platform_base: platform surface/display entry points. */
 		bool EXT_device_enumeration;      /**< EGL_EXT_device_enumeration: enumerate available EGL devices. */
 		bool EXT_explicit_device;         /**< EGL_EXT_explicit_device: create display from explicit device. */
 		bool EXT_device_drm;              /**< EGL_EXT_device_drm: query DRM device from EGL device. */
@@ -89,6 +94,7 @@ struct wlf_egl {
 
 	struct {
 		PFNEGLGETPLATFORMDISPLAYEXTPROC       eglGetPlatformDisplayEXT;      /**< Create a platform-specific EGL display. */
+		PFNEGLCREATEPLATFORMWINDOWSURFACEEXTPROC eglCreatePlatformWindowSurfaceEXT; /**< Create a platform window surface via EGL_EXT_platform_base. */
 		PFNEGLCREATEIMAGEKHRPROC              eglCreateImageKHR;             /**< Create an EGLImage from an existing resource. */
 		PFNEGLDESTROYIMAGEKHRPROC             eglDestroyImageKHR;            /**< Destroy an EGLImage. */
 		PFNEGLQUERYDMABUFFORMATSEXTPROC       eglQueryDmaBufFormatsEXT;      /**< Query supported DMA-BUF pixel formats. */
@@ -123,6 +129,21 @@ struct wlf_egl {
  * @return Pointer to the initialised EGL wrapper, or NULL on failure.
  */
 struct wlf_egl *wlf_egl_create(struct wlf_backend *backend);
+
+#if WLF_HAS_LINUX_PLATFORM
+/**
+ * @brief Chooses an EGL framebuffer configuration for a window format.
+ *
+ * The returned config is suitable for creating an EGL window surface whose
+ * color channel sizes and native visual match @p format when possible.
+ *
+ * @param egl    Pointer to the EGL wrapper.
+ * @param format Desired window render format.
+ * @return EGL config handle, or NULL on failure.
+ */
+EGLConfig wlf_egl_choose_config(struct wlf_egl *egl,
+	const struct wlf_render_format *format);
+#endif
 
 /**
  * @brief Destroys the EGL context and releases all associated resources.

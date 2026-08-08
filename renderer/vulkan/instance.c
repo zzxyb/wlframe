@@ -98,7 +98,11 @@ struct wlf_vk_instance *wlf_vk_instance_create(bool debug) {
 	}
 
 	size_t extensions_len = 0;
-	const char *extensions[1] = {0};
+	const char *extensions[8] = {0};
+	extensions[extensions_len++] = VK_KHR_SURFACE_EXTENSION_NAME;
+#if WLF_HAS_LINUX_PLATFORM
+	extensions[extensions_len++] = VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME;
+#endif
 
 	bool debug_utils_found = false;
 	if (debug && check_extension(avail_ext_props, avail_extc,
@@ -108,6 +112,13 @@ struct wlf_vk_instance *wlf_vk_instance_create(bool debug) {
 	}
 
 	assert(extensions_len <= sizeof(extensions) / sizeof(extensions[0]));
+	for (size_t i = 0; i < extensions_len; i++) {
+		if (!check_extension(avail_ext_props, avail_extc, extensions[i])) {
+			wlf_log(WLF_ERROR, "vulkan: required instance extension %s not found",
+				extensions[i]);
+			goto error;
+		}
+	}
 
 	VkApplicationInfo application_info = {
 		.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
@@ -167,6 +178,23 @@ struct wlf_vk_instance *wlf_vk_instance_create(bool debug) {
 			wlf_log(WLF_ERROR, "vkCreateDebugUtilsMessengerEXT not found");
 		}
 	}
+
+	ini->api.destroySurfaceKHR =
+		(PFN_vkDestroySurfaceKHR)vkGetInstanceProcAddr(ini->base,
+			"vkDestroySurfaceKHR");
+	if (ini->api.destroySurfaceKHR == NULL) {
+		wlf_log(WLF_ERROR, "vkDestroySurfaceKHR not found");
+		goto error;
+	}
+#if WLF_HAS_LINUX_PLATFORM
+	ini->api.createWaylandSurfaceKHR =
+		(PFN_vkCreateWaylandSurfaceKHR)vkGetInstanceProcAddr(ini->base,
+			"vkCreateWaylandSurfaceKHR");
+	if (ini->api.createWaylandSurfaceKHR == NULL) {
+		wlf_log(WLF_ERROR, "vkCreateWaylandSurfaceKHR not found");
+		goto error;
+	}
+#endif
 
 	return ini;
 
