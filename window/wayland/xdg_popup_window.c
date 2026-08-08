@@ -81,6 +81,7 @@ static bool create_base_objects(struct wlf_xdg_popup_window *window,
 	if (window->surface == NULL) {
 		return false;
 	}
+	wlf_wl_surface_set_window(window->surface, &window->base);
 
 	window->wm_base = wlf_xdg_wm_base_create(wayland->registry,
 		xdg_wm_base_reg->name, xdg_wm_base_reg->version);

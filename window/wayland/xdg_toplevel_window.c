@@ -8,6 +8,7 @@
 #include "wlf/utils/wlf_utils.h"
 #include "wlf/wayland/wlf_wl_compositor.h"
 #include "wlf/wayland/wlf_wl_interface.h"
+#include "wlf/wayland/wlf_wl_pointer.h"
 #include "wlf/wayland/wlf_wl_surface.h"
 #include "wlf/wayland/wlf_wp_fractional_scale_v1.h"
 #include "wlf/wayland/wlf_wp_viewporter.h"
@@ -219,6 +220,7 @@ static bool create_base_objects(struct wlf_xdg_toplevel_window *window,
 	if (window->surface == NULL) {
 		return false;
 	}
+	wlf_wl_surface_set_window(window->surface, &window->base);
 
 	window->wm_base = wlf_xdg_wm_base_create(wayland->registry,
 		xdg_wm_base_reg->name, xdg_wm_base_reg->version);
@@ -436,6 +438,17 @@ static void xdg_toplevel_window_set_state(struct wlf_window *base,
 	}
 }
 
+static void xdg_toplevel_window_begin_move(struct wlf_window *base,
+		struct wlf_pointer *pointer, uint32_t serial) {
+	struct wlf_xdg_toplevel_window *window = toplevel_from_window(base);
+	if (window == NULL || !wlf_pointer_is_wayland(pointer)) {
+		return;
+	}
+	struct wlf_wl_pointer *wl_pointer =
+		wlf_wl_pointer_from_pointer(pointer);
+	wlf_xdg_toplevel_move(window->xdg_toplevel, wl_pointer->seat, serial);
+}
+
 static void xdg_toplevel_window_set_input_region(struct wlf_window *base,
 		const pixman_region32_t *region) {
 	struct wlf_xdg_toplevel_window *window = toplevel_from_window(base);
@@ -477,6 +490,7 @@ static const struct wlf_window_impl xdg_toplevel_window_impl = {
 	.set_min_size = xdg_toplevel_window_set_min_size,
 	.set_max_size = xdg_toplevel_window_set_max_size,
 	.set_position = NULL,
+	.begin_move = xdg_toplevel_window_begin_move,
 	.set_state = xdg_toplevel_window_set_state,
 	.set_flags = NULL,
 	.set_input_region = xdg_toplevel_window_set_input_region,

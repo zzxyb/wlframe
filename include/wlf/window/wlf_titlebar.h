@@ -19,6 +19,7 @@
 #include <stdbool.h>
 
 struct wlf_rect_node;
+struct wlf_event_node;
 struct wlf_scene_node;
 struct wlf_scene_tree;
 struct wlf_svg_node;
@@ -38,10 +39,19 @@ enum {
 
 /** One titlebar control, represented by a dedicated scene subtree. */
 struct wlf_titlebar_button {
+	struct wlf_titlebar *titlebar;
+	enum wlf_titlebar_button_type type;
 	struct wlf_scene_tree *tree;
 	struct wlf_rect_node *background;
 	struct wlf_svg_node *icon;
+	struct wlf_event_node *event_node;
+	struct {
+		struct wlf_listener pointer_enter;
+		struct wlf_listener pointer_leave;
+		struct wlf_listener pointer_button;
+	} listeners;
 	bool visible;
+	bool hovered;
 	bool custom_icon;
 };
 
@@ -53,6 +63,7 @@ struct wlf_titlebar {
 	struct wlf_rect_node *separator;
 	/** Public container for application-supplied titlebar scene nodes. */
 	struct wlf_scene_tree *content;
+	struct wlf_event_node *move_event_node;
 	struct wlf_svg_node *window_icon;
 	struct wlf_text_node *title_text;
 	struct wlf_titlebar_button minimize_button;
@@ -63,6 +74,7 @@ struct wlf_titlebar {
 		struct wlf_listener focus_in;
 		struct wlf_listener focus_out;
 		struct wlf_listener theme_changed;
+		struct wlf_listener pointer_button;
 	} listeners;
 	bool theme_listener_attached;
 };

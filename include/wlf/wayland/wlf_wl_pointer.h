@@ -54,6 +54,7 @@ struct wlf_wl_pointer_axis_frame {
 struct wlf_wl_pointer {
 	struct wlf_pointer base;          /**< Generic pointer base (must be first). */
 	struct wl_pointer *pointer;       /**< Underlying Wayland pointer object. */
+	struct wl_seat *seat;             /**< Seat used for interactive requests. */
 	struct wl_surface *focus_surface; /**< Currently focused Wayland surface. */
 	uint32_t enter_serial;            /**< Serial from the last enter event. */
 

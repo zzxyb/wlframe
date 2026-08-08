@@ -1,4 +1,5 @@
 #include "wlf/platform/wayland/backend.h"
+#include "wlf/wayland/wlf_wl_seat.h"
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_signal.h"
@@ -299,7 +300,15 @@ static void display_global_added(void *data, struct wl_registry *wl_registry,
 	struct wlf_wl_backend *wayland = data;
 	uint32_t bind_version = version;
 
-	if (strcmp(interface, wl_compositor_interface.name) == 0) {
+	if (strcmp(interface, wl_seat_interface.name) == 0) {
+		if (wayland->wl_seat.seat == NULL) {
+			wayland->wl_seat.seat = wlf_wl_seat_create(
+				wl_registry, name, version);
+			if (wayland->wl_seat.seat != NULL) {
+				wayland->wl_seat.name = name;
+			}
+		}
+	} else if (strcmp(interface, wl_compositor_interface.name) == 0) {
 		if (version > (uint32_t)wl_compositor_interface.version) {
 			wlf_log(WLF_DEBUG, "Server %s interface version %u is higher than client version %u, "
 				"using client version", interface, version,
@@ -759,6 +768,11 @@ static void display_global_added(void *data, struct wl_registry *wl_registry,
 static void display_global_remove(void *data,
 		struct wl_registry *wl_registry, uint32_t name) {
 	struct wlf_wl_backend *wayland = data;
+	if (name == wayland->wl_seat.name) {
+		wlf_wl_seat_destroy(wayland->wl_seat.seat);
+		wayland->wl_seat.seat = NULL;
+		wayland->wl_seat.name = 0;
+	}
 
 	if (name == wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.name) {
 		destroy_zwp_keyboard_shortcuts_inhibit_manager_v1(wayland);
@@ -864,6 +878,8 @@ static void backend_destroy(struct wlf_backend *backend) {
 	wlf_log(WLF_DEBUG, "Destroying %s backend", backend->impl->name);
 
 	struct wlf_wl_backend *wayland = wlf_wl_backend_from_backend(backend);
+	wlf_wl_seat_destroy(wayland->wl_seat.seat);
+	wayland->wl_seat.seat = NULL;
 
 	destroy_zwp_keyboard_shortcuts_inhibit_manager_v1(wayland);
 	destroy_zwp_primary_selection_device_manager_v1(wayland);

@@ -208,6 +208,7 @@ struct wlf_window *wlf_wlr_layer_window_create_from_backend(
 		wlf_window_destroy(&window->base);
 		return NULL;
 	}
+	wlf_wl_surface_set_window(window->surface, &window->base);
 	window->layer_shell = wlf_zwlr_layer_shell_v1_create(wayland->registry,
 		layer_shell_reg->name, layer_shell_reg->version);
 	if (window->layer_shell == NULL) {

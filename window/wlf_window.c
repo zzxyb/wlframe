@@ -1,5 +1,7 @@
 #include "wlf/window/wlf_window.h"
 #include "wlf/scene/wlf_scene.h"
+#include "wlf/scene/wlf_event_node.h"
+#include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/window/wlf_titlebar.h"
 #include "wlf/platform/wlf_theme.h"
 #include "wlf/types/wlf_pixel_format.h"
@@ -85,6 +87,22 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 	wlf_signal_init(&window->events.scale);
 	wlf_signal_init(&window->events.show);
 	wlf_signal_init(&window->events.hide);
+	struct wlf_signal *input_signals[] = {
+		&window->events.pointer_enter, &window->events.pointer_leave,
+		&window->events.pointer_motion, &window->events.pointer_button,
+		&window->events.pointer_axis, &window->events.pointer_frame,
+		&window->events.keyboard_enter, &window->events.keyboard_leave,
+		&window->events.keyboard_keymap, &window->events.keyboard_key,
+		&window->events.keyboard_modifiers,
+		&window->events.keyboard_repeat_info, &window->events.tablet,
+		&window->events.touch_down, &window->events.touch_up,
+		&window->events.touch_motion, &window->events.touch_cancel,
+		&window->events.touch_frame, &window->events.touch_shape,
+		&window->events.touch_orientation,
+	};
+	for (size_t i = 0; i < sizeof(input_signals) / sizeof(input_signals[0]); ++i) {
+		wlf_signal_init(input_signals[i]);
+	}
 }
 
 void wlf_window_destroy(struct wlf_window *window) {
@@ -216,6 +234,15 @@ void wlf_window_set_position(struct wlf_window *window, int x, int y) {
 	wlf_signal_emit_mutable(&window->events.move, window);
 }
 
+void wlf_window_begin_move(struct wlf_window *window,
+		struct wlf_pointer *pointer, uint32_t serial) {
+	if (window == NULL || pointer == NULL || serial == 0 ||
+			window->impl->begin_move == NULL) {
+		return;
+	}
+	window->impl->begin_move(window, pointer, serial);
+}
+
 uint32_t wlf_window_scale_length(const struct wlf_window *window,
 		uint32_t logical_length) {
 	assert(window != NULL);
@@ -337,4 +364,189 @@ void wlf_window_schedule_frame(struct wlf_window *window) {
 
 	/* Backends without explicit frame callbacks render on the expose signal. */
 	wlf_signal_emit_mutable(&window->events.expose, window);
+}
+
+static struct wlf_event_node *window_event_node_at(struct wlf_window *window,
+		double x, double y) {
+	if (window == NULL || window->scene == NULL) {
+		return NULL;
+	}
+	struct wlf_scene_node *node = wlf_scene_node_at(
+		&window->scene->root->base, x, y, NULL, NULL);
+	while (node != NULL && !wlf_scene_node_is_event(node)) {
+		node = node->parent;
+	}
+	return node != NULL ? wlf_event_node_from_node(node) : NULL;
+}
+
+static void window_update_pointer_node(struct wlf_window *window,
+		struct wlf_pointer *pointer, double x, double y) {
+	struct wlf_event_node *next = window_event_node_at(window, x, y);
+	if (next == window->pointer_event_node) {
+		return;
+	}
+	struct wlf_event_pointer_focus_event event = {
+		.window = window,
+		.pointer = pointer,
+		.x = x,
+		.y = y,
+	};
+	if (window->pointer_event_node != NULL) {
+		wlf_event_node_notify_pointer_leave(
+			window->pointer_event_node, &event);
+	}
+	window->pointer_event_node = next;
+	if (next != NULL) {
+		wlf_event_node_notify_pointer_enter(next, &event);
+	}
+}
+
+void wlf_window_pointer_enter(struct wlf_window *window,
+		const struct wlf_pointer_enter_event *event) {
+	window->pointer_x = event->x;
+	window->pointer_y = event->y;
+	wlf_signal_emit_mutable(&window->events.pointer_enter, (void *)event);
+	window_update_pointer_node(window, event->pointer, event->x, event->y);
+}
+
+void wlf_window_pointer_leave(struct wlf_window *window,
+		const struct wlf_pointer_leave_event *event) {
+	wlf_signal_emit_mutable(&window->events.pointer_leave, (void *)event);
+	if (window->pointer_event_node != NULL) {
+		struct wlf_event_pointer_focus_event focus = {
+			.window = window,
+			.pointer = event->pointer,
+			.x = window->pointer_x,
+			.y = window->pointer_y,
+		};
+		wlf_event_node_notify_pointer_leave(
+			window->pointer_event_node, &focus);
+		window->pointer_event_node = NULL;
+	}
+}
+
+void wlf_window_pointer_motion(struct wlf_window *window,
+		const struct wlf_pointer_motion_absolute_event *event) {
+	window->pointer_x = event->x;
+	window->pointer_y = event->y;
+	wlf_signal_emit_mutable(&window->events.pointer_motion, (void *)event);
+	window_update_pointer_node(window, event->pointer, event->x, event->y);
+	if (window->pointer_event_node != NULL) {
+		wlf_signal_emit_mutable(
+			&window->pointer_event_node->events.pointer_motion, (void *)event);
+	}
+}
+
+void wlf_window_pointer_button(struct wlf_window *window,
+		const struct wlf_pointer_button_event *event) {
+	wlf_signal_emit_mutable(&window->events.pointer_button, (void *)event);
+	if (window->pointer_event_node != NULL) {
+		if (event->state == WLF_POINTER_BUTTON_STATE_PRESSED &&
+				window->pointer_event_node->base.state.focus_policy == CLICK_FOCUS) {
+			window->keyboard_event_node = window->pointer_event_node;
+		}
+		wlf_signal_emit_mutable(
+			&window->pointer_event_node->events.pointer_button, (void *)event);
+	}
+}
+
+void wlf_window_pointer_axis(struct wlf_window *window,
+		const struct wlf_pointer_axis_event *event) {
+	wlf_signal_emit_mutable(&window->events.pointer_axis, (void *)event);
+	if (window->pointer_event_node != NULL) {
+		wlf_signal_emit_mutable(
+			&window->pointer_event_node->events.pointer_axis, (void *)event);
+	}
+}
+
+void wlf_window_pointer_frame(struct wlf_window *window, void *event) {
+	wlf_signal_emit_mutable(&window->events.pointer_frame, event);
+	if (window->pointer_event_node != NULL) {
+		wlf_signal_emit_mutable(
+			&window->pointer_event_node->events.pointer_frame, event);
+	}
+}
+
+#define WLF_FORWARD_KEYBOARD(name, type) \
+	void wlf_window_keyboard_##name(struct wlf_window *window, \
+			const struct type *event) { \
+		wlf_signal_emit_mutable(&window->events.keyboard_##name, (void *)event); \
+		if (window->keyboard_event_node != NULL) { \
+			wlf_signal_emit_mutable( \
+				&window->keyboard_event_node->events.keyboard_##name, \
+				(void *)event); \
+		} \
+	}
+
+void wlf_window_keyboard_enter(struct wlf_window *window,
+		const struct wlf_keyboard_enter_event *event) {
+	if (window->keyboard_event_node == NULL) {
+		window->keyboard_event_node = window->pointer_event_node;
+	}
+	wlf_signal_emit_mutable(&window->events.keyboard_enter, (void *)event);
+	if (window->keyboard_event_node != NULL) {
+		wlf_signal_emit_mutable(
+			&window->keyboard_event_node->events.keyboard_enter, (void *)event);
+	}
+}
+
+void wlf_window_keyboard_leave(struct wlf_window *window,
+		const struct wlf_keyboard_leave_event *event) {
+	wlf_signal_emit_mutable(&window->events.keyboard_leave, (void *)event);
+	if (window->keyboard_event_node != NULL) {
+		wlf_signal_emit_mutable(
+			&window->keyboard_event_node->events.keyboard_leave, (void *)event);
+		window->keyboard_event_node = NULL;
+	}
+}
+
+WLF_FORWARD_KEYBOARD(keymap, wlf_keyboard_keymap_event)
+WLF_FORWARD_KEYBOARD(key, wlf_keyboard_key_event)
+WLF_FORWARD_KEYBOARD(modifiers, wlf_keyboard_modifiers_event)
+WLF_FORWARD_KEYBOARD(repeat_info, wlf_keyboard_repeat_info_event)
+
+#define WLF_FORWARD_TOUCH_POSITION(name, type) \
+	void wlf_window_touch_##name(struct wlf_window *window, \
+			const struct type *event) { \
+		wlf_signal_emit_mutable(&window->events.touch_##name, (void *)event); \
+		window->touch_event_node = window_event_node_at(window, event->x, event->y); \
+		if (window->touch_event_node != NULL) { \
+			wlf_signal_emit_mutable( \
+				&window->touch_event_node->events.touch_##name, (void *)event); \
+		} \
+	}
+
+WLF_FORWARD_TOUCH_POSITION(down, wlf_touch_down_event)
+WLF_FORWARD_TOUCH_POSITION(motion, wlf_touch_motion_event)
+
+#define WLF_FORWARD_TOUCH_FOCUS(name, type) \
+	void wlf_window_touch_##name(struct wlf_window *window, \
+			const struct type *event) { \
+		wlf_signal_emit_mutable(&window->events.touch_##name, (void *)event); \
+		if (window->touch_event_node != NULL) { \
+			wlf_signal_emit_mutable( \
+				&window->touch_event_node->events.touch_##name, (void *)event); \
+		} \
+	}
+
+WLF_FORWARD_TOUCH_FOCUS(up, wlf_touch_up_event)
+WLF_FORWARD_TOUCH_FOCUS(cancel, wlf_touch_cancel_event)
+WLF_FORWARD_TOUCH_FOCUS(shape, wlf_touch_shape_event)
+WLF_FORWARD_TOUCH_FOCUS(orientation, wlf_touch_orientation_event)
+
+void wlf_window_touch_frame(struct wlf_window *window, void *event) {
+	wlf_signal_emit_mutable(&window->events.touch_frame, event);
+	if (window->touch_event_node != NULL) {
+		wlf_signal_emit_mutable(
+			&window->touch_event_node->events.touch_frame, event);
+	}
+}
+
+void wlf_window_tablet_event(struct wlf_window *window, void *event,
+		double x, double y) {
+	wlf_signal_emit_mutable(&window->events.tablet, event);
+	struct wlf_event_node *node = window_event_node_at(window, x, y);
+	if (node != NULL) {
+		wlf_signal_emit_mutable(&node->events.tablet, event);
+	}
 }

@@ -15,11 +15,25 @@ static void pointer_enter(void *data, struct wl_pointer *wl_pointer,
 	struct wlf_wl_pointer *pointer = data;
 	pointer->focus_surface = surface;
 	pointer->enter_serial = serial;
+	struct wlf_pointer_enter_event event = {
+		.pointer = &pointer->base,
+		.serial = serial,
+		.surface = surface,
+		.x = wl_fixed_to_double(surface_x),
+		.y = wl_fixed_to_double(surface_y),
+	};
+	wlf_signal_emit_mutable(&pointer->base.events.enter, &event);
 }
 
 static void pointer_leave(void *data, struct wl_pointer *wl_pointer,
 		uint32_t serial, struct wl_surface *surface) {
 	struct wlf_wl_pointer *pointer = data;
+	struct wlf_pointer_leave_event event = {
+		.pointer = &pointer->base,
+		.serial = serial,
+		.surface = surface,
+	};
+	wlf_signal_emit_mutable(&pointer->base.events.leave, &event);
 	pointer->focus_surface = NULL;
 	pointer->enter_serial = 0;
 }
@@ -30,6 +44,7 @@ static void pointer_motion(void *data, struct wl_pointer *wl_pointer,
 
 	struct wlf_pointer_motion_absolute_event event = {
 		.pointer = &pointer->base,
+		.surface = pointer->focus_surface,
 		.time_msec = time,
 		.x = wl_fixed_to_double(surface_x),
 		.y = wl_fixed_to_double(surface_y),
@@ -50,6 +65,7 @@ static void pointer_button(void *data, struct wl_pointer *wl_pointer,
 
 	struct wlf_pointer_button_event event = {
 		.pointer = &pointer->base,
+		.serial = serial,
 		.time_msec = time,
 		.button = button,
 		.state = btn_state,
@@ -225,6 +241,7 @@ struct wlf_pointer *wlf_wl_pointer_create(struct wl_seat *seat) {
 		free(pointer);
 		return NULL;
 	}
+	pointer->seat = seat;
 
 	wl_pointer_add_listener(pointer->pointer, &wl_pointer_listener, pointer);
 	wlf_pointer_init(&pointer->base, &pointer_impl);
