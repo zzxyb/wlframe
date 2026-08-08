@@ -416,8 +416,18 @@ struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
 		goto failed;
 	}
 
+#if WLF_HAS_LINUX_PLATFORM
+	struct wlf_render_format default_format;
+	wlf_render_format_init(&default_format, WLF_FORMAT_XRGB8888);
+	egl->config = wlf_egl_choose_config(egl, &default_format);
+	wlf_render_format_finish(&default_format);
+	if (egl->config == NULL) {
+		goto failed;
+	}
+#else
 	const EGLint config_attribs[] = {
 		EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
 		EGL_NONE,
 	};
 	EGLint matched = 0;
@@ -427,6 +437,7 @@ struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
 			wlf_egl_error_str(eglGetError()));
 		goto failed;
 	}
+#endif
 
 	if (eglBindAPI(EGL_OPENGL_ES_API) != EGL_TRUE) {
 		wlf_log(WLF_ERROR, "Failed to bind OpenGL ES API: %s",

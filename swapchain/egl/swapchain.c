@@ -79,7 +79,8 @@ static void swapchain_present(struct wlf_swapchain *swapchain,
 	}
 
 	if (!ret) {
-		wlf_log(WLF_ERROR, "swapchain_present failed");
+		wlf_log(WLF_ERROR, "swapchain_present failed: %s",
+			wlf_egl_error_str(eglGetError()));
 		return;
 	}
 }
