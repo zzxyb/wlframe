@@ -249,10 +249,9 @@ static void scene_node_destroy(struct wlf_scene_node *base) {
 }
 
 static void scene_node_get_size(struct wlf_scene_node *base,
-		double *width, double *height) {
-	struct wlf_svg_node *node = wlf_svg_node_from_node(base);
-	*width = node->image->width;
-	*height = node->image->height;
+		uint32_t *width, uint32_t *height) {
+	*width = base->state.width;
+	*height = base->state.height;
 }
 
 static struct wlf_linked_list *scene_node_get_children(
@@ -278,7 +277,7 @@ static void scene_node_visibility(struct wlf_scene_node *base,
 }
 
 static bool node_at_iterator(struct wlf_scene_node *node,
-		double lx, double ly, void *data) {
+		int lx, int ly, void *data) {
 	struct wlf_node_at_data *at = data;
 	at->rx = at->lx - lx;
 	at->ry = at->ly - ly;
@@ -311,7 +310,7 @@ static struct wlf_scene_node *scene_node_at(struct wlf_scene_node *base,
 }
 
 static void scene_node_bounds(struct wlf_scene_node *base,
-		double x, double y, pixman_region32_t *visible) {
+		int x, int y, pixman_region32_t *visible) {
 	if (!base->state.enabled) {
 		return;
 	}
@@ -351,7 +350,7 @@ static const struct wlf_scene_node_impl scene_node_impl = {
 };
 
 struct wlf_svg_node *wlf_svg_node_create(struct wlf_scene_node *parent,
-		double x, double y, struct wlf_svg_image *image) {
+		int x, int y, struct wlf_svg_image *image) {
 	if (parent == NULL || image == NULL ||
 			!isfinite(image->width) || !isfinite(image->height) ||
 			image->width < 0 || image->height < 0) {
@@ -367,8 +366,8 @@ struct wlf_svg_node *wlf_svg_node_create(struct wlf_scene_node *parent,
 	wlf_linked_list_init(&node->children);
 	node->base.state.x = x;
 	node->base.state.y = y;
-	node->base.state.width = image->width;
-	node->base.state.height = image->height;
+	node->base.state.width = (uint32_t)ceil(image->width);
+	node->base.state.height = (uint32_t)ceil(image->height);
 	node->image = image;
 
 	if (!create_children(node)) {
@@ -381,7 +380,7 @@ struct wlf_svg_node *wlf_svg_node_create(struct wlf_scene_node *parent,
 }
 
 struct wlf_svg_node *wlf_svg_node_create_from_file(
-		struct wlf_scene_node *parent, double x, double y,
+		struct wlf_scene_node *parent, int x, int y,
 		const char *filename, const char *units, float dpi) {
 	if (filename == NULL) {
 		return NULL;

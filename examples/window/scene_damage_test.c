@@ -21,9 +21,9 @@ static void handle_frame_done(struct wlf_listener *listener, void *data) {
 	(void)data;
 	struct test_state *state =
 		wlf_container_of(listener, state, frame_done);
-	double x = state->rect->base.state.x + 1.0;
+	int x = state->rect->base.state.x + 1;
 	if (x >= state->window->state.geometry.width) {
-		x = -state->rect->base.state.width;
+		x = -(int)state->rect->base.state.width;
 	}
 	wlf_scene_node_set_position(&state->rect->base, x,
 		state->rect->base.state.y);

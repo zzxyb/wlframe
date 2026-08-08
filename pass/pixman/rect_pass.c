@@ -39,10 +39,11 @@ static void pixman_rect_pass_render(struct wlf_rect_pass *pass,
 		return;
 	}
 
-	int x = (int)floor(options->box.x);
-	int y = (int)floor(options->box.y);
-	int width = (int)ceil(options->box.x + options->box.width) - x;
-	int height = (int)ceil(options->box.y + options->box.height) - y;
+	double scale = render_target_info->scale;
+	int x = (int)floor(options->box.x * scale);
+	int y = (int)floor(options->box.y * scale);
+	int width = (int)ceil((options->box.x + options->box.width) * scale) - x;
+	int height = (int)ceil((options->box.y + options->box.height) * scale) - y;
 	if (width <= 0 || height <= 0) {
 		return;
 	}
@@ -53,7 +54,12 @@ static void pixman_rect_pass_render(struct wlf_rect_pass *pass,
 	pixman_region32_t clipped_region;
 	pixman_region32_init(&clipped_region);
 	if (options->clip != NULL) {
-		pixman_region32_intersect(&clipped_region, &rect_region, options->clip);
+		pixman_region32_t scaled_clip;
+		pixman_region32_init(&scaled_clip);
+		wlf_render_target_info_scale_region(render_target_info,
+			options->clip, &scaled_clip);
+		pixman_region32_intersect(&clipped_region, &rect_region, &scaled_clip);
+		pixman_region32_fini(&scaled_clip);
 	} else {
 		pixman_region32_copy(&clipped_region, &rect_region);
 	}

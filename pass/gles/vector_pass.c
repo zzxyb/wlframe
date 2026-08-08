@@ -9,6 +9,7 @@
 
 #include <GLES2/gl2.h>
 #include <limits.h>
+#include <math.h>
 #include <stdlib.h>
 
 struct wlf_gles_vector_pass {
@@ -94,10 +95,8 @@ static void vector_pass_render(struct wlf_vector_pass *base,
 		wlf_log(WLF_ERROR, "GLES vector pass requires a GLES target");
 		return;
 	}
-	struct wlf_gles_render_target_info *target =
-		wlf_gles_render_target_info_from_info(render_target_info);
-	int width = target->swapchain->base.width;
-	int height = target->swapchain->base.height;
+	int width = render_target_info->buffer_width;
+	int height = render_target_info->buffer_height;
 	if (width <= 0 || height <= 0) {
 		return;
 	}
@@ -114,7 +113,9 @@ static void vector_pass_render(struct wlf_vector_pass *base,
 	};
 	glViewport(0, 0, width, height);
 	glUseProgram(pass->program);
-	glUniform2f(pass->uniform_viewport, width, height);
+	glUniform2f(pass->uniform_viewport,
+		render_target_info->logical_width,
+		render_target_info->logical_height);
 	glUniform4fv(pass->uniform_color, 1, rgba);
 	glVertexAttribPointer(pass->attrib_pos, 2, GL_FLOAT, GL_FALSE,
 		sizeof(struct wlf_vector_vertex), options->vertices);
@@ -136,7 +137,11 @@ static void vector_pass_render(struct wlf_vector_pass *base,
 		glEnable(GL_SCISSOR_TEST);
 		for (int i = 0; i < nrects; i++) {
 			pixman_box32_t *r = &rects[i];
-			glScissor(r->x1, height - r->y2, r->x2 - r->x1, r->y2 - r->y1);
+			int x1 = (int)floor(r->x1 * render_target_info->scale);
+			int y1 = (int)floor(r->y1 * render_target_info->scale);
+			int x2 = (int)ceil(r->x2 * render_target_info->scale);
+			int y2 = (int)ceil(r->y2 * render_target_info->scale);
+			glScissor(x1, height - y2, x2 - x1, y2 - y1);
 			glDrawArrays(GL_TRIANGLES, 0, vertex_count);
 		}
 		glDisable(GL_SCISSOR_TEST);

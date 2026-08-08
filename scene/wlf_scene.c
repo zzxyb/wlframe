@@ -211,7 +211,7 @@ static void calculate_node_visibility(struct wlf_scene_node *node,
 		return;
 	}
 
-	double x, y;
+	int x, y;
 	if (!wlf_scene_node_coords(node, &x, &y) ||
 			wlf_scene_node_invisible(node)) {
 		return;
@@ -512,9 +512,12 @@ static bool scene_build_state(struct wlf_scene *scene,
 	if (width <= 0 || height <= 0) {
 		return false;
 	}
-	if (window->state.swapchain->width != width ||
-			window->state.swapchain->height != height) {
-		if (!wlf_swapchain_resize(window->state.swapchain, width, height)) {
+	int buffer_width = (int)wlf_window_scale_length(window, (uint32_t)width);
+	int buffer_height = (int)wlf_window_scale_length(window, (uint32_t)height);
+	if (window->state.swapchain->width != buffer_width ||
+			window->state.swapchain->height != buffer_height) {
+		if (!wlf_swapchain_resize(window->state.swapchain,
+				buffer_width, buffer_height)) {
 			return false;
 		}
 		pixman_region32_union_rect(&scene->damage, &scene->damage,
@@ -595,7 +598,15 @@ bool wlf_scene_commit(struct wlf_scene *scene) {
 		return false;
 	}
 
-	wlf_swapchain_present(scene->window->state.swapchain, &state.damage);
+	pixman_region32_t buffer_damage;
+	pixman_region32_init(&buffer_damage);
+	struct wlf_render_target_info scale_info = {
+		.scale = scene->window->state.scale,
+	};
+	wlf_render_target_info_scale_region(&scale_info,
+		&state.damage, &buffer_damage);
+	wlf_swapchain_present(scene->window->state.swapchain, &buffer_damage);
+	pixman_region32_fini(&buffer_damage);
 	pixman_region32_copy(&scene->previous_damage, &state.damage);
 	pixman_region32_clear(&scene->damage);
 	pixman_region32_fini(&state.damage);

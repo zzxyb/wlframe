@@ -116,10 +116,8 @@ static void gles_rect_pass_render(struct wlf_rect_pass *base,
 		return;
 	}
 
-	struct wlf_gles_render_target_info *target =
-		wlf_gles_render_target_info_from_info(render_target_info);
-	int target_width = target->swapchain->base.width;
-	int target_height = target->swapchain->base.height;
+	int target_width = render_target_info->buffer_width;
+	int target_height = render_target_info->buffer_height;
 	if (target_width <= 0 || target_height <= 0) {
 		return;
 	}
@@ -165,7 +163,9 @@ static void gles_rect_pass_render(struct wlf_rect_pass *base,
 
 	glViewport(0, 0, target_width, target_height);
 	glUseProgram(pass->program);
-	glUniform2f(pass->uniform_viewport, target_width, target_height);
+	glUniform2f(pass->uniform_viewport,
+		render_target_info->logical_width,
+		render_target_info->logical_height);
 	glUniform4fv(pass->uniform_color, 1, rgba);
 	glVertexAttribPointer((GLuint)pass->attrib_pos, 2, GL_FLOAT,
 		GL_FALSE, 0, vertices);
@@ -181,10 +181,11 @@ static void gles_rect_pass_render(struct wlf_rect_pass *base,
 	glEnable(GL_SCISSOR_TEST);
 	for (int i = 0; i < nrects; i++) {
 		const pixman_box32_t *r = &rects[i];
-		int scissor_width = r->x2 - r->x1;
-		int scissor_height = r->y2 - r->y1;
-		glScissor(r->x1, target_height - r->y2,
-			scissor_width, scissor_height);
+		int x1 = (int)floor(r->x1 * render_target_info->scale);
+		int y1 = (int)floor(r->y1 * render_target_info->scale);
+		int x2 = (int)ceil(r->x2 * render_target_info->scale);
+		int y2 = (int)ceil(r->y2 * render_target_info->scale);
+		glScissor(x1, target_height - y2, x2 - x1, y2 - y1);
 		glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	}
 	glDisable(GL_SCISSOR_TEST);

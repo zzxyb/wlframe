@@ -21,7 +21,7 @@ static void bounds(const struct wlf_circle_shape *shape,
 }
 
 struct wlf_circle_node *wlf_circle_node_create(struct wlf_scene_node *parent,
-		double x, double y, struct wlf_circle_shape *shape) {
+		int x, int y, struct wlf_circle_shape *shape) {
 	if (shape == NULL) return NULL;
 	struct wlf_circle_node *node = calloc(1, sizeof(*node));
 	if (node == NULL) return NULL;
@@ -57,7 +57,7 @@ static void render_at(struct wlf_circle_node *node,
 void wlf_circle_node_render(struct wlf_circle_node *node,
 		struct wlf_circle_pass *pass, struct wlf_render_target_info *target,
 		const pixman_region32_t *clip) {
-	double x, y;
+	int x, y;
 	if (node == NULL || !wlf_scene_node_coords(&node->base, &x, &y)) {
 		return;
 	}

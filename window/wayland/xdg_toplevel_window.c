@@ -9,6 +9,8 @@
 #include "wlf/wayland/wlf_wl_compositor.h"
 #include "wlf/wayland/wlf_wl_interface.h"
 #include "wlf/wayland/wlf_wl_surface.h"
+#include "wlf/wayland/wlf_wp_fractional_scale_v1.h"
+#include "wlf/wayland/wlf_wp_viewporter.h"
 #include "wlf/wayland/wlf_xdg_wm_base.h"
 #include "wlf/wayland/wlf_zxdg_decoration_v1.h"
 #include "wayland/protocols/xdg-shell-client-protocol.h"
@@ -21,6 +23,110 @@
 
 static void handle_decoration_configure(struct wlf_listener *listener,
 	void *data);
+
+static void update_surface_scale(struct wlf_xdg_toplevel_window *window,
+		double scale) {
+	double old_scale = window->base.state.scale;
+	if (window->fractional_scale != NULL && window->viewport != NULL) {
+		wlf_wl_surface_set_buffer_scale(window->surface, 1);
+		wlf_wp_viewport_set_destination(window->viewport,
+			window->base.state.geometry.width,
+			window->base.state.geometry.height);
+	} else {
+		int32_t integer_scale = (int32_t)scale;
+		if (integer_scale < 1) {
+			integer_scale = 1;
+		}
+		scale = integer_scale;
+		wlf_wl_surface_set_buffer_scale(window->surface, integer_scale);
+	}
+	wlf_window_set_scale(&window->base, scale);
+	if (old_scale != window->base.state.scale) {
+		wlf_log(WLF_DEBUG, "Wayland window scale changed from %.2f to %.2f",
+			old_scale, window->base.state.scale);
+	}
+}
+
+static void handle_preferred_buffer_scale(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_xdg_toplevel_window *window =
+		wlf_container_of(listener, window, preferred_buffer_scale);
+	struct wlf_wl_surface *surface = data;
+	if (window->fractional_scale == NULL) {
+		update_surface_scale(window, surface->preferred_buffer_scale);
+	}
+}
+
+static void handle_preferred_fractional_scale(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_xdg_toplevel_window *window =
+		wlf_container_of(listener, window, preferred_fractional_scale);
+	struct wlf_wp_fractional_scale_v1 *fractional_scale = data;
+	update_surface_scale(window, fractional_scale->preferred_scale_double);
+}
+
+static bool create_scale_objects(struct wlf_xdg_toplevel_window *window) {
+	window->preferred_buffer_scale.notify = handle_preferred_buffer_scale;
+	wlf_signal_add(&window->surface->events.preferred_buffer_scale,
+		&window->preferred_buffer_scale);
+	window->has_preferred_buffer_scale_listener = true;
+
+	struct wlf_wl_backend *wayland =
+		wlf_wl_backend_from_backend(window->backend);
+	if (wayland->wp_fractional_scale_manager_v1.
+			fractional_scale_manager_v1 == NULL ||
+			wayland->wp_viewporter.viewporter == NULL) {
+		update_surface_scale(window, window->surface->preferred_buffer_scale);
+		return true;
+	}
+
+	window->fractional_scale_manager =
+		wlf_wp_fractional_scale_manager_v1_create(wayland->registry,
+			wayland->wp_fractional_scale_manager_v1.name,
+			wayland->wp_fractional_scale_manager_v1.bind_version);
+	window->viewporter = wlf_wp_viewporter_create(wayland->registry,
+		wayland->wp_viewporter.name, wayland->wp_viewporter.bind_version);
+	if (window->fractional_scale_manager == NULL ||
+			window->viewporter == NULL) {
+		return false;
+	}
+	window->fractional_scale =
+		wlf_wp_fractional_scale_manager_v1_get_fractional_scale(
+			window->fractional_scale_manager, window->surface->wl_surface);
+	window->viewport = wlf_wp_viewporter_get_viewport(window->viewporter,
+		window->surface->wl_surface);
+	if (window->fractional_scale == NULL || window->viewport == NULL) {
+		return false;
+	}
+
+	window->preferred_fractional_scale.notify =
+		handle_preferred_fractional_scale;
+	wlf_signal_add(&window->fractional_scale->events.preferred_scale,
+		&window->preferred_fractional_scale);
+	window->has_preferred_fractional_scale_listener = true;
+	update_surface_scale(window, 1.0);
+	return true;
+}
+
+static void destroy_scale_objects(struct wlf_xdg_toplevel_window *window) {
+	if (window->has_preferred_fractional_scale_listener) {
+		wlf_linked_list_remove(&window->preferred_fractional_scale.link);
+		window->has_preferred_fractional_scale_listener = false;
+	}
+	if (window->has_preferred_buffer_scale_listener) {
+		wlf_linked_list_remove(&window->preferred_buffer_scale.link);
+		window->has_preferred_buffer_scale_listener = false;
+	}
+	wlf_wp_viewport_destroy(window->viewport);
+	window->viewport = NULL;
+	wlf_wp_fractional_scale_v1_destroy(window->fractional_scale);
+	window->fractional_scale = NULL;
+	wlf_wp_viewporter_destroy(window->viewporter);
+	window->viewporter = NULL;
+	wlf_wp_fractional_scale_manager_v1_destroy(
+		window->fractional_scale_manager);
+	window->fractional_scale_manager = NULL;
+}
 
 static struct wlf_xdg_toplevel_window *toplevel_from_window(
 		struct wlf_window *window) {
@@ -177,6 +283,10 @@ static void handle_xdg_toplevel_configure(struct wlf_listener *listener,
 
 	window->base.state.geometry.width = toplevel->configure_width;
 	window->base.state.geometry.height = toplevel->configure_height;
+	if (window->viewport != NULL) {
+		wlf_wp_viewport_set_destination(window->viewport,
+			toplevel->configure_width, toplevel->configure_height);
+	}
 	wlf_signal_emit_mutable(&window->base.events.resize, &window->base);
 }
 
@@ -219,6 +329,7 @@ static void xdg_toplevel_window_destroy(struct wlf_window *base) {
 	}
 	destroy_toplevel_decoration(window);
 	wlf_zxdg_decoration_manager_v1_destroy(window->decoration_manager);
+	destroy_scale_objects(window);
 
 	if (window->xdg_toplevel != NULL) {
 		wlf_xdg_toplevel_destroy(window->xdg_toplevel);
@@ -279,6 +390,9 @@ static void xdg_toplevel_window_set_size(struct wlf_window *base,
 	if (window != NULL) {
 		wlf_xdg_surface_set_window_geometry(window->xdg_surface,
 			base->state.geometry.x, base->state.geometry.y, width, height);
+		if (window->viewport != NULL) {
+			wlf_wp_viewport_set_destination(window->viewport, width, height);
+		}
 	}
 }
 
@@ -394,6 +508,11 @@ struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(
 	window->backend = backend;
 
 	if (!create_base_objects(window, backend)) {
+		wlf_window_destroy(&window->base);
+		return NULL;
+	}
+	if (!create_scale_objects(window)) {
+		wlf_log(WLF_ERROR, "Failed to create Wayland surface scale objects");
 		wlf_window_destroy(&window->base);
 		return NULL;
 	}

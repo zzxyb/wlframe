@@ -37,6 +37,10 @@ struct wlf_pixman_render_target_info *wlf_pixman_begin_pixman_render_pass(
 	}
 
 	wlf_render_target_info_init(&pass->base, &render_target_info_impl);
+	pass->base.logical_width = buffer->buffer->width;
+	pass->base.logical_height = buffer->buffer->height;
+	pass->base.buffer_width = buffer->buffer->width;
+	pass->base.buffer_height = buffer->buffer->height;
 
 	if (!begin_pixman_data_ptr_access(buffer->buffer, &buffer->image,
 			WLF_BUFFER_DATA_PTR_ACCESS_READ | WLF_BUFFER_DATA_PTR_ACCESS_WRITE)) {

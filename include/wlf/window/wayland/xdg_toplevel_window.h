@@ -29,6 +29,10 @@ struct wlf_xdg_wm_base;
 struct wlf_zxdg_decoration_manager_v1;
 struct wlf_zxdg_toplevel_decoration_v1;
 struct wlf_titlebar;
+struct wlf_wp_fractional_scale_manager_v1;
+struct wlf_wp_fractional_scale_v1;
+struct wlf_wp_viewporter;
+struct wlf_wp_viewport;
 
 /**
  * @brief Wayland xdg_toplevel window object.
@@ -46,6 +50,10 @@ struct wlf_xdg_toplevel_window {
 	struct wlf_xdg_toplevel *xdg_toplevel;   /**< xdg_toplevel role wrapper */
 	struct wlf_zxdg_decoration_manager_v1 *decoration_manager;
 	struct wlf_zxdg_toplevel_decoration_v1 *decoration;
+	struct wlf_wp_fractional_scale_manager_v1 *fractional_scale_manager;
+	struct wlf_wp_fractional_scale_v1 *fractional_scale;
+	struct wlf_wp_viewporter *viewporter;
+	struct wlf_wp_viewport *viewport;
 	/** Disables SSD negotiation and keeps the scene-owned CSD enabled. */
 	bool force_client_side_decorations;
 
@@ -53,10 +61,14 @@ struct wlf_xdg_toplevel_window {
 	struct wlf_listener xdg_toplevel_configure;  /**< xdg_toplevel configure listener */
 	struct wlf_listener xdg_toplevel_close;      /**< xdg_toplevel close listener */
 	struct wlf_listener decoration_configure;
+	struct wlf_listener preferred_buffer_scale;
+	struct wlf_listener preferred_fractional_scale;
 	bool has_xdg_surface_configure_listener;     /**< Whether xdg_surface listener is registered */
 	bool has_xdg_toplevel_configure_listener;    /**< Whether configure listener is registered */
 	bool has_xdg_toplevel_close_listener;        /**< Whether close listener is registered */
 	bool has_decoration_configure_listener;
+	bool has_preferred_buffer_scale_listener;
+	bool has_preferred_fractional_scale_listener;
 };
 
 /**

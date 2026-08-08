@@ -31,7 +31,7 @@ struct wlf_rect_node {
  * @brief Creates a rectangle node under a parent scene node.
  */
 struct wlf_rect_node *wlf_rect_node_create(struct wlf_scene_node *parent,
-	double x, double y, double width, double height,
+	int x, int y, uint32_t width, uint32_t height,
 	const struct wlf_color *color);
 
 /**

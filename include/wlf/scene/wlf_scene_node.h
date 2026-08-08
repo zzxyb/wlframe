@@ -48,7 +48,7 @@ struct wlf_render_list_constructor_data;
  *         (e.g., when the desired node has been found during a hit-test).
  */
 typedef bool (*scene_node_box_iterator_func_t)(struct wlf_scene_node *node,
-	double sx, double sy, void *data);
+	int sx, int sy, void *data);
 
 
 /**
@@ -88,7 +88,7 @@ struct wlf_scene_node_impl {
 	 * @param x X coordinate relative to parent
 	 * @param y Y coordinate relative to parent
 	 */
-	void (*set_position)(struct wlf_scene_node *node, double x, double y);
+	void (*set_position)(struct wlf_scene_node *node, int x, int y);
 
 	/**
 	 * @brief Sets the opacity of the scene node
@@ -104,7 +104,8 @@ struct wlf_scene_node_impl {
 	 * @param width Pointer to store width
 	 * @param height Pointer to store height
 	 */
-	void (*get_size)(struct wlf_scene_node *node, double *width, double *height);
+	void (*get_size)(struct wlf_scene_node *node,
+		uint32_t *width, uint32_t *height);
 
 	/**
 	 * @brief Gets the children list of the scene node
@@ -120,7 +121,7 @@ struct wlf_scene_node_impl {
 	 * @param y Y offset
 	 * @param opaque Region to store opaque area
 	 */
-	void (*opaque_region)(struct wlf_scene_node *node, double x, double y,
+	void (*opaque_region)(struct wlf_scene_node *node, int x, int y,
 		pixman_region32_t *opaque);
 
 	/**
@@ -157,8 +158,7 @@ struct wlf_scene_node_impl {
 	 * @param ly_ptr Pointer to store local Y
 	 * @return True if coordinates are valid
 	 */
-	bool (*coords)(struct wlf_scene_node *node,
-		double *lx_ptr, double *ly_ptr);
+	bool (*coords)(struct wlf_scene_node *node, int *lx_ptr, int *ly_ptr);
 
 	/**
 	 * @brief Updates the scene node with damage region
@@ -177,7 +177,7 @@ struct wlf_scene_node_impl {
 	 * @param visible Pointer to an existing region structure.
 	 */
 	void (*bounds)(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *visible);
+		int x, int y, pixman_region32_t *visible);
 
 	/**
 	 * @brief Iterates over child nodes or sub-elements intersecting a bounding box.
@@ -194,7 +194,7 @@ struct wlf_scene_node_impl {
 
 	/** Adds this node to a render list when it is eligible for rendering. */
 	bool (*construct_render_list_iterator)(struct wlf_scene_node *node,
-		double lx, double ly, void *data);
+		int lx, int ly, void *data);
 
 	/**
 	 * Submits this leaf node's rendering commands.
@@ -213,7 +213,8 @@ struct wlf_scene_node_impl {
  */
 struct wlf_scene_node_state {
 	bool enabled;                           /**< Whether the node is enabled */
-	double x, y, width, height;             /**< Position and size relative to parent */
+	int x, y;                               /**< Position relative to parent */
+	uint32_t width, height;                 /**< Non-negative logical size */
 	float opacity;                          /**< Opacity level (0.0 to 1.0) */
 
 	enum wlf_focus_policy focus_policy;     /**< Focus policy for the node */
@@ -256,7 +257,7 @@ struct wlf_scene_node {
 struct wlf_render_list_entry {
 	struct wlf_scene_node *node;             /**< Node to render */
 	bool highlight_transparent_region;       /**< Whether to highlight transparent regions */
-	double x, y;                             /**< Rendering position */
+	int x, y;                                /**< Logical rendering position */
 };
 
 /** Data used while scene nodes construct a render list. */
@@ -361,7 +362,7 @@ void wlf_scene_node_set_enabled(struct wlf_scene_node *node, bool enabled);
  * @param x X coordinate relative to parent.
  * @param y Y coordinate relative to parent.
  */
-void wlf_scene_node_set_position(struct wlf_scene_node *node, double x, double y);
+void wlf_scene_node_set_position(struct wlf_scene_node *node, int x, int y);
 
 /**
  * @brief Sets the opacity of a scene node.
@@ -380,7 +381,7 @@ void wlf_scene_node_set_opacity(struct wlf_scene_node *node,
  * @param height Pointer to store height.
  */
 void wlf_scene_node_get_size(struct wlf_scene_node *node,
-	double *width, double *height);
+	uint32_t *width, uint32_t *height);
 
 /**
  * @brief Gets the children list of a scene node.
@@ -398,12 +399,12 @@ struct wlf_linked_list *wlf_scene_node_get_children(struct wlf_scene_node *node)
  * @param y Y offset.
  * @param opaque Region to store opaque area.
  */
-void wlf_scene_node_opaque_region(struct wlf_scene_node *node, double x,
-	double y, pixman_region32_t *opaque);
+void wlf_scene_node_opaque_region(struct wlf_scene_node *node, int x,
+	int y, pixman_region32_t *opaque);
 
 /** Compatibility name for wlf_scene_node_opaque_region(). */
-void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
-	double y, pixman_region32_t *opaque);
+void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, int x,
+	int y, pixman_region32_t *opaque);
 
 /**
  * @brief Checks if a scene node is invisible.
@@ -444,7 +445,7 @@ struct wlf_scene_node *wlf_scene_node_at(struct wlf_scene_node *node,
  * @return True if coordinates are valid.
  */
 bool wlf_scene_node_coords(struct wlf_scene_node *node,
-	double *lx_ptr, double *ly_ptr);
+	int *lx_ptr, int *ly_ptr);
 
 /**
  * @brief Updates a scene node with damage region.
@@ -476,7 +477,7 @@ void wlf_scene_node_update(struct wlf_scene_node *node, pixman_region32_t *damag
  *                 this region remains unmodified.
  */
 void wlf_scene_node_bounds(struct wlf_scene_node *node,
-	double x, double y, pixman_region32_t *visible);
+	int x, int y, pixman_region32_t *visible);
 
 /**
  * @brief Traverses and evaluates scene graph elements within a specified bounding box.
@@ -502,11 +503,11 @@ bool wlf_scene_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
 	scene_node_box_iterator_func_t iterator, void *user_data);
 
 bool wlf_scene_node_construct_render_list_iterator(
-	struct wlf_scene_node *node, double lx, double ly, void *data);
+	struct wlf_scene_node *node, int lx, int ly, void *data);
 
 /** Adds an eligible node to the render list in data. */
 bool wlf_scene_node_add_render_list_entry(struct wlf_scene_node *node,
-	double lx, double ly, void *data);
+	int lx, int ly, void *data);
 
 /** Initializes render_region with the node-visible portion of frame damage. */
 bool wlf_scene_node_init_render_region(struct wlf_render_list_entry *entry,

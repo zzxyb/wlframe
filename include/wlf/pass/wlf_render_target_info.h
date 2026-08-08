@@ -17,6 +17,8 @@
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/utils/wlf_signal.h"
 
+#include <pixman.h>
+
 struct wlf_render_target_info;
 
 /**
@@ -44,6 +46,9 @@ struct wlf_render_target_info_impl {
  */
 struct wlf_render_target_info {
 	const struct wlf_render_target_info_impl *impl; /**< Implementation vtable */
+	int logical_width, logical_height; /**< Target size in logical coordinates. */
+	int buffer_width, buffer_height;   /**< Target size in physical pixels. */
+	double scale;                      /**< Logical-to-buffer pixel scale. */
 	struct {
 		struct wlf_signal destroy; /**< Emitted before target info is destroyed */
 	} events;
@@ -66,5 +71,10 @@ void wlf_render_target_info_init(struct wlf_render_target_info *render_target,
  * @param render_target Render target info object to destroy.
  */
 void wlf_render_target_info_destroy(struct wlf_render_target_info *render_target);
+
+/** Converts a logical region into a covering buffer-pixel region. */
+void wlf_render_target_info_scale_region(
+	const struct wlf_render_target_info *render_target,
+	const pixman_region32_t *logical, pixman_region32_t *buffer);
 
 #endif // PASS_WLF_RENDER_TARGET_INFO_H

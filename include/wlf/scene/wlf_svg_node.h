@@ -1,6 +1,16 @@
 /**
- * @file wlf_svg_node.h
- * @brief Composite scene node for parsed SVG images.
+ * @file        wlf_svg_node.h
+ * @brief       Composite scene node for parsed SVG images.
+ * @details     This file integrates parsed SVG images with the scene graph.
+ *              SVG geometry is represented by regular wlframe shape and text
+ *              nodes so rendering, damage tracking, and hit testing use the
+ *              normal scene pipeline.
+ * @author      YaoBing Xiao
+ * @date        2026-08-09
+ * @version     v1.0
+ * @par Copyright(c):
+ * @par History:
+ *      version: v1.0, YaoBing Xiao, 2026-08-09, initial version\n
  */
 
 #ifndef SCENE_WLF_SVG_NODE_H
@@ -37,7 +47,7 @@ struct wlf_svg_node {
  * @return A new SVG node, or NULL on failure.
  */
 struct wlf_svg_node *wlf_svg_node_create(struct wlf_scene_node *parent,
-	double x, double y, struct wlf_svg_image *image);
+	int x, int y, struct wlf_svg_image *image);
 
 /**
  * Parses a file and creates an SVG node.
@@ -51,7 +61,7 @@ struct wlf_svg_node *wlf_svg_node_create(struct wlf_scene_node *parent,
  * @return A new SVG node, or NULL on parse/allocation failure.
  */
 struct wlf_svg_node *wlf_svg_node_create_from_file(
-	struct wlf_scene_node *parent, double x, double y,
+	struct wlf_scene_node *parent, int x, int y,
 	const char *filename, const char *units, float dpi);
 
 /** @return true when @p node is an SVG node. */

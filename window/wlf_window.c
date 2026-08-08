@@ -5,6 +5,8 @@
 #include "wlf/utils/wlf_log.h"
 
 #include <assert.h>
+#include <limits.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,6 +27,7 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 		.impl = impl,
 		.state.type = type,
 		.state.opacity = 1.0f,
+		.state.scale = 1.0,
 		.state.background_color = WLF_COLOR_BLACK,
 		.state.backend = backend,
 		.state.server_side_decorated =
@@ -49,6 +52,7 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 	wlf_signal_init(&window->events.close);
 	wlf_signal_init(&window->events.focus_in);
 	wlf_signal_init(&window->events.focus_out);
+	wlf_signal_init(&window->events.scale);
 	wlf_signal_init(&window->events.show);
 	wlf_signal_init(&window->events.hide);
 }
@@ -173,6 +177,30 @@ void wlf_window_set_position(struct wlf_window *window, int x, int y) {
 	wlf_signal_emit_mutable(&window->events.move, window);
 }
 
+uint32_t wlf_window_scale_length(const struct wlf_window *window,
+		uint32_t logical_length) {
+	assert(window != NULL);
+	double scaled = ceil(logical_length * window->state.scale);
+	return scaled >= INT_MAX ? INT_MAX : (uint32_t)scaled;
+}
+
+void wlf_window_set_scale(struct wlf_window *window, double scale) {
+	assert(window != NULL);
+	if (!isfinite(scale) || scale <= 0.0) {
+		wlf_log(WLF_ERROR, "Ignoring invalid window scale %.2f", scale);
+		return;
+	}
+	if (window->state.scale == scale) {
+		return;
+	}
+
+	window->state.scale = scale;
+	wlf_signal_emit_mutable(&window->events.scale, window);
+	if (window->scene != NULL) {
+		wlf_scene_damage_whole(window->scene);
+	}
+}
+
 void wlf_window_set_state(struct wlf_window *window,
 		enum wlf_window_state_flags state) {
 	if (window->impl->set_state) {
@@ -249,8 +277,12 @@ void *wlf_window_native_handle(struct wlf_window *window) {
 void wlf_window_init_renderer(struct wlf_window *window, struct wlf_renderer *renderer) {
 	window->state.renderer = renderer;
 	window->state.swapchain =
-		wlf_swapchain_auto_create(window, window->state.geometry.width,
-			window->state.geometry.height, &window->state.format);
+		wlf_swapchain_auto_create(window,
+			(int)wlf_window_scale_length(window,
+				(uint32_t)window->state.geometry.width),
+			(int)wlf_window_scale_length(window,
+				(uint32_t)window->state.geometry.height),
+			&window->state.format);
 }
 
 void wlf_window_schedule_frame(struct wlf_window *window) {

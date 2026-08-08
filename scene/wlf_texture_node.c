@@ -17,13 +17,13 @@ static bool texture_node_invisible(struct wlf_scene_node *node) {
 }
 
 static void texture_node_get_size(struct wlf_scene_node *node,
-		double *width, double *height) {
+		uint32_t *width, uint32_t *height) {
 	*width = node->state.width;
 	*height = node->state.height;
 }
 
 static void scene_node_opaque_region(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *opaque) {
+		int x, int y, pixman_region32_t *opaque) {
 	(void)node;
 	(void)x;
 	(void)y;
@@ -54,7 +54,7 @@ static struct wlf_scene_node *texture_node_at(struct wlf_scene_node *node,
 }
 
 static void texture_node_bounds(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *visible) {
+		int x, int y, pixman_region32_t *visible) {
 	if (!texture_node_invisible(node)) {
 		pixman_region32_union_rect(visible, visible, (int)x, (int)y,
 			node->state.width, node->state.height);
@@ -67,7 +67,7 @@ static bool texture_node_in_box(struct wlf_scene_node *node,
 	if (texture_node_invisible(node)) {
 		return false;
 	}
-	double x, y;
+	int x, y;
 	if (!wlf_scene_node_coords(node, &x, &y)) {
 		return false;
 	}
@@ -119,8 +119,8 @@ static const struct wlf_scene_node_impl texture_node_impl = {
 
 struct wlf_texture_node *wlf_texture_node_create(
 		struct wlf_scene_node *parent, struct wlf_texture *texture,
-		double x, double y, double width, double height) {
-	if (parent == NULL || texture == NULL || width < 0 || height < 0) {
+		int x, int y, uint32_t width, uint32_t height) {
+	if (parent == NULL || texture == NULL) {
 		return NULL;
 	}
 	struct wlf_texture_node *node = calloc(1, sizeof(*node));
@@ -154,8 +154,8 @@ void wlf_texture_node_set_texture(struct wlf_texture_node *node,
 }
 
 void wlf_texture_node_set_dest_size(struct wlf_texture_node *node,
-		double width, double height) {
-	if (node == NULL || width < 0 || height < 0) {
+		uint32_t width, uint32_t height) {
+	if (node == NULL) {
 		return;
 	}
 	if (width == 0 && node->texture != NULL) {
@@ -208,8 +208,8 @@ void wlf_texture_node_render(struct wlf_texture_node *node,
 		struct wlf_texture_pass *pass,
 		struct wlf_render_target_info *render_target_info,
 		const pixman_region32_t *clip) {
-	double x = 0;
-	double y = 0;
+	int x = 0;
+	int y = 0;
 	if (!wlf_scene_node_coords(&node->base, &x, &y)) {
 		return;
 	}
