@@ -144,6 +144,9 @@ if is_linux
 	libwebp = dependency('libwebp', required: true)
 	libwebpdemux = dependency('libwebpdemux', required: true)
 	libwebpmux = dependency('libwebpmux', required: true)
+	cairo = dependency('cairo', version: '>=1.16', required: true)
+	pangocairo = dependency('pangocairo', version: '>=1.44', required: true)
+	harfbuzz = dependency('harfbuzz', version: '>=2.6', required: true)
 	wlr_protos =  dependency('wlr-protocols')
 	giflib = cc.find_library('gif', required: true)
 	glesv2 = dependency('glesv2', required: true)
@@ -161,6 +164,12 @@ elif is_macos
 	libwebp = dependency('libwebp', required: true, method: 'pkg-config')
 	libwebpdemux = dependency('libwebpdemux', required: true, method: 'pkg-config')
 	libwebpmux = dependency('libwebpmux', required: true, method: 'pkg-config')
+	cairo = dependency('cairo', version: '>=1.16', required: true,
+		method: 'pkg-config')
+	pangocairo = dependency('pangocairo', version: '>=1.44', required: true,
+		method: 'pkg-config')
+	harfbuzz = dependency('harfbuzz', version: '>=2.6', required: true,
+		method: 'pkg-config')
 	pixman = dependency('pixman-1', version: '>=0.42', required: true, method: 'pkg-config')
 	brew = find_program('brew', required: false)
 	if not brew.found()
@@ -204,6 +213,9 @@ elif is_windows
 	libwebp = dependency('libwebp', required: true)
 	libwebpdemux = dependency('libwebpdemux', required: true)
 	libwebpmux = dependency('libwebpmux', required: true)
+	cairo = dependency('cairo', version: '>=1.16', required: true)
+	pangocairo = dependency('pangocairo', version: '>=1.44', required: true)
+	harfbuzz = dependency('harfbuzz', version: '>=2.6', required: true)
 	pixman = dependency('pixman-1', version: '>=0.42', required: true)
 	giflib = dependency('giflib', required: false)
 	if not giflib.found()
@@ -229,6 +241,9 @@ wlf_deps = [
 	libwebpmux,
 	giflib,
 	pixman,
+	cairo,
+	pangocairo,
+	harfbuzz,
 ]
 
 if is_macos

@@ -4,6 +4,7 @@ wlf_files += files(
 	'wlf_scene_tree.c',
 	'wlf_scene.c',
 	'wlf_texture_node.c',
+	'wlf_text_node.c',
 	'wlf_shape_node_common.c',
 	'wlf_rect_shape_node.c',
 	'wlf_circle_node.c',

@@ -12,6 +12,7 @@
 #include "wlf/renderer/pixman/renderer.h"
 #include "wlf/scene/wlf_rect_node.h"
 #include "wlf/scene/wlf_scene_tree.h"
+#include "wlf/scene/wlf_text_node.h"
 #include "wlf/scene/wlf_texture_node.h"
 #include "wlf/scene/wlf_rect_shape_node.h"
 #include "wlf/scene/wlf_circle_node.h"
@@ -43,6 +44,7 @@ struct render_state {
 	struct wlf_poly_pass *poly_pass;
 	struct wlf_path_pass *path_pass;
 	struct wlf_rect_node *rect;
+	struct wlf_text_node *text;
 	struct wlf_texture_node *image;
 	struct wlf_rect_shape_node *rounded_rect;
 	struct wlf_circle_node *circle;
@@ -67,6 +69,7 @@ static void render_scene(struct render_state *state, struct wlf_window *window,
 	};
 	wlf_render_pass_add_rect(state->rect_pass, target, &background);
 	wlf_rect_node_render(state->rect, state->rect_pass, target, damage);
+	wlf_text_node_render(state->text, state->texture_pass, target, damage);
 	wlf_texture_node_render(state->image, state->texture_pass, target, damage);
 	wlf_rect_shape_node_render(state->rounded_rect,
 		state->rect_shape_pass, target, damage);
@@ -205,7 +208,7 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	wlf_window_init_renderer(window, renderer);
-	wlf_window_set_title(window, "wlframe scene shapes and image test");
+	wlf_window_set_title(window, "wlframe scene text, shapes and image test");
 
 	struct wlf_scene_tree *tree = wlf_root_scene_tree_create();
 	if (tree == NULL) {
@@ -252,6 +255,23 @@ int main(int argc, char *argv[]) {
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
+	struct wlf_color text_color = wlf_color_from_rgb8(245, 248, 255);
+	render.text = wlf_text_node_create(&tree->base, 45, 55,
+		"wlframe text node\n中文 fallback · ffi\nمرحبا بالعالم",
+		"sans-serif", 28,
+		&text_color);
+	if (render.text == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create text scene node");
+		wlf_scene_node_destroy(&tree->base);
+		destroy_shape_passes(&render);
+		wlf_render_texture_pass_destroy(render.texture_pass);
+		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_backend_destroy(backend);
+		return EXIT_FAILURE;
+	}
+	wlf_text_node_set_font_style(render.text, WLF_TEXT_FONT_SLANT_NORMAL,
+		WLF_TEXT_FONT_WEIGHT_BOLD);
+	wlf_text_node_set_max_width(render.text, 260);
 
 	struct wlf_image *image = wlf_image_load(image_path);
 	if (image == NULL) {
