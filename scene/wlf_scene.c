@@ -1,6 +1,12 @@
 #include "wlf/scene/wlf_scene.h"
 
 #include "wlf/buffer/pixman/buffer.h"
+#include "wlf/pass/wlf_circle_pass.h"
+#include "wlf/pass/wlf_ellipse_pass.h"
+#include "wlf/pass/wlf_line_pass.h"
+#include "wlf/pass/wlf_path_pass.h"
+#include "wlf/pass/wlf_poly_pass.h"
+#include "wlf/pass/wlf_rect_shape_pass.h"
 #include "wlf/pass/gles/rect_pass.h"
 #include "wlf/pass/gles/render_target_info.h"
 #include "wlf/pass/gles/texture_pass.h"
@@ -11,16 +17,7 @@
 #include "wlf/pass/pixman/vector_pass.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
-#include "wlf/scene/wlf_circle_node.h"
-#include "wlf/scene/wlf_ellipse_node.h"
-#include "wlf/scene/wlf_line_node.h"
-#include "wlf/scene/wlf_path_node.h"
-#include "wlf/scene/wlf_poly_node.h"
-#include "wlf/scene/wlf_rect_node.h"
-#include "wlf/scene/wlf_rect_shape_node.h"
 #include "wlf/scene/wlf_scene_tree.h"
-#include "wlf/scene/wlf_texture_node.h"
-#include "wlf/scene/wlf_text_node.h"
 #include "wlf/swapchain/egl/swapchain.h"
 #include "wlf/swapchain/shm/swapchain.h"
 #include "wlf/utils/wlf_log.h"
@@ -206,30 +203,31 @@ static struct wlf_render_target_info *begin_render(
 
 static void clear_node_visibility(struct wlf_scene_node *node) {
 	pixman_region32_clear(&node->state.visible);
-	if (!wlf_scene_node_is_tree(node)) {
+	struct wlf_linked_list *children = wlf_scene_node_get_children(node);
+	if (children == NULL) {
 		return;
 	}
 
-	struct wlf_scene_tree *tree = wlf_scene_tree_from_node(node);
 	struct wlf_scene_node *child;
-	wlf_linked_list_for_each(child, &tree->children, link) {
+	wlf_linked_list_for_each(child, children, link) {
 		clear_node_visibility(child);
 	}
 }
 
 static void calculate_node_visibility(struct wlf_scene_node *node,
-		pixman_region32_t *remaining) {
+		pixman_region32_t *remaining, bool calculate_visibility) {
 	if (!node->state.enabled) {
 		clear_node_visibility(node);
 		return;
 	}
 
 	pixman_region32_clear(&node->state.visible);
-	if (wlf_scene_node_is_tree(node)) {
-		struct wlf_scene_tree *tree = wlf_scene_tree_from_node(node);
+	struct wlf_linked_list *children = wlf_scene_node_get_children(node);
+	if (children != NULL) {
 		struct wlf_scene_node *child;
-		wlf_linked_list_for_each_reverse(child, &tree->children, link) {
-			calculate_node_visibility(child, remaining);
+		wlf_linked_list_for_each_reverse(child, children, link) {
+			calculate_node_visibility(child, remaining,
+				calculate_visibility);
 			pixman_region32_union(&node->state.visible,
 				&node->state.visible, &child->state.visible);
 		}
@@ -247,12 +245,14 @@ static void calculate_node_visibility(struct wlf_scene_node *node,
 	wlf_scene_node_bounds(node, x, y, &bounds);
 	pixman_region32_intersect(&node->state.visible, &bounds, remaining);
 
-	pixman_region32_t opaque;
-	pixman_region32_init(&opaque);
-	wlf_scene_node_get_opaque_region(node, x, y, &opaque);
-	pixman_region32_intersect(&opaque, &opaque, &node->state.visible);
-	pixman_region32_subtract(remaining, remaining, &opaque);
-	pixman_region32_fini(&opaque);
+	if (calculate_visibility) {
+		pixman_region32_t opaque;
+		pixman_region32_init(&opaque);
+		wlf_scene_node_opaque_region(node, x, y, &opaque);
+		pixman_region32_intersect(&opaque, &opaque, &node->state.visible);
+		pixman_region32_subtract(remaining, remaining, &opaque);
+		pixman_region32_fini(&opaque);
+	}
 	pixman_region32_fini(&bounds);
 }
 
@@ -269,63 +269,61 @@ void wlf_scene_recalculate_visibility(struct wlf_scene *scene) {
 
 	pixman_region32_t remaining;
 	pixman_region32_init_rect(&remaining, 0, 0, width, height);
-	calculate_node_visibility(&scene->tree->base, &remaining);
+	calculate_node_visibility(&scene->tree->base, &remaining,
+		scene->calculate_visibility);
 	pixman_region32_fini(&remaining);
 }
 
-static void render_node(struct wlf_scene *scene, struct wlf_scene_node *node,
-		struct wlf_render_target_info *target,
-		const pixman_region32_t *damage) {
-	if (!node->state.enabled) {
-		return;
-	}
+static bool scene_build_render_list(struct wlf_scene *scene,
+		int width, int height) {
+	struct wlf_render_list_constructor_data list_con = {
+		.box = {
+			.width = width,
+			.height = height,
+		},
+		.render_list = &scene->render_list,
+		.calculate_visibility = scene->calculate_visibility,
+		.highlight_transparent_region =
+			scene->highlight_transparent_region,
+	};
 
-	if (wlf_scene_node_is_tree(node)) {
-		struct wlf_scene_tree *tree = wlf_scene_tree_from_node(node);
-		struct wlf_scene_node *child;
-		wlf_linked_list_for_each(child, &tree->children, link) {
-			render_node(scene, child, target, damage);
+	scene->render_list.size = 0;
+	wlf_scene_node_nodes_in_box(&scene->tree->base, &list_con.box,
+		wlf_scene_node_construct_render_list_iterator, &list_con);
+	return !list_con.failed;
+}
+
+static void scene_render_background(struct wlf_scene *scene,
+		const struct wlf_render_data *render_data,
+		struct wlf_render_list_entry *entries, size_t entries_len,
+		int width, int height) {
+	pixman_region32_t background;
+	pixman_region32_init(&background);
+	pixman_region32_copy(&background,
+		(pixman_region32_t *)&render_data->damage);
+
+	if (scene->calculate_visibility) {
+		for (size_t i = entries_len; i > 0; i--) {
+			struct wlf_render_list_entry *entry = &entries[i - 1];
+			pixman_region32_t opaque;
+			pixman_region32_init(&opaque);
+			wlf_scene_node_opaque_region(entry->node,
+				entry->x, entry->y, &opaque);
+			pixman_region32_intersect(&opaque, &opaque,
+				&entry->node->state.visible);
+			pixman_region32_subtract(&background, &background, &opaque);
+			pixman_region32_fini(&opaque);
 		}
-		return;
 	}
 
-	pixman_region32_t clip;
-	pixman_region32_init(&clip);
-	pixman_region32_intersect(&clip, damage, &node->state.visible);
-	if (pixman_region32_empty(&clip)) {
-		pixman_region32_fini(&clip);
-		return;
-	}
-
-	if (wlf_scene_node_is_rect(node)) {
-		wlf_rect_node_render(wlf_rect_node_from_node(node), scene->rect_pass,
-			target, &clip);
-	} else if (wlf_scene_node_is_texture(node)) {
-		wlf_texture_node_render(wlf_texture_node_from_node(node),
-			scene->texture_pass, target, &clip);
-	} else if (wlf_scene_node_is_text(node)) {
-		wlf_text_node_render(wlf_text_node_from_node(node),
-			scene->texture_pass, target, &clip);
-	} else if (wlf_scene_node_is_rect_shape(node)) {
-		wlf_rect_shape_node_render(wlf_rect_shape_node_from_node(node),
-			scene->rect_shape_pass, target, &clip);
-	} else if (wlf_scene_node_is_circle(node)) {
-		wlf_circle_node_render(wlf_circle_node_from_node(node),
-			scene->circle_pass, target, &clip);
-	} else if (wlf_scene_node_is_ellipse(node)) {
-		wlf_ellipse_node_render(wlf_ellipse_node_from_node(node),
-			scene->ellipse_pass, target, &clip);
-	} else if (wlf_scene_node_is_line(node)) {
-		wlf_line_node_render(wlf_line_node_from_node(node), scene->line_pass,
-			target, &clip);
-	} else if (wlf_scene_node_is_poly(node)) {
-		wlf_poly_node_render(wlf_poly_node_from_node(node), scene->poly_pass,
-			target, &clip);
-	} else if (wlf_scene_node_is_path(node)) {
-		wlf_path_node_render(wlf_path_node_from_node(node), scene->path_pass,
-			target, &clip);
-	}
-	pixman_region32_fini(&clip);
+	wlf_render_pass_add_rect(scene->rect_pass, render_data->target,
+		&(struct wlf_render_rect_options){
+			.box = { .width = width, .height = height },
+			.color = scene->window->state.background_color,
+			.clip = &background,
+			.blend_mode = WLF_RENDER_BLEND_MODE_NONE,
+		});
+	pixman_region32_fini(&background);
 }
 
 static void handle_window_expose(struct wlf_listener *listener, void *data) {
@@ -366,6 +364,7 @@ struct wlf_scene *wlf_scene_create(struct wlf_window *window) {
 		return NULL;
 	}
 	scene->tree->base.window = window;
+	scene->tree->base.scene = scene;
 	window->tree = scene->tree;
 	if (!create_passes(scene)) {
 		wlf_scene_node_destroy(&scene->tree->base);
@@ -380,6 +379,11 @@ struct wlf_scene *wlf_scene_create(struct wlf_window *window) {
 	pixman_region32_init_rect(&scene->previous_damage, 0, 0,
 		window->state.geometry.width, window->state.geometry.height);
 	wlf_linked_list_init(&scene->damage_highlight_regions);
+	wlf_array_init(&scene->render_list);
+	scene->calculate_visibility =
+		!wlf_env_parse_bool("WLF_SCENE_DISABLE_VISIBILITY");
+	scene->highlight_transparent_region =
+		wlf_env_parse_bool("WLF_SCENE_HIGHLIGHT_TRANSPARENT_REGION");
 	const char *debug_damage_options[] = {
 		"none",
 		"rerender",
@@ -417,6 +421,7 @@ void wlf_scene_destroy(struct wlf_scene *scene) {
 	}
 	destroy_passes(scene);
 	clear_highlight_regions(scene);
+	wlf_array_release(&scene->render_list);
 	pixman_region32_fini(&scene->damage);
 	pixman_region32_fini(&scene->previous_damage);
 	free(scene);
@@ -483,11 +488,12 @@ bool wlf_scene_needs_frame(const struct wlf_scene *scene) {
 		!wlf_linked_list_empty(&scene->damage_highlight_regions)));
 }
 
-bool wlf_scene_commit(struct wlf_scene *scene) {
-	if (scene == NULL || !wlf_scene_needs_frame(scene)) {
-		return scene != NULL;
-	}
+struct scene_state {
+	pixman_region32_t damage;
+};
 
+static bool scene_build_state(struct wlf_scene *scene,
+		struct scene_state *state) {
 	struct wlf_window *window = scene->window;
 	int width = window->state.geometry.width;
 	int height = window->state.geometry.height;
@@ -506,19 +512,19 @@ bool wlf_scene_commit(struct wlf_scene *scene) {
 			&scene->previous_damage, 0, 0, width, height);
 	}
 
-	pixman_region32_t damage;
 	pixman_region32_t render_damage;
-	pixman_region32_init(&damage);
 	pixman_region32_init(&render_damage);
-	pixman_region32_copy(&damage, &scene->damage);
+	pixman_region32_copy(&state->damage, &scene->damage);
 	struct timespec highlight_now = {0};
 	if (scene->debug_damage_option == WLF_SCENE_DEBUG_DAMAGE_RERENDER) {
-		pixman_region32_clear(&damage);
-		pixman_region32_union_rect(&damage, &damage, 0, 0, width, height);
+		pixman_region32_clear(&state->damage);
+		pixman_region32_union_rect(&state->damage, &state->damage,
+			0, 0, width, height);
 	} else if (scene->debug_damage_option == WLF_SCENE_DEBUG_DAMAGE_HIGHLIGHT) {
-		prepare_highlight_damage(scene, &damage, &highlight_now);
+		prepare_highlight_damage(scene, &state->damage, &highlight_now);
 	}
-	pixman_region32_union(&render_damage, &damage, &scene->previous_damage);
+	pixman_region32_union(&render_damage, &state->damage,
+		&scene->previous_damage);
 	/* EGL does not expose a stable buffer identity here. Without EGL buffer-age
 	 * tracking, repaint the whole back buffer while still presenting only the
 	 * actual surface damage. */
@@ -527,33 +533,61 @@ bool wlf_scene_commit(struct wlf_scene *scene) {
 		pixman_region32_union_rect(&render_damage, &render_damage,
 			0, 0, width, height);
 	}
+	if (!scene_build_render_list(scene, width, height)) {
+		pixman_region32_fini(&render_damage);
+		return false;
+	}
 	struct wlf_render_target_info *target = begin_render(scene);
 	if (target == NULL) {
 		pixman_region32_fini(&render_damage);
-		pixman_region32_fini(&damage);
 		return false;
 	}
 
-	struct wlf_render_rect_options background = {
-		.box = { .width = width, .height = height },
-		.color = window->state.background_color,
-		.clip = &render_damage,
-		.blend_mode = WLF_RENDER_BLEND_MODE_NONE,
+	struct wlf_render_data render_data = {
+		.scene = scene,
+		.target = target,
+		.logical = {
+			.width = width,
+			.height = height,
+		},
 	};
-	wlf_render_pass_add_rect(scene->rect_pass, target, &background);
-	render_node(scene, &scene->tree->base, target, &render_damage);
+	pixman_region32_init(&render_data.damage);
+	pixman_region32_copy(&render_data.damage, &render_damage);
+	struct wlf_render_list_entry *entries = scene->render_list.data;
+	size_t entries_len = scene->render_list.size / sizeof(*entries);
+	scene_render_background(scene, &render_data, entries, entries_len,
+		width, height);
+	for (size_t i = entries_len; i > 0; i--) {
+		wlf_scene_node_render(&entries[i - 1], &render_data);
+	}
+	pixman_region32_fini(&render_data.damage);
 	if (scene->debug_damage_option == WLF_SCENE_DEBUG_DAMAGE_HIGHLIGHT) {
 		render_damage_highlights(scene, target, &highlight_now, width, height);
 	}
 	wlf_render_target_info_destroy(target);
-	wlf_swapchain_present(window->state.swapchain, &damage);
-	pixman_region32_copy(&scene->previous_damage, &damage);
-	pixman_region32_clear(&scene->damage);
 	pixman_region32_fini(&render_damage);
-	pixman_region32_fini(&damage);
+	return true;
+}
+
+bool wlf_scene_commit(struct wlf_scene *scene) {
+	if (scene == NULL || !wlf_scene_needs_frame(scene)) {
+		return scene != NULL;
+	}
+
+	struct scene_state state;
+	pixman_region32_init(&state.damage);
+	if (!scene_build_state(scene, &state)) {
+		pixman_region32_fini(&state.damage);
+		return false;
+	}
+
+	wlf_swapchain_present(scene->window->state.swapchain, &state.damage);
+	pixman_region32_copy(&scene->previous_damage, &state.damage);
+	pixman_region32_clear(&scene->damage);
+	pixman_region32_fini(&state.damage);
 	if (scene->debug_damage_option == WLF_SCENE_DEBUG_DAMAGE_HIGHLIGHT &&
 			!wlf_linked_list_empty(&scene->damage_highlight_regions)) {
-		wlf_window_schedule_frame(window);
+		wlf_window_schedule_frame(scene->window);
 	}
 	return true;
 }

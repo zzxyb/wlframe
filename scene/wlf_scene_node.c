@@ -1,7 +1,10 @@
 #include "wlf/scene/wlf_scene_node.h"
 #include "wlf/scene/wlf_scene.h"
+#include "wlf/pass/wlf_rect_pass.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/utils/wlf_log.h"
 #include "wlf/window/wlf_window.h"
+#include "wlf_scene_node_internal.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -112,6 +115,7 @@ void wlf_scene_node_init(struct wlf_scene_node *node,
 
 	if (parent != NULL) {
 		wlf_linked_list_insert(parent->impl->get_children(parent)->prev, &node->link);
+		node->scene = parent->scene;
 		node->window = parent->window;
 	}
 
@@ -219,18 +223,23 @@ struct wlf_linked_list *wlf_scene_node_get_children(struct wlf_scene_node *node)
 	return node->impl->get_children(node);
 }
 
-void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
+void wlf_scene_node_opaque_region(struct wlf_scene_node *node, double x,
 		double y, pixman_region32_t *opaque) {
-	if (node->impl->get_opaque_region == NULL) {
+	if (node->impl->opaque_region == NULL) {
 		/* Unknown node types are conservatively treated as non-opaque. */
 		return;
 	}
 
-	node->impl->get_opaque_region(node, x, y, opaque);
+	node->impl->opaque_region(node, x, y, opaque);
+}
+
+void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
+		double y, pixman_region32_t *opaque) {
+	wlf_scene_node_opaque_region(node, x, y, opaque);
 }
 
 bool wlf_scene_node_invisible(struct wlf_scene_node *node) {
-		if (node->impl->invisible == NULL) {
+	if (node->impl->invisible == NULL) {
 		return false;
 	}
 
@@ -238,10 +247,11 @@ bool wlf_scene_node_invisible(struct wlf_scene_node *node) {
 }
 
 void wlf_scene_node_visibility(struct wlf_scene_node *node, pixman_region32_t *visible) {
-	if (!node->state.enabled) {
+	if (node->impl->visibility == NULL) {
 		return;
 	}
-	pixman_region32_union(visible, visible, &node->state.visible);
+
+	node->impl->visibility(node, visible);
 }
 
 struct wlf_scene_node *wlf_scene_node_at(struct wlf_scene_node *node,
@@ -291,8 +301,8 @@ void wlf_scene_node_update(struct wlf_scene_node *node, pixman_region32_t *damag
 		} else {
 			pixman_region32_copy(&old_visible, &node->state.visible);
 		}
-		if (node->window != NULL && node->window->scene != NULL) {
-			wlf_scene_recalculate_visibility(node->window->scene);
+		if (node->scene != NULL) {
+			wlf_scene_recalculate_visibility(node->scene);
 		} else {
 			double x, y;
 			if (wlf_scene_node_coords(node, &x, &y)) {
@@ -303,8 +313,8 @@ void wlf_scene_node_update(struct wlf_scene_node *node, pixman_region32_t *damag
 		pixman_region32_copy(&new_visible, &node->state.visible);
 		pixman_region32_union(&changed, &old_visible, &new_visible);
 
-		if (node->window != NULL && node->window->scene != NULL) {
-			wlf_scene_damage(node->window->scene, &changed);
+		if (node->scene != NULL) {
+			wlf_scene_damage(node->scene, &changed);
 		}
 
 		pixman_region32_fini(&changed);
@@ -333,11 +343,102 @@ void wlf_scene_node_bounds(struct wlf_scene_node *node,
 	node->impl->bounds(node, x, y, visible);
 }
 
-bool wlf_scene_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
+bool wlf_scene_node_nodes_in_box(struct wlf_scene_node *node,
+		struct wlf_frect *box,
 		scene_node_box_iterator_func_t iterator, void *user_data) {
 	if (node->impl->in_box == NULL) {
 		return false;
 	}
 
 	return node->impl->in_box(node, box, iterator, user_data);
+}
+
+bool wlf_scene_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
+		scene_node_box_iterator_func_t iterator, void *user_data) {
+	return wlf_scene_node_nodes_in_box(node, box, iterator, user_data);
+}
+
+bool wlf_scene_node_construct_render_list_iterator(
+		struct wlf_scene_node *node, double lx, double ly, void *data) {
+	if (node->impl->construct_render_list_iterator == NULL) {
+		return false;
+	}
+
+	return node->impl->construct_render_list_iterator(node, lx, ly, data);
+}
+
+bool wlf_scene_node_add_render_list_entry(struct wlf_scene_node *node,
+		double lx, double ly, void *_data) {
+	struct wlf_render_list_constructor_data *data = _data;
+	if (wlf_scene_node_invisible(node)) {
+		return false;
+	}
+
+	pixman_region32_t intersection;
+	pixman_region32_init(&intersection);
+	pixman_region32_intersect_rect(&intersection, &node->state.visible,
+		(int)data->box.x, (int)data->box.y,
+		(uint32_t)data->box.width, (uint32_t)data->box.height);
+	bool visible = !pixman_region32_empty(&intersection);
+	pixman_region32_fini(&intersection);
+	if (!visible) {
+		return false;
+	}
+
+	struct wlf_render_list_entry *entry = wlf_array_add(data->render_list,
+		sizeof(*entry));
+	if (entry == NULL) {
+		wlf_log_errno(WLF_ERROR, "failed to grow scene render list");
+		data->failed = true;
+		return true;
+	}
+
+	*entry = (struct wlf_render_list_entry){
+		.node = node,
+		.highlight_transparent_region = data->highlight_transparent_region,
+		.x = lx,
+		.y = ly,
+	};
+	return false;
+}
+
+bool wlf_scene_node_init_render_region(struct wlf_render_list_entry *entry,
+		const struct wlf_render_data *data,
+		pixman_region32_t *render_region) {
+	pixman_region32_init(render_region);
+	pixman_region32_intersect(render_region, &entry->node->state.visible,
+		(pixman_region32_t *)&data->damage);
+	return !pixman_region32_empty(render_region);
+}
+
+void wlf_scene_node_render(struct wlf_render_list_entry *entry,
+		const struct wlf_render_data *data) {
+	if (entry->node->impl->render == NULL) {
+		return;
+	}
+
+	entry->node->impl->render(entry, data);
+	if (!entry->highlight_transparent_region) {
+		return;
+	}
+
+	pixman_region32_t transparent;
+	pixman_region32_t opaque;
+	pixman_region32_init(&transparent);
+	pixman_region32_init(&opaque);
+	pixman_region32_intersect(&transparent, &entry->node->state.visible,
+		(pixman_region32_t *)&data->damage);
+	wlf_scene_node_opaque_region(entry->node, entry->x, entry->y, &opaque);
+	pixman_region32_subtract(&transparent, &transparent, &opaque);
+	if (!pixman_region32_empty(&transparent)) {
+		wlf_render_pass_add_rect(data->scene->rect_pass, data->target,
+			&(struct wlf_render_rect_options){
+				.box = data->logical,
+				.color = { .g = 0.3, .a = 0.3 },
+				.clip = &transparent,
+				.blend_mode = WLF_RENDER_BLEND_MODE_PREMULTIPLIED,
+			});
+	}
+	pixman_region32_fini(&opaque);
+	pixman_region32_fini(&transparent);
 }

@@ -1,8 +1,10 @@
 #include "wlf/scene/wlf_text_node.h"
 
+#include "wlf/scene/wlf_scene.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wlf_window.h"
+#include "wlf_scene_node_internal.h"
 
 #include <assert.h>
 #include <math.h>
@@ -18,6 +20,9 @@ struct text_metrics {
 	double height;
 	double baseline;
 };
+
+static void scene_node_render(struct wlf_render_list_entry *entry,
+	const struct wlf_render_data *data);
 
 static PangoStyle to_pango_style(enum wlf_text_font_slant slant) {
 	switch (slant) {
@@ -49,7 +54,7 @@ static void text_node_get_size(struct wlf_scene_node *node,
 	*height = node->state.height;
 }
 
-static void text_node_get_opaque_region(struct wlf_scene_node *node,
+static void scene_node_opaque_region(struct wlf_scene_node *node,
 		double x, double y, pixman_region32_t *opaque) {
 	(void)node;
 	(void)x;
@@ -69,15 +74,10 @@ static void text_node_add_bounds(struct wlf_scene_node *node,
 
 static void text_node_visibility(struct wlf_scene_node *node,
 		pixman_region32_t *visible) {
-	if (text_node_invisible(node)) {
+	if (!node->state.enabled) {
 		return;
 	}
-
-	double x = 0;
-	double y = 0;
-	if (wlf_scene_node_coords(node, &x, &y)) {
-		text_node_add_bounds(node, x, y, visible);
-	}
+	pixman_region32_union(visible, visible, &node->state.visible);
 }
 
 static struct wlf_scene_node *text_node_at(struct wlf_scene_node *node,
@@ -280,12 +280,15 @@ static void text_node_destroy(struct wlf_scene_node *base) {
 static const struct wlf_scene_node_impl text_node_impl = {
 	.destroy = text_node_destroy,
 	.get_size = text_node_get_size,
-	.get_opaque_region = text_node_get_opaque_region,
+	.opaque_region = scene_node_opaque_region,
 	.invisible = text_node_invisible,
 	.visibility = text_node_visibility,
 	.at = text_node_at,
 	.bounds = text_node_bounds,
 	.in_box = text_node_in_box,
+	.construct_render_list_iterator =
+		wlf_scene_node_add_render_list_entry,
+	.render = scene_node_render,
 };
 
 struct wlf_text_node *wlf_text_node_create(struct wlf_scene_node *parent,
@@ -419,16 +422,11 @@ struct wlf_text_node *wlf_text_node_from_node(struct wlf_scene_node *node) {
 	return text_node;
 }
 
-void wlf_text_node_render(struct wlf_text_node *node,
+static void text_node_render_at(struct wlf_text_node *node,
 		struct wlf_texture_pass *pass,
 		struct wlf_render_target_info *render_target_info,
-		const pixman_region32_t *clip) {
+		const pixman_region32_t *clip, double x, double y) {
 	if (node == NULL || pass == NULL || text_node_invisible(&node->base)) {
-		return;
-	}
-	double x = 0;
-	double y = 0;
-	if (!wlf_scene_node_coords(&node->base, &x, &y)) {
 		return;
 	}
 
@@ -446,4 +444,29 @@ void wlf_text_node_render(struct wlf_text_node *node,
 			.filter_mode = WLF_SCALE_FILTER_BILINEAR,
 			.blend_mode = WLF_RENDER_BLEND_MODE_PREMULTIPLIED,
 		});
+}
+
+void wlf_text_node_render(struct wlf_text_node *node,
+		struct wlf_texture_pass *pass,
+		struct wlf_render_target_info *render_target_info,
+		const pixman_region32_t *clip) {
+	double x = 0;
+	double y = 0;
+	if (!wlf_scene_node_coords(&node->base, &x, &y)) {
+		return;
+	}
+	text_node_render_at(node, pass, render_target_info, clip, x, y);
+}
+
+static void scene_node_render(struct wlf_render_list_entry *entry,
+		const struct wlf_render_data *data) {
+	pixman_region32_t render_region;
+	if (!wlf_scene_node_init_render_region(entry, data, &render_region)) {
+		pixman_region32_fini(&render_region);
+		return;
+	}
+	text_node_render_at(wlf_text_node_from_node(entry->node),
+		data->scene->texture_pass, data->target, &render_region,
+		entry->x, entry->y);
+	pixman_region32_fini(&render_region);
 }

@@ -1,9 +1,14 @@
 #include "wlf/scene/wlf_texture_node.h"
 
+#include "wlf/scene/wlf_scene.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf_scene_node_internal.h"
 
 #include <assert.h>
 #include <stdlib.h>
+
+static void scene_node_render(struct wlf_render_list_entry *entry,
+	const struct wlf_render_data *data);
 
 static bool texture_node_invisible(struct wlf_scene_node *node) {
 	struct wlf_texture_node *texture_node = wlf_texture_node_from_node(node);
@@ -18,7 +23,7 @@ static void texture_node_get_size(struct wlf_scene_node *node,
 	*height = node->state.height;
 }
 
-static void texture_node_get_opaque_region(struct wlf_scene_node *node,
+static void scene_node_opaque_region(struct wlf_scene_node *node,
 		double x, double y, pixman_region32_t *opaque) {
 	(void)node;
 	(void)x;
@@ -28,14 +33,10 @@ static void texture_node_get_opaque_region(struct wlf_scene_node *node,
 
 static void texture_node_visibility(struct wlf_scene_node *node,
 		pixman_region32_t *visible) {
-	if (texture_node_invisible(node)) {
+	if (!node->state.enabled) {
 		return;
 	}
-	double x, y;
-	if (wlf_scene_node_coords(node, &x, &y)) {
-		pixman_region32_union_rect(visible, visible, (int)x, (int)y,
-			node->state.width, node->state.height);
-	}
+	pixman_region32_union(visible, visible, &node->state.visible);
 }
 
 static struct wlf_scene_node *texture_node_at(struct wlf_scene_node *node,
@@ -106,12 +107,15 @@ static void texture_node_destroy(struct wlf_scene_node *base) {
 static const struct wlf_scene_node_impl texture_node_impl = {
 	.destroy = texture_node_destroy,
 	.get_size = texture_node_get_size,
-	.get_opaque_region = texture_node_get_opaque_region,
+	.opaque_region = scene_node_opaque_region,
 	.invisible = texture_node_invisible,
 	.visibility = texture_node_visibility,
 	.at = texture_node_at,
 	.bounds = texture_node_bounds,
 	.in_box = texture_node_in_box,
+	.construct_render_list_iterator =
+		wlf_scene_node_add_render_list_entry,
+	.render = scene_node_render,
 };
 
 struct wlf_texture_node *wlf_texture_node_create(
@@ -178,15 +182,11 @@ struct wlf_texture_node *wlf_texture_node_from_node(
 	return texture_node;
 }
 
-void wlf_texture_node_render(struct wlf_texture_node *node,
+static void texture_node_render_at(struct wlf_texture_node *node,
 		struct wlf_texture_pass *pass,
 		struct wlf_render_target_info *render_target_info,
-		const pixman_region32_t *clip) {
+		const pixman_region32_t *clip, double x, double y) {
 	if (node == NULL || pass == NULL || texture_node_invisible(&node->base)) {
-		return;
-	}
-	double x, y;
-	if (!wlf_scene_node_coords(&node->base, &x, &y)) {
 		return;
 	}
 	struct wlf_render_texture_options options = {
@@ -203,4 +203,29 @@ void wlf_texture_node_render(struct wlf_texture_node *node,
 		.blend_mode = node->blend_mode,
 	};
 	wlf_render_pass_add_texture(pass, render_target_info, &options);
+}
+
+void wlf_texture_node_render(struct wlf_texture_node *node,
+		struct wlf_texture_pass *pass,
+		struct wlf_render_target_info *render_target_info,
+		const pixman_region32_t *clip) {
+	double x = 0;
+	double y = 0;
+	if (!wlf_scene_node_coords(&node->base, &x, &y)) {
+		return;
+	}
+	texture_node_render_at(node, pass, render_target_info, clip, x, y);
+}
+
+static void scene_node_render(struct wlf_render_list_entry *entry,
+		const struct wlf_render_data *data) {
+	pixman_region32_t render_region;
+	if (!wlf_scene_node_init_render_region(entry, data, &render_region)) {
+		pixman_region32_fini(&render_region);
+		return;
+	}
+	texture_node_render_at(wlf_texture_node_from_node(entry->node),
+		data->scene->texture_pass, data->target, &render_region,
+		entry->x, entry->y);
+	pixman_region32_fini(&render_region);
 }
