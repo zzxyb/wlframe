@@ -1,9 +1,14 @@
 /**
  * @file        wlf_radial_gradient.h
  * @brief       Radial gradient implementation for wlframe.
+ * @details     This file defines radial gradient data and construction helpers
+ *              used by the rendering and SVG subsystems.
  * @author      YaoBing Xiao
  * @date        2026-03-21
  * @version     v1.0
+ * @par Copyright(c):
+ * @par History:
+ *      version: v1.0, YaoBing Xiao, 2026-03-21, initial version\n
  */
 
 #ifndef TYPES_WLF_RADIAL_GRADIENT_H
