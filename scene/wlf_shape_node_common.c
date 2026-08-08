@@ -1,5 +1,4 @@
 #include "wlf_shape_node_common.h"
-#include "wlf_scene_node_internal.h"
 
 #include <math.h>
 

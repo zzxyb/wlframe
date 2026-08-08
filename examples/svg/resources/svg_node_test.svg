@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="600" height="360" viewBox="0 0 600 360">
+  <rect x="4" y="4" width="592" height="352" rx="28"
+        fill="#172033" stroke="#6ea8fe" stroke-width="8"/>
+  <circle cx="105" cy="112" r="62" fill="#f06478"/>
+  <ellipse cx="260" cy="112" rx="92" ry="55" fill="#40c887"/>
+  <path d="M430 50 L439 86 L492 92 L452 104 L468 165
+           L430 139 L392 165 L408 104 L368 92 L421 86 Z"
+        fill="#a873e8" stroke="#ffffff" stroke-width="4"/>
+  <text x="300" y="245" text-anchor="middle" font-family="sans-serif"
+        font-size="34" fill="#f8f9ff">wlframe SVG · 中文 · مرحبا</text>
+  <text x="300" y="305" text-anchor="middle" font-family="serif"
+        font-size="25" fill="#ffd166">Pango / HarfBuzz shaped text</text>
+</svg>

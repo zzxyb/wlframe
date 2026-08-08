@@ -1,7 +1,6 @@
 #include "wlf/scene/wlf_rect_shape_node.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf_shape_node_impl.h"
-#include "wlf_scene_node_internal.h"
 
 #include <math.h>
 #include <stdlib.h>
