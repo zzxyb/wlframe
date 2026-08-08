@@ -158,6 +158,7 @@ struct wlf_backend *macos_backend_create(void) {
 	}
 
 	wlf_backend_init(&backend->base, &macos_backend_impl);
+	backend->base.features.server_side_decorations = true;
 	backend->base.data = backend;
 
 	if (!backend_ensure_appkit(backend)) {

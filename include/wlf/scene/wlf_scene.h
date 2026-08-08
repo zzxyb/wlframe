@@ -19,6 +19,7 @@ struct wlf_ellipse_pass;
 struct wlf_line_pass;
 struct wlf_poly_pass;
 struct wlf_path_pass;
+struct wlf_titlebar;
 
 /** Scene damage visualization mode, compatible with wlroots semantics. */
 enum wlf_scene_debug_damage_option {
@@ -30,7 +31,9 @@ enum wlf_scene_debug_damage_option {
 /** A window-local scene graph with accumulated buffer damage. */
 struct wlf_scene {
 	struct wlf_window *window;
-	struct wlf_scene_tree *tree;
+	struct wlf_scene_tree *root; /**< Internal root containing content and decoration layers. */
+	struct wlf_scene_tree *tree; /**< Application content tree. */
+	struct wlf_titlebar *titlebar; /**< Client-side titlebar, or NULL when using SSD. */
 	pixman_region32_t damage;
 	/** Damage from the previous swapchain buffer, used to repair double buffering. */
 	pixman_region32_t previous_damage;
@@ -86,6 +89,10 @@ bool wlf_scene_needs_frame(const struct wlf_scene *scene);
 
 /** Renders accumulated damage and presents the window swapchain. */
 bool wlf_scene_commit(struct wlf_scene *scene);
+
+/** Enables or disables the scene-owned client-side titlebar. */
+bool wlf_scene_set_client_side_decorated(struct wlf_scene *scene,
+	bool enabled);
 
 /** Notifies scene consumers that the frame timestamp has been reached. */
 void wlf_scene_send_frame_done(struct wlf_scene *scene,

@@ -22,6 +22,7 @@
 #include "wlf/utils/wlf_env.h"
 #include "wlf/utils/wlf_time.h"
 #include "wlf/window/wlf_window.h"
+#include "wlf/window/wlf_titlebar.h"
 
 #include <stdlib.h>
 
@@ -239,13 +240,13 @@ void wlf_scene_recalculate_visibility(struct wlf_scene *scene) {
 	int width = scene->window->state.geometry.width;
 	int height = scene->window->state.geometry.height;
 	if (width <= 0 || height <= 0) {
-		clear_node_visibility(&scene->tree->base);
+		clear_node_visibility(&scene->root->base);
 		return;
 	}
 
 	pixman_region32_t remaining;
 	pixman_region32_init_rect(&remaining, 0, 0, width, height);
-	calculate_node_visibility(&scene->tree->base, &remaining,
+	calculate_node_visibility(&scene->root->base, &remaining,
 		scene->calculate_visibility);
 	pixman_region32_fini(&remaining);
 }
@@ -264,7 +265,7 @@ static bool scene_build_render_list(struct wlf_scene *scene,
 	};
 
 	scene->render_list.size = 0;
-	wlf_scene_node_nodes_in_box(&scene->tree->base, &list_con.box,
+	wlf_scene_node_nodes_in_box(&scene->root->base, &list_con.box,
 		wlf_scene_node_construct_render_list_iterator, &list_con);
 	return !list_con.failed;
 }
@@ -334,16 +335,22 @@ struct wlf_scene *wlf_scene_create(struct wlf_window *window) {
 		return NULL;
 	}
 	scene->window = window;
-	scene->tree = wlf_root_scene_tree_create();
-	if (scene->tree == NULL) {
+	scene->root = wlf_root_scene_tree_create();
+	if (scene->root == NULL) {
 		free(scene);
 		return NULL;
 	}
-	scene->tree->base.window = window;
-	scene->tree->base.scene = scene;
+	scene->root->base.window = window;
+	scene->root->base.scene = scene;
+	scene->tree = wlf_scene_tree_create(&scene->root->base);
+	if (scene->tree == NULL) {
+		wlf_scene_node_destroy(&scene->root->base);
+		free(scene);
+		return NULL;
+	}
 	window->tree = scene->tree;
 	if (!create_passes(scene)) {
-		wlf_scene_node_destroy(&scene->tree->base);
+		wlf_scene_node_destroy(&scene->root->base);
 		window->tree = NULL;
 		destroy_passes(scene);
 		free(scene);
@@ -371,12 +378,17 @@ struct wlf_scene *wlf_scene_create(struct wlf_window *window) {
 	wlf_signal_init(&scene->events.frame_done);
 	wlf_signal_init(&scene->events.destroy);
 
-	window->scene = scene;
-
 	scene->window_expose.notify = handle_window_expose;
 	scene->window_resize.notify = handle_window_resize;
 	wlf_signal_add(&window->events.expose, &scene->window_expose);
 	wlf_signal_add(&window->events.resize, &scene->window_resize);
+	window->scene = scene;
+	if (!window->state.server_side_decorated &&
+			!(window->state.state & WLF_WINDOW_FULLSCREEN) &&
+			!wlf_scene_set_client_side_decorated(scene, true)) {
+		wlf_scene_destroy(scene);
+		return NULL;
+	}
 	return scene;
 }
 
@@ -391,7 +403,9 @@ void wlf_scene_destroy(struct wlf_scene *scene) {
 	if (scene->window != NULL && scene->window->scene == scene) {
 		scene->window->scene = NULL;
 	}
-	wlf_scene_node_destroy(&scene->tree->base);
+	wlf_titlebar_destroy(scene->titlebar);
+	scene->titlebar = NULL;
+	wlf_scene_node_destroy(&scene->root->base);
 	if (scene->window != NULL && scene->window->tree == scene->tree) {
 		scene->window->tree = NULL;
 	}
@@ -401,6 +415,28 @@ void wlf_scene_destroy(struct wlf_scene *scene) {
 	pixman_region32_fini(&scene->damage);
 	pixman_region32_fini(&scene->previous_damage);
 	free(scene);
+}
+
+bool wlf_scene_set_client_side_decorated(struct wlf_scene *scene,
+		bool enabled) {
+	if (enabled == (scene->titlebar != NULL)) {
+		return true;
+	}
+	if (enabled) {
+		scene->titlebar = wlf_titlebar_create(&scene->root->base,
+			scene->window);
+		if (scene->titlebar == NULL) {
+			return false;
+		}
+		wlf_scene_node_set_position(&scene->tree->base,
+			0, WLF_TITLEBAR_HEIGHT);
+	} else {
+		wlf_titlebar_destroy(scene->titlebar);
+		scene->titlebar = NULL;
+		wlf_scene_node_set_position(&scene->tree->base, 0, 0);
+	}
+	wlf_scene_damage_whole(scene);
+	return true;
 }
 
 void wlf_scene_damage(struct wlf_scene *scene,

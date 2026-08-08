@@ -1,5 +1,6 @@
 #include "wlf/window/wlf_window.h"
 #include "wlf/scene/wlf_scene.h"
+#include "wlf/window/wlf_titlebar.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
 
@@ -26,6 +27,8 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 		.state.opacity = 1.0f,
 		.state.background_color = WLF_COLOR_BLACK,
 		.state.backend = backend,
+		.state.server_side_decorated =
+			wlf_backend_supports_server_side_decorations(backend),
 		.state.geometry = {
 			.width = (int)width,
 			.height = (int)height,
@@ -110,6 +113,9 @@ void wlf_window_set_title(struct wlf_window *window, const char *title) {
 	if (window->impl->set_title) {
 		window->impl->set_title(window, new_title);
 	}
+	if (window->scene != NULL && window->scene->titlebar != NULL) {
+		wlf_titlebar_set_title(window->scene->titlebar, new_title);
+	}
 }
 
 void wlf_window_set_geometry(struct wlf_window *window,
@@ -174,6 +180,13 @@ void wlf_window_set_state(struct wlf_window *window,
 	}
 
 	window->state.state = state;
+	if (window->scene != NULL) {
+		bool client_side = !window->state.server_side_decorated &&
+			!(state & WLF_WINDOW_FULLSCREEN);
+		if (!wlf_scene_set_client_side_decorated(window->scene, client_side)) {
+			wlf_log(WLF_ERROR, "Failed to update client-side decoration state");
+		}
+	}
 }
 
 void wlf_window_set_flags(struct wlf_window *window, uint32_t flags) {

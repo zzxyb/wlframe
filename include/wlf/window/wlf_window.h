@@ -123,6 +123,8 @@ struct wlf_window_state {
 
 	bool visible;                       /**< Whether window is currently visible */
 	bool focused;                       /**< Whether window has focus */
+	/** Whether this window is currently using server-side decorations. */
+	bool server_side_decorated;
 };
 
 /**

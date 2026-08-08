@@ -233,6 +233,7 @@ static void destroy_zxdg_decoration_manager_v1(struct wlf_wl_backend *wayland) {
 	wayland->zxdg_decoration_manager_v1.decoration_manager = NULL;
 	wayland->zxdg_decoration_manager_v1.bind_version = 0;
 	wayland->zxdg_decoration_manager_v1.name = 0;
+	wayland->base.features.server_side_decorations = false;
 }
 
 static void destroy_wp_cursor_shape_manager_v1(struct wlf_wl_backend *wayland) {
@@ -634,6 +635,7 @@ static void display_global_added(void *data, struct wl_registry *wl_registry,
 
 		wayland->zxdg_decoration_manager_v1.bind_version = bind_version;
 		wayland->zxdg_decoration_manager_v1.name = name;
+		wayland->base.features.server_side_decorations = true;
 		wlf_log(WLF_DEBUG, "Successfully bound interface (name: %s, version: %u)",
 			interface, bind_version);
 	} else if (strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
@@ -1030,6 +1032,8 @@ struct wlf_backend *wayland_backend_create(void) {
 	wlf_signal_init(&backend->events.global_remove);
 	wl_registry_add_listener(backend->registry, &wl_base_registry_listener, backend);
 	wl_display_roundtrip(backend->display);
+	backend->base.features.server_side_decorations =
+		backend->zxdg_decoration_manager_v1.decoration_manager != NULL;
 
 	wlf_log(WLF_DEBUG, "Created %s backend", backend->base.impl->name);
 

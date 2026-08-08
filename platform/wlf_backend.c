@@ -142,3 +142,9 @@ bool wlf_backend_remove_event_source(struct wlf_backend *backend,
 void wlf_backend_quit(struct wlf_backend *backend) {
 	backend->running = false;
 }
+
+bool wlf_backend_supports_server_side_decorations(
+		const struct wlf_backend *backend) {
+	assert(backend != NULL);
+	return backend->features.server_side_decorations;
+}

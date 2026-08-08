@@ -2,6 +2,7 @@
 
 #include "wlf/platform/wayland/backend.h"
 #include "wlf/platform/wlf_backend.h"
+#include "wlf/scene/wlf_scene.h"
 #include "wlf/swapchain/wlf_swapchain.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
@@ -9,6 +10,7 @@
 #include "wlf/wayland/wlf_wl_interface.h"
 #include "wlf/wayland/wlf_wl_surface.h"
 #include "wlf/wayland/wlf_xdg_wm_base.h"
+#include "wlf/wayland/wlf_zxdg_decoration_v1.h"
 #include "wayland/protocols/xdg-shell-client-protocol.h"
 
 #include <assert.h>
@@ -16,6 +18,9 @@
 #include <string.h>
 
 #include <wayland-client-protocol.h>
+
+static void handle_decoration_configure(struct wlf_listener *listener,
+	void *data);
 
 static struct wlf_xdg_toplevel_window *toplevel_from_window(
 		struct wlf_window *window) {
@@ -25,6 +30,63 @@ static struct wlf_xdg_toplevel_window *toplevel_from_window(
 
 	struct wlf_xdg_toplevel_window *toplevel = NULL;
 	return wlf_container_of(window, toplevel, base);
+}
+
+static bool update_client_side_decoration(
+		struct wlf_xdg_toplevel_window *window) {
+	bool client_side = !window->base.state.server_side_decorated &&
+		!(window->base.state.state & WLF_WINDOW_FULLSCREEN);
+	if (window->base.scene == NULL) {
+		return true;
+	}
+	return wlf_scene_set_client_side_decorated(window->base.scene,
+		client_side);
+}
+
+static void destroy_toplevel_decoration(
+		struct wlf_xdg_toplevel_window *window) {
+	if (window->has_decoration_configure_listener) {
+		wlf_linked_list_remove(&window->decoration_configure.link);
+		window->has_decoration_configure_listener = false;
+	}
+	wlf_zxdg_toplevel_decoration_v1_destroy(window->decoration);
+	window->decoration = NULL;
+}
+
+static bool ensure_decoration_manager(
+		struct wlf_xdg_toplevel_window *window) {
+	if (window->decoration_manager != NULL) {
+		return true;
+	}
+	struct wlf_wl_backend *wayland =
+		wlf_wl_backend_from_backend(window->backend);
+	window->decoration_manager = wlf_zxdg_decoration_manager_v1_create(
+		wayland->registry, wayland->zxdg_decoration_manager_v1.name,
+		wayland->zxdg_decoration_manager_v1.bind_version);
+	return window->decoration_manager != NULL;
+}
+
+static bool request_server_side_decoration(
+		struct wlf_xdg_toplevel_window *window) {
+	if (window->decoration != NULL) {
+		return true;
+	}
+	if (!ensure_decoration_manager(window)) {
+		return false;
+	}
+	window->decoration =
+		wlf_zxdg_decoration_manager_v1_get_toplevel_decoration(
+			window->decoration_manager, window->xdg_toplevel->base);
+	if (window->decoration == NULL) {
+		return false;
+	}
+	window->decoration_configure.notify = handle_decoration_configure;
+	wlf_signal_add(&window->decoration->events.configure,
+		&window->decoration_configure);
+	window->has_decoration_configure_listener = true;
+	wlf_zxdg_toplevel_decoration_v1_set_mode(window->decoration,
+		WLF_DECORATION_MODE_SERVER_SIDE);
+	return true;
 }
 
 static bool create_base_objects(struct wlf_xdg_toplevel_window *window,
@@ -83,6 +145,31 @@ static void handle_xdg_toplevel_configure(struct wlf_listener *listener,
 	struct wlf_xdg_toplevel_window *window =
 		wlf_container_of(listener, window, xdg_toplevel_configure);
 	struct wlf_xdg_toplevel *toplevel = window->xdg_toplevel;
+	uint32_t states = toplevel->configure_states;
+	bool focused = states & (1u << WLF_XDG_TOPLEVEL_STATE_ACTIVATED);
+	enum wlf_window_state_flags state = WLF_WINDOW_NORMAL;
+	if (focused) {
+		state |= WLF_WINDOW_ACTIVE;
+	}
+	if (states & (1u << WLF_XDG_TOPLEVEL_STATE_MAXIMIZED)) {
+		state |= WLF_WINDOW_MAXIMIZED;
+	}
+	if (states & (1u << WLF_XDG_TOPLEVEL_STATE_FULLSCREEN)) {
+		state |= WLF_WINDOW_FULLSCREEN;
+	}
+	if (states & (1u << WLF_XDG_TOPLEVEL_STATE_SUSPENDED)) {
+		state |= WLF_WINDOW_SUSPENDED;
+	}
+	bool focus_changed = window->base.state.focused != focused;
+	window->base.state.focused = focused;
+	window->base.state.state = state;
+	if (!update_client_side_decoration(window)) {
+		wlf_log(WLF_ERROR, "Failed to update client-side decoration state");
+	}
+	if (focus_changed) {
+		wlf_signal_emit_mutable(focused ? &window->base.events.focus_in :
+			&window->base.events.focus_out, &window->base);
+	}
 
 	if (toplevel->configure_width <= 0 || toplevel->configure_height <= 0) {
 		return;
@@ -101,6 +188,19 @@ static void handle_xdg_toplevel_close(struct wlf_listener *listener,
 	wlf_window_close(&window->base);
 }
 
+static void handle_decoration_configure(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_xdg_toplevel_window *window =
+		wlf_container_of(listener, window, decoration_configure);
+	struct wlf_zxdg_toplevel_decoration_v1 *decoration = data;
+	bool server_side = !window->force_client_side_decorations &&
+		decoration->mode == WLF_DECORATION_MODE_SERVER_SIDE;
+	window->base.state.server_side_decorated = server_side;
+	if (!update_client_side_decoration(window)) {
+		wlf_log(WLF_ERROR, "Failed to update negotiated window decoration");
+	}
+}
+
 static void xdg_toplevel_window_destroy(struct wlf_window *base) {
 	struct wlf_xdg_toplevel_window *window = toplevel_from_window(base);
 	if (window == NULL) {
@@ -117,6 +217,8 @@ static void xdg_toplevel_window_destroy(struct wlf_window *base) {
 	if (window->has_xdg_surface_configure_listener) {
 		wlf_linked_list_remove(&window->xdg_surface_configure.link);
 	}
+	destroy_toplevel_decoration(window);
+	wlf_zxdg_decoration_manager_v1_destroy(window->decoration_manager);
 
 	if (window->xdg_toplevel != NULL) {
 		wlf_xdg_toplevel_destroy(window->xdg_toplevel);
@@ -287,6 +389,8 @@ struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(
 
 	wlf_window_init(&window->base, WLF_WINDOW_TYPE_TOPLEVEL,
 		&xdg_toplevel_window_impl, backend, width, height);
+	/* SSD is not active until the compositor confirms it for this toplevel. */
+	window->base.state.server_side_decorated = false;
 	window->backend = backend;
 
 	if (!create_base_objects(window, backend)) {
@@ -298,6 +402,11 @@ struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(
 	if (window->xdg_toplevel == NULL) {
 		wlf_window_destroy(&window->base);
 		return NULL;
+	}
+
+	if (wlf_backend_supports_server_side_decorations(backend) &&
+			!request_server_side_decoration(window)) {
+		wlf_log(WLF_ERROR, "Failed to request server-side decoration");
 	}
 
 	window->xdg_surface_configure.notify = handle_xdg_surface_configure;
@@ -318,6 +427,45 @@ struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(
 
 bool wlf_window_is_xdg_toplevel(const struct wlf_window *window) {
 	return window != NULL && window->impl == &xdg_toplevel_window_impl;
+}
+
+bool wlf_xdg_toplevel_window_set_force_client_side_decorations(
+		struct wlf_xdg_toplevel_window *window, bool force) {
+	assert(window != NULL);
+	if (window->force_client_side_decorations == force) {
+		return true;
+	}
+
+	window->force_client_side_decorations = force;
+	window->base.state.server_side_decorated = false;
+	if (force) {
+		destroy_toplevel_decoration(window);
+		if (window->surface != NULL) {
+			wlf_wl_surface_commit(window->surface);
+		}
+		return update_client_side_decoration(window);
+	}
+
+	if (!update_client_side_decoration(window)) {
+		return false;
+	}
+	if (!wlf_backend_supports_server_side_decorations(window->backend)) {
+		return true;
+	}
+	return request_server_side_decoration(window);
+}
+
+bool wlf_xdg_toplevel_window_uses_client_side_decorations(
+		const struct wlf_xdg_toplevel_window *window) {
+	assert(window != NULL);
+	return !window->base.state.server_side_decorated &&
+		!(window->base.state.state & WLF_WINDOW_FULLSCREEN);
+}
+
+struct wlf_titlebar *wlf_xdg_toplevel_window_get_titlebar(
+		struct wlf_xdg_toplevel_window *window) {
+	assert(window != NULL);
+	return window->base.scene != NULL ? window->base.scene->titlebar : NULL;
 }
 
 struct wlf_xdg_toplevel_window *wlf_xdg_toplevel_window_from_window(

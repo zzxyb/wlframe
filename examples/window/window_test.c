@@ -1,14 +1,7 @@
 #include "wlf/platform/wlf_backend.h"
-#include "wlf/pass/gles/rect_pass.h"
-#include "wlf/pass/gles/texture_pass.h"
-#include "wlf/pass/gles/vector_pass.h"
-#include "wlf/pass/pixman/rect_pass.h"
-#include "wlf/pass/pixman/texture_pass.h"
-#include "wlf/pass/pixman/vector_pass.h"
-#include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/wlf_renderer.h"
-#include "wlf/renderer/pixman/renderer.h"
 #include "wlf/scene/wlf_rect_node.h"
+#include "wlf/scene/wlf_scene.h"
 #include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/scene/wlf_text_node.h"
 #include "wlf/scene/wlf_texture_node.h"
@@ -20,25 +13,14 @@
 #include "wlf/scene/wlf_path_node.h"
 #include "wlf/image/wlf_image.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/utils/wlf_linked_list.h"
 #include "wlf/window/wayland/xdg_toplevel_window.h"
 #include "wlf/window/wlf_window.h"
-#include "wlf/utils/wlf_env.h"
 
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 struct render_state {
-	struct wlf_listener expose;
-	struct wlf_rect_pass *rect_pass;
-	struct wlf_texture_pass *texture_pass;
-	struct wlf_rect_shape_pass *rect_shape_pass;
-	struct wlf_circle_pass *circle_pass;
-	struct wlf_ellipse_pass *ellipse_pass;
-	struct wlf_line_pass *line_pass;
-	struct wlf_poly_pass *poly_pass;
-	struct wlf_path_pass *path_pass;
 	struct wlf_rect_node *rect;
 	struct wlf_text_node *text;
 	struct wlf_texture_node *image;
@@ -49,103 +31,6 @@ struct render_state {
 	struct wlf_poly_node *poly;
 	struct wlf_path_node *path;
 };
-
-static void render_scene(struct render_state *state, struct wlf_window *window,
-		struct wlf_render_target_info *target, const pixman_region32_t *damage) {
-	struct wlf_render_rect_options background = {
-		.box = {
-			.x = 0,
-			.y = 0,
-			.width = window->state.geometry.width,
-			.height = window->state.geometry.height,
-		},
-		.color = WLF_COLOR_DARK_GRAY,
-		.clip = damage,
-		.blend_mode = WLF_RENDER_BLEND_MODE_NONE,
-	};
-	wlf_render_pass_add_rect(state->rect_pass, target, &background);
-	wlf_rect_node_render(state->rect, state->rect_pass, target, damage);
-	wlf_text_node_render(state->text, state->texture_pass, target, damage);
-	wlf_texture_node_render(state->image, state->texture_pass, target, damage);
-	wlf_rect_shape_node_render(state->rounded_rect,
-		state->rect_shape_pass, target, damage);
-	wlf_circle_node_render(state->circle,
-		state->circle_pass, target, damage);
-	wlf_ellipse_node_render(state->ellipse,
-		state->ellipse_pass, target, damage);
-	wlf_line_node_render(state->line,
-		state->line_pass, target, damage);
-	wlf_poly_node_render(state->poly,
-		state->poly_pass, target, damage);
-	wlf_path_node_render(state->path,
-		state->path_pass, target, damage);
-}
-
-static void handle_expose(struct wlf_listener *listener, void *data) {
-	struct render_state *state =
-		wlf_container_of(listener, state, expose);
-	struct wlf_window *window = data;
-
-	pixman_region32_t damage;
-	pixman_region32_init_rect(&damage, 0, 0,
-		window->state.geometry.width, window->state.geometry.height);
-
-	struct wlf_render_target_info *target = wlf_renderer_begin_buffer_pass(
-		window->state.renderer,
-		wlf_swapchain_get_back_buffer(window->state.swapchain),
-		&(struct wlf_buffer_pass_options){ .damage = &damage });
-	if (target != NULL) {
-		render_scene(state, window, target, &damage);
-		wlf_render_target_info_destroy(target);
-		wlf_swapchain_present(window->state.swapchain, &damage);
-	}
-	pixman_region32_fini(&damage);
-}
-
-static struct wlf_rect_pass *create_rect_pass(struct wlf_renderer *renderer) {
-	if (wlf_renderer_is_gles(renderer)) {
-		return wlf_gles_rect_pass_create();
-	}
-	if (wlf_renderer_is_pixman(renderer)) {
-		return wlf_pixman_rect_pass_create();
-	}
-
-	wlf_log(WLF_ERROR, "No rect pass for selected renderer");
-	return NULL;
-}
-
-static struct wlf_texture_pass *create_texture_pass(
-		struct wlf_renderer *renderer) {
-	if (wlf_renderer_is_gles(renderer)) {
-		return wlf_gles_texture_pass_create();
-	}
-	if (wlf_renderer_is_pixman(renderer)) {
-		return wlf_pixman_texture_pass_create();
-	}
-	wlf_log(WLF_ERROR, "No texture pass for selected renderer");
-	return NULL;
-}
-
-static struct wlf_vector_pass *create_vector_pass(
-		struct wlf_renderer *renderer) {
-	if (wlf_renderer_is_gles(renderer)) {
-		return wlf_gles_vector_pass_create();
-	}
-	if (wlf_renderer_is_pixman(renderer)) {
-		return wlf_pixman_vector_pass_create();
-	}
-	wlf_log(WLF_ERROR, "No vector pass for selected renderer");
-	return NULL;
-}
-
-static void destroy_shape_passes(struct render_state *state) {
-	wlf_render_rect_shape_pass_destroy(state->rect_shape_pass);
-	wlf_render_circle_pass_destroy(state->circle_pass);
-	wlf_render_ellipse_pass_destroy(state->ellipse_pass);
-	wlf_render_line_pass_destroy(state->line_pass);
-	wlf_render_poly_pass_destroy(state->poly_pass);
-	wlf_render_path_pass_destroy(state->path_pass);
-}
 
 static void set_shape_style(struct wlf_shape_state *state,
 		struct wlf_color fill, struct wlf_color stroke, float stroke_width) {
@@ -182,49 +67,26 @@ int main(int argc, char *argv[]) {
 	}
 	wlf_window_init_renderer(window, renderer);
 	wlf_window_set_title(window, "wlframe scene text, shapes and image test");
+	wlf_window_set_background_color(window, &WLF_COLOR_DARK_GRAY);
 
-	struct wlf_scene_tree *tree = wlf_root_scene_tree_create();
-	if (tree == NULL) {
-		wlf_log(WLF_ERROR, "Failed to create scene tree");
+	struct wlf_scene *scene = wlf_scene_create(window);
+	if (scene == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create window scene");
+		wlf_window_destroy(window);
+		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
-	window->tree = tree;
-	tree->base.window = window;
+	struct wlf_scene_tree *tree = scene->tree;
 
-	struct render_state render = {
-		.expose = {
-			.notify = handle_expose,
-		},
-		.rect_pass = create_rect_pass(renderer),
-		.texture_pass = create_texture_pass(renderer),
-		.rect_shape_pass = wlf_rect_shape_pass_create(create_vector_pass(renderer)),
-		.circle_pass = wlf_circle_pass_create(create_vector_pass(renderer)),
-		.ellipse_pass = wlf_ellipse_pass_create(create_vector_pass(renderer)),
-		.line_pass = wlf_line_pass_create(create_vector_pass(renderer)),
-		.poly_pass = wlf_poly_pass_create(create_vector_pass(renderer)),
-		.path_pass = wlf_path_pass_create(create_vector_pass(renderer)),
-	};
-	if (render.rect_pass == NULL || render.texture_pass == NULL ||
-			render.rect_shape_pass == NULL || render.circle_pass == NULL ||
-			render.ellipse_pass == NULL || render.line_pass == NULL ||
-			render.poly_pass == NULL || render.path_pass == NULL) {
-		wlf_render_rect_pass_destroy(render.rect_pass);
-		wlf_render_texture_pass_destroy(render.texture_pass);
-		destroy_shape_passes(&render);
-		wlf_scene_node_destroy(&tree->base);
-		wlf_backend_destroy(backend);
-		return EXIT_FAILURE;
-	}
+	struct render_state render = {0};
 
 	struct wlf_color rect_color = wlf_color_from_rgba8(64, 148, 255, 230);
 	render.rect = wlf_rect_node_create(&tree->base, 25, 25, 300, 220,
 		&rect_color);
 	if (render.rect == NULL) {
-		wlf_scene_node_destroy(&tree->base);
-		destroy_shape_passes(&render);
-		wlf_render_texture_pass_destroy(render.texture_pass);
-		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_window_destroy(window);
+		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
@@ -235,10 +97,8 @@ int main(int argc, char *argv[]) {
 		&text_color);
 	if (render.text == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create text scene node");
-		wlf_scene_node_destroy(&tree->base);
-		destroy_shape_passes(&render);
-		wlf_render_texture_pass_destroy(render.texture_pass);
-		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_window_destroy(window);
+		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
@@ -249,10 +109,8 @@ int main(int argc, char *argv[]) {
 	struct wlf_image *image = wlf_image_load(image_path);
 	if (image == NULL) {
 		wlf_log(WLF_ERROR, "Failed to load image: %s", image_path);
-		wlf_scene_node_destroy(&tree->base);
-		destroy_shape_passes(&render);
-		wlf_render_texture_pass_destroy(render.texture_pass);
-		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_window_destroy(window);
+		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
@@ -264,10 +122,8 @@ int main(int argc, char *argv[]) {
 	free(image);
 	if (texture == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create texture for: %s", image_path);
-		wlf_scene_node_destroy(&tree->base);
-		destroy_shape_passes(&render);
-		wlf_render_texture_pass_destroy(render.texture_pass);
-		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_window_destroy(window);
+		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
@@ -277,10 +133,8 @@ int main(int argc, char *argv[]) {
 		image_width, image_height);
 	if (render.image == NULL) {
 		wlf_texture_destroy(texture);
-		wlf_scene_node_destroy(&tree->base);
-		destroy_shape_passes(&render);
-		wlf_render_texture_pass_destroy(render.texture_pass);
-		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_window_destroy(window);
+		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
@@ -340,25 +194,19 @@ int main(int argc, char *argv[]) {
 			render.ellipse == NULL || render.line == NULL ||
 			render.poly == NULL || render.path == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create shape scene node");
-		wlf_scene_node_destroy(&tree->base);
-		destroy_shape_passes(&render);
-		wlf_render_texture_pass_destroy(render.texture_pass);
-		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_window_destroy(window);
+		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
 	wlf_log(WLF_INFO, "Displaying image: %s", image_path);
-	wlf_signal_add(&window->events.expose, &render.expose);
 
 	wlf_window_show(window);
 	wlf_log(WLF_INFO, "Backend started successfully");
 
 	wlf_backend_exe(backend);
-	wlf_linked_list_remove(&render.expose.link);
-	wlf_scene_node_destroy(&tree->base);
-	destroy_shape_passes(&render);
-	wlf_render_texture_pass_destroy(render.texture_pass);
-	wlf_render_rect_pass_destroy(render.rect_pass);
+	wlf_window_destroy(window);
+	wlf_renderer_destroy(renderer);
 	wlf_backend_destroy(backend);
 
 	return EXIT_SUCCESS;
