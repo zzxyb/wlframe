@@ -13,28 +13,47 @@ static void event_node_destroy(struct wlf_scene_node *base) {
 		if (base->window->pointer_event_node == node) {
 			base->window->pointer_event_node = NULL;
 		}
+		if (base->window->pointer_grab_event_node == node) {
+			base->window->pointer_grab_event_node = NULL;
+		}
 		if (base->window->keyboard_event_node == node) {
 			base->window->keyboard_event_node = NULL;
 		}
-		if (base->window->touch_event_node == node) {
-			base->window->touch_event_node = NULL;
-		}
+		wlf_window_forget_touch_event_node(base->window, node);
 	}
-	struct wlf_signal *signals[] = {
-		&node->events.pointer_enter, &node->events.pointer_leave,
-		&node->events.pointer_motion, &node->events.pointer_button,
-		&node->events.pointer_axis, &node->events.pointer_frame,
-		&node->events.keyboard_enter, &node->events.keyboard_leave,
-		&node->events.keyboard_keymap, &node->events.keyboard_key,
-		&node->events.keyboard_modifiers, &node->events.keyboard_repeat_info,
-		&node->events.tablet, &node->events.touch_down,
-		&node->events.touch_up, &node->events.touch_motion,
-		&node->events.touch_cancel, &node->events.touch_frame,
-		&node->events.touch_shape, &node->events.touch_orientation,
-	};
-	for (size_t i = 0; i < sizeof(signals) / sizeof(signals[0]); ++i) {
-		assert(wlf_linked_list_empty(&signals[i]->listener_list));
-	}
+	assert(wlf_linked_list_empty(
+		&node->events.pointer_enter.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.pointer_leave.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.pointer_motion.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.pointer_button.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.pointer_axis.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.pointer_frame.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.keyboard_enter.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.keyboard_leave.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.keyboard_keymap.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.keyboard_key.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.keyboard_modifiers.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.keyboard_repeat_info.listener_list));
+	assert(wlf_linked_list_empty(&node->events.tablet.listener_list));
+	assert(wlf_linked_list_empty(&node->events.touch_down.listener_list));
+	assert(wlf_linked_list_empty(&node->events.touch_up.listener_list));
+	assert(wlf_linked_list_empty(&node->events.touch_motion.listener_list));
+	assert(wlf_linked_list_empty(&node->events.touch_cancel.listener_list));
+	assert(wlf_linked_list_empty(&node->events.touch_frame.listener_list));
+	assert(wlf_linked_list_empty(&node->events.touch_shape.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.touch_orientation.listener_list));
 	pixman_region32_fini(&node->input_region);
 	free(node);
 }
@@ -52,6 +71,15 @@ static void event_node_get_size(struct wlf_scene_node *base,
 static bool event_node_invisible(struct wlf_scene_node *base) {
 	(void)base;
 	return true;
+}
+
+static void event_node_bounds(struct wlf_scene_node *base,
+		int x, int y, pixman_region32_t *bounds) {
+	(void)base;
+	(void)x;
+	(void)y;
+	(void)bounds;
+	/* Input-only nodes never contribute pixels, visibility or damage. */
 }
 
 static struct wlf_scene_node *event_node_at(struct wlf_scene_node *base,
@@ -102,6 +130,7 @@ static const struct wlf_scene_node_impl event_node_impl = {
 	.destroy = event_node_destroy,
 	.get_size = event_node_get_size,
 	.invisible = event_node_invisible,
+	.bounds = event_node_bounds,
 	.at = event_node_at,
 	.in_box = event_node_in_box,
 };
@@ -122,21 +151,26 @@ struct wlf_event_node *wlf_event_node_create(struct wlf_scene_node *parent,
 	pixman_region32_init_rect(&node->input_region, 0, 0, width, height);
 	node->cursor_shape = WLF_CURSOR_SHAPE_DEFAULT;
 
-	struct wlf_signal *signals[] = {
-		&node->events.pointer_enter, &node->events.pointer_leave,
-		&node->events.pointer_motion, &node->events.pointer_button,
-		&node->events.pointer_axis, &node->events.pointer_frame,
-		&node->events.keyboard_enter, &node->events.keyboard_leave,
-		&node->events.keyboard_keymap, &node->events.keyboard_key,
-		&node->events.keyboard_modifiers, &node->events.keyboard_repeat_info,
-		&node->events.tablet, &node->events.touch_down,
-		&node->events.touch_up, &node->events.touch_motion,
-		&node->events.touch_cancel, &node->events.touch_frame,
-		&node->events.touch_shape, &node->events.touch_orientation,
-	};
-	for (size_t i = 0; i < sizeof(signals) / sizeof(signals[0]); ++i) {
-		wlf_signal_init(signals[i]);
-	}
+	wlf_signal_init(&node->events.pointer_enter);
+	wlf_signal_init(&node->events.pointer_leave);
+	wlf_signal_init(&node->events.pointer_motion);
+	wlf_signal_init(&node->events.pointer_button);
+	wlf_signal_init(&node->events.pointer_axis);
+	wlf_signal_init(&node->events.pointer_frame);
+	wlf_signal_init(&node->events.keyboard_enter);
+	wlf_signal_init(&node->events.keyboard_leave);
+	wlf_signal_init(&node->events.keyboard_keymap);
+	wlf_signal_init(&node->events.keyboard_key);
+	wlf_signal_init(&node->events.keyboard_modifiers);
+	wlf_signal_init(&node->events.keyboard_repeat_info);
+	wlf_signal_init(&node->events.tablet);
+	wlf_signal_init(&node->events.touch_down);
+	wlf_signal_init(&node->events.touch_up);
+	wlf_signal_init(&node->events.touch_motion);
+	wlf_signal_init(&node->events.touch_cancel);
+	wlf_signal_init(&node->events.touch_frame);
+	wlf_signal_init(&node->events.touch_shape);
+	wlf_signal_init(&node->events.touch_orientation);
 	return node;
 }
 
@@ -188,4 +222,36 @@ struct wlf_event_node *wlf_event_node_from_node(struct wlf_scene_node *node) {
 	struct wlf_event_node *event_node =
 		wlf_container_of(node, event_node, base);
 	return event_node;
+}
+
+struct wlf_event_node *wlf_event_node_at(struct wlf_scene_node *root,
+		double x, double y) {
+	if (root == NULL || !root->state.enabled) {
+		return NULL;
+	}
+
+	/* Children at the end of the list are visually on top. Search them first
+	 * and ignore rendering-node hit-test implementations entirely. */
+	struct wlf_linked_list *children = wlf_scene_node_get_children(root);
+	if (children != NULL) {
+		struct wlf_scene_node *child;
+		wlf_linked_list_for_each_reverse(child, children, link) {
+			struct wlf_event_node *hit = wlf_event_node_at(child, x, y);
+			if (hit != NULL) {
+				return hit;
+			}
+		}
+	}
+
+	if (!wlf_scene_node_is_event(root)) {
+		return NULL;
+	}
+	int node_x = 0, node_y = 0;
+	if (!wlf_scene_node_coords(root, &node_x, &node_y)) {
+		return NULL;
+	}
+	struct wlf_event_node *event_node = wlf_event_node_from_node(root);
+	return pixman_region32_contains_point(&event_node->input_region,
+		(int)floor(x - node_x), (int)floor(y - node_y), NULL) ?
+		event_node : NULL;
 }

@@ -234,6 +234,13 @@ static void xdg_popup_window_schedule_frame(struct wlf_window *base) {
 	}
 }
 
+static void xdg_popup_window_arm_frame(struct wlf_window *base) {
+	struct wlf_xdg_popup_window *window = popup_from_window(base);
+	if (window != NULL) {
+		wlf_wl_surface_arm_frame(window->surface, base);
+	}
+}
+
 static const struct wlf_window_impl xdg_popup_window_impl = {
 	.destroy = xdg_popup_window_destroy,
 	.close = xdg_popup_window_close,
@@ -253,6 +260,7 @@ static const struct wlf_window_impl xdg_popup_window_impl = {
 	.set_mask = NULL,
 	.set_background_color = NULL,
 	.native_handle = xdg_popup_window_native_handle,
+	.arm_frame = xdg_popup_window_arm_frame,
 	.schedule_frame = xdg_popup_window_schedule_frame,
 };
 

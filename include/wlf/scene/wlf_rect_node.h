@@ -34,6 +34,10 @@ struct wlf_rect_node *wlf_rect_node_create(struct wlf_scene_node *parent,
 	int x, int y, uint32_t width, uint32_t height,
 	const struct wlf_color *color);
 
+/** Changes the fill color and damages the complete rectangle. */
+void wlf_rect_node_set_color(struct wlf_rect_node *rect,
+	const struct wlf_color *color);
+
 /**
  * @brief Checks whether a scene node is a rectangle node.
  */

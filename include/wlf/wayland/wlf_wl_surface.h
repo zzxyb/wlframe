@@ -14,6 +14,7 @@
  * @author      YaoBing Xiao
  * @date        2026-05-23
  * @version     v1.0
+ * @par Copyright(c):
  * @par History:
  *      version: v1.0, YaoBing Xiao, 2026-05-23, initial version\n
  */
@@ -79,11 +80,11 @@ struct wlf_wl_surface {
  */
 struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *compositor);
 
-/** Associates the native surface with its owning window. */
+/** Associates the native surface with its owning wlframe window. */
 void wlf_wl_surface_set_window(struct wlf_wl_surface *surface,
 	struct wlf_window *window);
 
-/** Resolves a wlframe window from one of its native Wayland surfaces. */
+/** Resolves a wlframe window from a native Wayland surface. */
 struct wlf_window *wlf_wl_surface_get_window(struct wl_surface *surface);
 
 /**
@@ -134,7 +135,11 @@ void wlf_wl_surface_damage_buffer(struct wlf_wl_surface *surface,
  */
 struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface);
 
-/** Schedules one compositor-paced expose event for @p window. */
+/** Arms one compositor-paced expose event without committing the surface. */
+bool wlf_wl_surface_arm_frame(struct wlf_wl_surface *surface,
+	struct wlf_window *window);
+
+/** Schedules one compositor-paced expose event, committing when newly armed. */
 bool wlf_wl_surface_schedule_frame(struct wlf_wl_surface *surface,
 	struct wlf_window *window);
 

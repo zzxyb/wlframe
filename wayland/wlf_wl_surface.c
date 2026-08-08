@@ -201,7 +201,7 @@ struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface) {
 	return wl_surface_frame(surface->wl_surface);
 }
 
-bool wlf_wl_surface_schedule_frame(struct wlf_wl_surface *surface,
+bool wlf_wl_surface_arm_frame(struct wlf_wl_surface *surface,
 		struct wlf_window *window) {
 	if (surface == NULL || window == NULL) {
 		return false;
@@ -216,6 +216,17 @@ bool wlf_wl_surface_schedule_frame(struct wlf_wl_surface *surface,
 	}
 	surface->frame_window = window;
 	wl_callback_add_listener(surface->frame_callback, &frame_listener, surface);
+	return true;
+}
+
+bool wlf_wl_surface_schedule_frame(struct wlf_wl_surface *surface,
+		struct wlf_window *window) {
+	if (surface != NULL && surface->frame_callback != NULL) {
+		return true;
+	}
+	if (!wlf_wl_surface_arm_frame(surface, window)) {
+		return false;
+	}
 	wl_surface_commit(surface->wl_surface);
 	return true;
 }

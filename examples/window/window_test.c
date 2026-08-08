@@ -8,6 +8,7 @@
 #include "wlf/scene/wlf_rect_shape_node.h"
 #include "wlf/scene/wlf_circle_node.h"
 #include "wlf/scene/wlf_ellipse_node.h"
+#include "wlf/scene/wlf_event_node.h"
 #include "wlf/scene/wlf_line_node.h"
 #include "wlf/scene/wlf_poly_node.h"
 #include "wlf/scene/wlf_path_node.h"
@@ -30,7 +31,119 @@ struct render_state {
 	struct wlf_line_node *line;
 	struct wlf_poly_node *poly;
 	struct wlf_path_node *path;
+	struct {
+		struct wlf_scene_tree *tree;
+		struct wlf_rect_node *background;
+		struct wlf_event_node *event_node;
+		struct wlf_listener pointer_enter;
+		struct wlf_listener pointer_leave;
+		struct wlf_listener touch_down;
+		struct wlf_listener touch_up;
+		struct wlf_listener touch_cancel;
+		uint32_t active_touches;
+	} event_test;
 };
+
+static void set_event_test_color(struct render_state *render,
+		struct wlf_color color) {
+	wlf_rect_node_set_color(render->event_test.background, &color);
+}
+
+static void update_event_test_color(struct render_state *render) {
+	bool active = render->event_test.event_node->pointer_inside ||
+		render->event_test.active_touches > 0;
+	set_event_test_color(render, active ?
+		wlf_color_from_rgb8(55, 145, 245) :
+		wlf_color_from_rgb8(70, 75, 88));
+}
+
+static void handle_event_test_enter(struct wlf_listener *listener, void *data) {
+	(void)data;
+	struct render_state *render = wlf_container_of(listener, render,
+		event_test.pointer_enter);
+	update_event_test_color(render);
+}
+
+static void handle_event_test_leave(struct wlf_listener *listener, void *data) {
+	(void)data;
+	struct render_state *render = wlf_container_of(listener, render,
+		event_test.pointer_leave);
+	update_event_test_color(render);
+}
+
+static void handle_event_test_touch_down(struct wlf_listener *listener,
+		void *data) {
+	(void)data;
+	struct render_state *render = wlf_container_of(listener, render,
+		event_test.touch_down);
+	render->event_test.active_touches++;
+	update_event_test_color(render);
+}
+
+static void handle_event_test_touch_up(struct wlf_listener *listener,
+		void *data) {
+	(void)data;
+	struct render_state *render = wlf_container_of(listener, render,
+		event_test.touch_up);
+	if (render->event_test.active_touches > 0) {
+		render->event_test.active_touches--;
+	}
+	update_event_test_color(render);
+}
+
+static void handle_event_test_touch_cancel(struct wlf_listener *listener,
+		void *data) {
+	(void)data;
+	struct render_state *render = wlf_container_of(listener, render,
+		event_test.touch_cancel);
+	render->event_test.active_touches = 0;
+	update_event_test_color(render);
+}
+
+static bool create_event_node_test(struct render_state *render,
+		struct wlf_scene_tree *parent) {
+	render->event_test.tree = wlf_scene_tree_create(&parent->base);
+	if (render->event_test.tree == NULL) {
+		return false;
+	}
+	wlf_scene_node_set_position(&render->event_test.tree->base, 365, 405);
+	struct wlf_color color = wlf_color_from_rgb8(70, 75, 88);
+	render->event_test.background = wlf_rect_node_create(
+		&render->event_test.tree->base, 0, 0, 330, 58, &color);
+	render->event_test.event_node = wlf_event_node_create(
+		&render->event_test.tree->base, 0, 0, 330, 58);
+	if (render->event_test.background == NULL ||
+			render->event_test.event_node == NULL) {
+		return false;
+	}
+	render->event_test.pointer_enter.notify = handle_event_test_enter;
+	render->event_test.pointer_leave.notify = handle_event_test_leave;
+	render->event_test.touch_down.notify = handle_event_test_touch_down;
+	render->event_test.touch_up.notify = handle_event_test_touch_up;
+	render->event_test.touch_cancel.notify = handle_event_test_touch_cancel;
+	wlf_signal_add(&render->event_test.event_node->events.pointer_enter,
+		&render->event_test.pointer_enter);
+	wlf_signal_add(&render->event_test.event_node->events.pointer_leave,
+		&render->event_test.pointer_leave);
+	wlf_signal_add(&render->event_test.event_node->events.touch_down,
+		&render->event_test.touch_down);
+	wlf_signal_add(&render->event_test.event_node->events.touch_up,
+		&render->event_test.touch_up);
+	wlf_signal_add(&render->event_test.event_node->events.touch_cancel,
+		&render->event_test.touch_cancel);
+	return true;
+}
+
+static void finish_event_node_test(struct render_state *render) {
+	if (render->event_test.event_node == NULL) {
+		return;
+	}
+	wlf_linked_list_remove(&render->event_test.touch_cancel.link);
+	wlf_linked_list_remove(&render->event_test.touch_up.link);
+	wlf_linked_list_remove(&render->event_test.touch_down.link);
+	wlf_linked_list_remove(&render->event_test.pointer_leave.link);
+	wlf_linked_list_remove(&render->event_test.pointer_enter.link);
+}
 
 static void set_shape_style(struct wlf_shape_state *state,
 		struct wlf_color fill, struct wlf_color stroke, float stroke_width) {
@@ -192,7 +305,8 @@ int main(int argc, char *argv[]) {
 
 	if (render.rounded_rect == NULL || render.circle == NULL ||
 			render.ellipse == NULL || render.line == NULL ||
-			render.poly == NULL || render.path == NULL) {
+			render.poly == NULL || render.path == NULL ||
+			!create_event_node_test(&render, tree)) {
 		wlf_log(WLF_ERROR, "Failed to create shape scene node");
 		wlf_window_destroy(window);
 		wlf_renderer_destroy(renderer);
@@ -205,6 +319,7 @@ int main(int argc, char *argv[]) {
 	wlf_log(WLF_INFO, "Backend started successfully");
 
 	wlf_backend_exe(backend);
+	finish_event_node_test(&render);
 	wlf_window_destroy(window);
 	wlf_renderer_destroy(renderer);
 	wlf_backend_destroy(backend);

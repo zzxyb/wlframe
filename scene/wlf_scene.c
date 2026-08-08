@@ -21,6 +21,7 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_env.h"
 #include "wlf/utils/wlf_time.h"
+#include "wlf/swapchain/wlf_swapchain.h"
 #include "wlf/window/wlf_window.h"
 #include "wlf/window/wlf_titlebar.h"
 
@@ -307,7 +308,12 @@ static void handle_window_expose(struct wlf_listener *listener, void *data) {
 	(void)data;
 	struct wlf_scene *scene =
 		wlf_container_of(listener, scene, window_expose);
+	scene->frame_scheduled = false;
 	if (wlf_scene_needs_frame(scene) && !wlf_scene_commit(scene)) {
+		if (!scene->frame_scheduled) {
+			scene->frame_scheduled = true;
+			wlf_window_schedule_frame(scene->window);
+		}
 		return;
 	}
 
@@ -450,7 +456,6 @@ void wlf_scene_damage(struct wlf_scene *scene,
 		return;
 	}
 
-	bool schedule = pixman_region32_empty(&scene->damage);
 	pixman_region32_t clipped;
 	pixman_region32_init(&clipped);
 	pixman_region32_intersect_rect(&clipped, damage, 0, 0,
@@ -459,7 +464,8 @@ void wlf_scene_damage(struct wlf_scene *scene,
 	bool has_damage = !pixman_region32_empty(&clipped);
 	pixman_region32_fini(&clipped);
 
-	if (schedule && has_damage) {
+	if (has_damage && !scene->frame_scheduled) {
+		scene->frame_scheduled = true;
 		wlf_window_schedule_frame(scene->window);
 	}
 }
@@ -612,7 +618,10 @@ bool wlf_scene_commit(struct wlf_scene *scene) {
 	pixman_region32_fini(&state.damage);
 	if (scene->debug_damage_option == WLF_SCENE_DEBUG_DAMAGE_HIGHLIGHT &&
 			!wlf_linked_list_empty(&scene->damage_highlight_regions)) {
-		wlf_window_schedule_frame(scene->window);
+		if (!scene->frame_scheduled) {
+			scene->frame_scheduled = true;
+			wlf_window_schedule_frame(scene->window);
+		}
 	}
 	return true;
 }

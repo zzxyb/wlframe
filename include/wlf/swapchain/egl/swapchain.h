@@ -40,6 +40,7 @@ struct wlf_egl_swapchain {
 #endif
 	EGLConfig config; /**< EGL configuration selected for the window. */
 	EGLSurface surface; /**< EGL presentation surface. */
+	bool swap_interval_configured; /**< Whether the EGL swap interval was set. */
 };
 
 /**

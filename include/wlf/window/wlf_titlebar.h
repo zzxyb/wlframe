@@ -58,9 +58,15 @@ struct wlf_titlebar_button {
 		struct wlf_listener pointer_enter;
 		struct wlf_listener pointer_leave;
 		struct wlf_listener pointer_button;
+		struct wlf_listener touch_down;
+		struct wlf_listener touch_up;
+		struct wlf_listener touch_cancel;
 	} listeners;
 	bool visible;
 	bool hovered;
+	bool pressed;
+	bool touch_pressed;
+	int32_t touch_id;
 	bool custom_icon;
 };
 
