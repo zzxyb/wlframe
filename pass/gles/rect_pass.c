@@ -4,6 +4,9 @@
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/utils/wlf_log.h"
 
+#include "rect_frag_src.h"
+#include "rect_vert_src.h"
+
 #include <GLES2/gl2.h>
 #include <math.h>
 #include <stdlib.h>
@@ -15,21 +18,6 @@ struct wlf_gles_rect_pass {
 	GLint uniform_viewport;
 	GLint uniform_color;
 };
-
-static const char vertex_shader_src[] =
-	"attribute vec2 pos;\n"
-	"uniform vec2 viewport;\n"
-	"void main() {\n"
-	"	vec2 ndc = pos / viewport * 2.0 - 1.0;\n"
-	"	gl_Position = vec4(ndc.x, -ndc.y, 0.0, 1.0);\n"
-	"}\n";
-
-static const char fragment_shader_src[] =
-	"precision mediump float;\n"
-	"uniform vec4 color;\n"
-	"void main() {\n"
-	"	gl_FragColor = color;\n"
-	"}\n";
 
 static GLuint compile_shader(GLenum type, const char *source) {
 	GLuint shader = glCreateShader(type);
@@ -56,12 +44,12 @@ static GLuint compile_shader(GLenum type, const char *source) {
 }
 
 static bool link_program(struct wlf_gles_rect_pass *pass) {
-	GLuint vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_shader_src);
+	GLuint vertex_shader = compile_shader(GL_VERTEX_SHADER, rect_vert_src);
 	if (vertex_shader == 0) {
 		return false;
 	}
 
-	GLuint fragment_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_shader_src);
+	GLuint fragment_shader = compile_shader(GL_FRAGMENT_SHADER, rect_frag_src);
 	if (fragment_shader == 0) {
 		glDeleteShader(vertex_shader);
 		return false;
