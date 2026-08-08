@@ -280,7 +280,7 @@ int main(int argc, char *argv[]) {
 	}
 	render.image = wlf_texture_node_create(&tree->base, texture,
 		40.0 + (270.0 - image_width) / 2.0,
-		40.0 + (190.0 - image_height) / 2.0,
+		270.0 + (190.0 - image_height) / 2.0,
 		image_width, image_height);
 	if (render.image == NULL) {
 		wlf_texture_destroy(texture);
