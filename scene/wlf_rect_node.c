@@ -16,19 +16,19 @@ static void rect_node_destroy(struct wlf_scene_node *node) {
 }
 
 static void rect_node_get_size(struct wlf_scene_node *node,
-		double *width, double *height) {
+		uint32_t *width, uint32_t *height) {
 	*width = node->state.width;
 	*height = node->state.height;
 }
 
 static void scene_node_opaque_region(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *opaque) {
+		int x, int y, pixman_region32_t *opaque) {
 	struct wlf_rect_node *rect = wlf_rect_node_from_node(node);
 	if (node->state.opacity != 1.0f || rect->color.a != 1.0) {
 		return;
 	}
-	pixman_region32_union_rect(opaque, opaque, (int)x, (int)y,
-		(uint32_t)node->state.width, (uint32_t)node->state.height);
+	pixman_region32_union_rect(opaque, opaque, x, y,
+		node->state.width, node->state.height);
 }
 
 static bool rect_node_invisible(struct wlf_scene_node *node) {
@@ -64,13 +64,13 @@ static struct wlf_scene_node *rect_node_at(struct wlf_scene_node *node,
 }
 
 static void rect_node_bounds(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *visible) {
+		int x, int y, pixman_region32_t *visible) {
 	if (rect_node_invisible(node)) {
 		return;
 	}
 
-	pixman_region32_union_rect(visible, visible, (int)x, (int)y,
-		(uint32_t)node->state.width, (uint32_t)node->state.height);
+	pixman_region32_union_rect(visible, visible, x, y,
+		node->state.width, node->state.height);
 }
 
 static bool rect_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
@@ -79,8 +79,8 @@ static bool rect_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
 		return false;
 	}
 
-	double x = 0;
-	double y = 0;
+	int x = 0;
+	int y = 0;
 	if (!wlf_scene_node_coords(node, &x, &y)) {
 		return false;
 	}
@@ -117,7 +117,7 @@ static const struct wlf_scene_node_impl rect_node_impl = {
 };
 
 struct wlf_rect_node *wlf_rect_node_create(struct wlf_scene_node *parent,
-		double x, double y, double width, double height,
+		int x, int y, uint32_t width, uint32_t height,
 		const struct wlf_color *color) {
 	struct wlf_rect_node *rect = calloc(1, sizeof(*rect));
 	if (rect == NULL) {
@@ -176,8 +176,8 @@ void wlf_rect_node_render(struct wlf_rect_node *rect,
 		struct wlf_rect_pass *pass,
 		struct wlf_render_target_info *render_target_info,
 		const pixman_region32_t *clip) {
-	double x = 0;
-	double y = 0;
+	int x = 0;
+	int y = 0;
 	if (!wlf_scene_node_coords(&rect->base, &x, &y)) {
 		return;
 	}

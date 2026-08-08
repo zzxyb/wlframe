@@ -120,6 +120,7 @@ struct wlf_window_state {
 	enum wlf_window_type type;          /**< Window type */
 	enum wlf_window_state_flags state; /**< Window state flags */
 	float opacity;                      /**< Window opacity (0.0-1.0) */
+	double scale;                       /**< Logical-to-buffer pixel scale. */
 
 	bool visible;                       /**< Whether window is currently visible */
 	bool focused;                       /**< Whether window has focus */
@@ -151,6 +152,7 @@ struct wlf_window {
 		struct wlf_signal close;        /**< Emitted when close is requested */
 		struct wlf_signal focus_in;     /**< Emitted when window gains focus */
 		struct wlf_signal focus_out;    /**< Emitted when window loses focus */
+		struct wlf_signal scale;        /**< Emitted after the buffer scale changes */
 		struct wlf_signal show;         /**< Emitted when window is shown */
 		struct wlf_signal hide;         /**< Emitted when window is hidden */
 	} events;
@@ -237,6 +239,13 @@ void wlf_window_set_max_size(struct wlf_window *window, int width, int height);
  * @param y New window y position.
  */
 void wlf_window_set_position(struct wlf_window *window, int x, int y);
+
+/** Changes the logical-to-buffer pixel scale and schedules a full repaint. */
+void wlf_window_set_scale(struct wlf_window *window, double scale);
+
+/** Returns a logical size converted to a covering buffer-pixel size. */
+uint32_t wlf_window_scale_length(const struct wlf_window *window,
+	uint32_t logical_length);
 
 /**
  * @brief Set the window state (e.g. minimized, maximized).

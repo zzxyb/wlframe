@@ -71,16 +71,24 @@ static void vector_pass_render(struct wlf_vector_pass *pass,
 	for (size_t i = 0; i < options->vertex_count; i += 3) {
 		const struct wlf_vector_vertex *v = &options->vertices[i];
 		if (v[0].coverage < 1 || v[1].coverage < 1 || v[2].coverage < 1) continue;
+		double scale = render_target_info->scale;
 		triangles[triangle_index++] = (pixman_triangle_t){
-			.p1 = { pixman_double_to_fixed(v[0].x), pixman_double_to_fixed(v[0].y) },
-			.p2 = { pixman_double_to_fixed(v[1].x), pixman_double_to_fixed(v[1].y) },
-			.p3 = { pixman_double_to_fixed(v[2].x), pixman_double_to_fixed(v[2].y) },
+			.p1 = { pixman_double_to_fixed(v[0].x * scale),
+				pixman_double_to_fixed(v[0].y * scale) },
+			.p2 = { pixman_double_to_fixed(v[1].x * scale),
+				pixman_double_to_fixed(v[1].y * scale) },
+			.p3 = { pixman_double_to_fixed(v[2].x * scale),
+				pixman_double_to_fixed(v[2].y * scale) },
 		};
 	}
 
+	pixman_region32_t scaled_clip;
+	pixman_region32_init(&scaled_clip);
 	if (options->clip != NULL) {
+		wlf_render_target_info_scale_region(render_target_info,
+			options->clip, &scaled_clip);
 		pixman_image_set_clip_region32(target->buffer->image,
-			(pixman_region32_t *)options->clip);
+			&scaled_clip);
 	}
 	pixman_composite_triangles(
 		options->blend_mode == WLF_RENDER_BLEND_MODE_NONE ? PIXMAN_OP_SRC : PIXMAN_OP_OVER,
@@ -89,6 +97,7 @@ static void vector_pass_render(struct wlf_vector_pass *pass,
 	if (options->clip != NULL) {
 		pixman_image_set_clip_region32(target->buffer->image, NULL);
 	}
+	pixman_region32_fini(&scaled_clip);
 
 	free(triangles);
 	pixman_image_unref(solid);

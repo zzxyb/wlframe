@@ -41,7 +41,7 @@ static void scene_node_visibility(struct wlf_scene_node *node,
 }
 
 static bool scene_node_at_iterator(struct wlf_scene_node *node,
-		double lx, double ly, void *data) {
+		int lx, int ly, void *data) {
 	struct wlf_node_at_data *at_data = data;
 
 	double rx = at_data->lx - lx;
@@ -82,7 +82,7 @@ static struct wlf_scene_node *scene_node_at(struct wlf_scene_node *node,
 }
 
 static void scene_node_bounds(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *visible) {
+		int x, int y, pixman_region32_t *visible) {
 	if (!node->state.enabled) {
 		return;
 	}
@@ -96,7 +96,7 @@ static void scene_node_bounds(struct wlf_scene_node *node,
 
 static bool scene_nodes_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
 		scene_node_box_iterator_func_t iterator, void *user_data) {
-	double x, y;
+	int x, y;
 	wlf_scene_node_coords(node, &x, &y);
 
 	// return _scene_nodes_in_box(node, box, iterator, user_data, x, y);

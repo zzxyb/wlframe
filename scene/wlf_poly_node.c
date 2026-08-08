@@ -30,7 +30,7 @@ static bool bounds(const struct wlf_poly_shape *shape,
 }
 
 struct wlf_poly_node *wlf_poly_node_create(struct wlf_scene_node *parent,
-		double x, double y, struct wlf_poly_shape *shape) {
+		int x, int y, struct wlf_poly_shape *shape) {
 	if (shape == NULL) return NULL;
 	struct wlf_poly_node *node = calloc(1, sizeof(*node));
 	if (node == NULL) return NULL;
@@ -66,7 +66,7 @@ static void render_at(struct wlf_poly_node *node,
 void wlf_poly_node_render(struct wlf_poly_node *node,
 		struct wlf_poly_pass *pass, struct wlf_render_target_info *target,
 		const pixman_region32_t *clip) {
-	double x, y;
+	int x, y;
 	if (node == NULL || !wlf_scene_node_coords(&node->base, &x, &y)) {
 		return;
 	}

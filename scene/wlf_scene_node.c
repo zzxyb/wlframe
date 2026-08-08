@@ -73,7 +73,7 @@ void wlf_scene_node_reparent(struct wlf_scene_node *node,
 		assert(ancestor != node);
 	}
 
-	double x, y;
+	int x, y;
 	pixman_region32_t visible;
 	pixman_region32_init(&visible);
 	if (wlf_scene_node_coords(node, &x, &y)) {
@@ -148,7 +148,7 @@ void wlf_scene_node_set_enabled(struct wlf_scene_node *node, bool enabled) {
 	}
 
 	if (node->impl->set_enabled == NULL) {
-		double x, y;
+		int x, y;
 		pixman_region32_t visible;
 		pixman_region32_init(&visible);
 		if (wlf_scene_node_coords(node, &x, &y)) {
@@ -165,7 +165,7 @@ void wlf_scene_node_set_enabled(struct wlf_scene_node *node, bool enabled) {
 	node->impl->set_enabled(node, enabled);
 }
 
-void wlf_scene_node_set_position(struct wlf_scene_node *node, double x, double y) {
+void wlf_scene_node_set_position(struct wlf_scene_node *node, int x, int y) {
 	if (node->state.x == x && node->state.y == y) {
 		return;
 	}
@@ -204,7 +204,7 @@ void wlf_scene_node_set_opacity(struct wlf_scene_node *node,
 }
 
 void wlf_scene_node_get_size(struct wlf_scene_node *node,
-		double *width, double *height) {
+		uint32_t *width, uint32_t *height) {
 	if (node->impl->get_size == NULL) {
 		*width = 0;
 		*height = 0;
@@ -222,8 +222,8 @@ struct wlf_linked_list *wlf_scene_node_get_children(struct wlf_scene_node *node)
 	return node->impl->get_children(node);
 }
 
-void wlf_scene_node_opaque_region(struct wlf_scene_node *node, double x,
-		double y, pixman_region32_t *opaque) {
+void wlf_scene_node_opaque_region(struct wlf_scene_node *node, int x,
+		int y, pixman_region32_t *opaque) {
 	if (node->impl->opaque_region == NULL) {
 		/* Unknown node types are conservatively treated as non-opaque. */
 		return;
@@ -232,8 +232,8 @@ void wlf_scene_node_opaque_region(struct wlf_scene_node *node, double x,
 	node->impl->opaque_region(node, x, y, opaque);
 }
 
-void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
-		double y, pixman_region32_t *opaque) {
+void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, int x,
+		int y, pixman_region32_t *opaque) {
 	wlf_scene_node_opaque_region(node, x, y, opaque);
 }
 
@@ -263,9 +263,9 @@ struct wlf_scene_node *wlf_scene_node_at(struct wlf_scene_node *node,
 }
 
 bool wlf_scene_node_coords(struct wlf_scene_node *node,
-		double *lx_ptr, double *ly_ptr) {
+		int *lx_ptr, int *ly_ptr) {
 	if (node->impl->coords == NULL) {
-		double lx = 0, ly = 0;
+		int lx = 0, ly = 0;
 		bool enabled = true;
 		while (true) {
 			lx += node->state.x;
@@ -303,7 +303,7 @@ void wlf_scene_node_update(struct wlf_scene_node *node, pixman_region32_t *damag
 		if (node->scene != NULL) {
 			wlf_scene_recalculate_visibility(node->scene);
 		} else {
-			double x, y;
+			int x, y;
 			if (wlf_scene_node_coords(node, &x, &y)) {
 				wlf_scene_node_bounds(node, x, y, &new_visible);
 				pixman_region32_copy(&node->state.visible, &new_visible);
@@ -326,16 +326,15 @@ void wlf_scene_node_update(struct wlf_scene_node *node, pixman_region32_t *damag
 }
 
 void wlf_scene_node_bounds(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *visible) {
+		int x, int y, pixman_region32_t *visible) {
 	if (node->impl->bounds == NULL) {
 		if (!node->state.enabled) {
 			return;
 		}
 
-		double width, height;
+		uint32_t width, height;
 		wlf_scene_node_get_size(node, &width, &height);
-		pixman_region32_union_rect(visible, visible, (int)x, (int)y,
-			(uint32_t)width, (uint32_t)height);
+		pixman_region32_union_rect(visible, visible, x, y, width, height);
 		return;
 	}
 
@@ -358,7 +357,7 @@ bool wlf_scene_node_in_box(struct wlf_scene_node *node, struct wlf_frect *box,
 }
 
 bool wlf_scene_node_construct_render_list_iterator(
-		struct wlf_scene_node *node, double lx, double ly, void *data) {
+		struct wlf_scene_node *node, int lx, int ly, void *data) {
 	if (node->impl->construct_render_list_iterator == NULL) {
 		return false;
 	}
@@ -367,7 +366,7 @@ bool wlf_scene_node_construct_render_list_iterator(
 }
 
 bool wlf_scene_node_add_render_list_entry(struct wlf_scene_node *node,
-		double lx, double ly, void *_data) {
+		int lx, int ly, void *_data) {
 	struct wlf_render_list_constructor_data *data = _data;
 	if (wlf_scene_node_invisible(node)) {
 		return false;

@@ -43,6 +43,10 @@ struct wlf_gles_render_target_info *wlf_gles_begin_egl_render_pass(
 	}
 
 	wlf_render_target_info_init(&target->base, &render_target_info_impl);
+	target->base.logical_width = swapchain->base.width;
+	target->base.logical_height = swapchain->base.height;
+	target->base.buffer_width = swapchain->base.width;
+	target->base.buffer_height = swapchain->base.height;
 	target->swapchain = swapchain;
 	target->renderer = renderer;
 

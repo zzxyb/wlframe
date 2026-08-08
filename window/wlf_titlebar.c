@@ -116,8 +116,8 @@ static bool create_button(struct wlf_titlebar_button *button,
 }
 
 static void arrange_button(struct wlf_titlebar_button *button,
-		double button_x) {
-	double y = (WLF_TITLEBAR_HEIGHT - TITLEBAR_BUTTON_SIZE) / 2.0;
+		int button_x) {
+	int y = (WLF_TITLEBAR_HEIGHT - TITLEBAR_BUTTON_SIZE) / 2;
 	wlf_scene_node_set_position(&button->tree->base, button_x, y);
 }
 
@@ -130,7 +130,7 @@ static void set_button_icon_opacity(struct wlf_titlebar_button *button,
 }
 
 void wlf_titlebar_arrange(struct wlf_titlebar *titlebar) {
-	double width = titlebar->window->state.geometry.width;
+	int width = titlebar->window->state.geometry.width;
 	titlebar->background->base.state.width = width;
 	titlebar->background->base.state.height = WLF_TITLEBAR_HEIGHT;
 	wlf_scene_node_update(&titlebar->background->base, NULL);
@@ -140,11 +140,11 @@ void wlf_titlebar_arrange(struct wlf_titlebar *titlebar) {
 		0, WLF_TITLEBAR_HEIGHT - 1);
 	wlf_scene_node_update(&titlebar->separator->base, NULL);
 
-	double close_x = width - TITLEBAR_HORIZONTAL_PADDING -
+	int close_x = width - TITLEBAR_HORIZONTAL_PADDING -
 		TITLEBAR_BUTTON_SIZE;
-	double maximize_x = close_x - TITLEBAR_BUTTON_GAP -
+	int maximize_x = close_x - TITLEBAR_BUTTON_GAP -
 		TITLEBAR_BUTTON_SIZE;
-	double minimize_x = maximize_x - TITLEBAR_BUTTON_GAP -
+	int minimize_x = maximize_x - TITLEBAR_BUTTON_GAP -
 		TITLEBAR_BUTTON_SIZE;
 	arrange_button(&titlebar->close_button, close_x);
 	arrange_button(&titlebar->maximize_button, maximize_x);
@@ -160,9 +160,10 @@ void wlf_titlebar_arrange(struct wlf_titlebar *titlebar) {
 	if (title_x < TITLEBAR_HORIZONTAL_PADDING) {
 		title_x = TITLEBAR_HORIZONTAL_PADDING;
 	}
-	double title_y = (WLF_TITLEBAR_HEIGHT -
-		titlebar->title_text->base.state.height) / 2.0;
-	wlf_scene_node_set_position(&titlebar->title_text->base, title_x, title_y);
+	int title_y = (WLF_TITLEBAR_HEIGHT -
+		(int)titlebar->title_text->base.state.height) / 2;
+	wlf_scene_node_set_position(&titlebar->title_text->base,
+		(int)title_x, title_y);
 }
 
 void wlf_titlebar_set_active(struct wlf_titlebar *titlebar, bool active) {

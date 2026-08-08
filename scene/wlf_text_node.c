@@ -22,6 +22,7 @@ struct text_metrics {
 
 static void scene_node_render(struct wlf_render_list_entry *entry,
 	const struct wlf_render_data *data);
+static bool text_node_rasterize(struct wlf_text_node *node);
 
 static PangoStyle to_pango_style(enum wlf_text_font_slant slant) {
 	switch (slant) {
@@ -48,13 +49,13 @@ static bool text_node_invisible(struct wlf_scene_node *base) {
 }
 
 static void text_node_get_size(struct wlf_scene_node *node,
-		double *width, double *height) {
+		uint32_t *width, uint32_t *height) {
 	*width = node->state.width;
 	*height = node->state.height;
 }
 
 static void scene_node_opaque_region(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *opaque) {
+		int x, int y, pixman_region32_t *opaque) {
 	(void)node;
 	(void)x;
 	(void)y;
@@ -62,13 +63,9 @@ static void scene_node_opaque_region(struct wlf_scene_node *node,
 }
 
 static void text_node_add_bounds(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *region) {
-	int left = (int)floor(x);
-	int top = (int)floor(y);
-	int right = (int)ceil(x + node->state.width);
-	int bottom = (int)ceil(y + node->state.height);
-	pixman_region32_union_rect(region, region, left, top,
-		(uint32_t)(right - left), (uint32_t)(bottom - top));
+		int x, int y, pixman_region32_t *region) {
+	pixman_region32_union_rect(region, region, x, y,
+		node->state.width, node->state.height);
 }
 
 static void text_node_visibility(struct wlf_scene_node *node,
@@ -95,7 +92,7 @@ static struct wlf_scene_node *text_node_at(struct wlf_scene_node *node,
 }
 
 static void text_node_bounds(struct wlf_scene_node *node,
-		double x, double y, pixman_region32_t *visible) {
+		int x, int y, pixman_region32_t *visible) {
 	if (!text_node_invisible(node)) {
 		text_node_add_bounds(node, x, y, visible);
 	}
@@ -108,8 +105,8 @@ static bool text_node_in_box(struct wlf_scene_node *node,
 		return false;
 	}
 
-	double x = 0;
-	double y = 0;
+	int x = 0;
+	int y = 0;
 	if (!wlf_scene_node_coords(node, &x, &y) ||
 			x >= box->x + box->width || x + node->state.width <= box->x ||
 			y >= box->y + box->height || y + node->state.height <= box->y) {
@@ -134,6 +131,19 @@ static void handle_renderer_destroy(struct wlf_listener *listener, void *data) {
 	node->renderer = NULL;
 }
 
+static void handle_window_scale(struct wlf_listener *listener, void *data) {
+	struct wlf_text_node *node =
+		wlf_container_of(listener, node, window_scale);
+	struct wlf_window *window = data;
+	if (node->raster_scale == window->state.scale) {
+		return;
+	}
+	node->raster_scale = window->state.scale;
+	if (!text_node_rasterize(node)) {
+		wlf_log(WLF_ERROR, "failed to rerasterize text after scale change");
+	}
+}
+
 static PangoLayout *create_layout(cairo_t *cr,
 		const struct wlf_text_node *node) {
 	PangoLayout *layout = pango_cairo_create_layout(cr);
@@ -148,7 +158,7 @@ static PangoLayout *create_layout(cairo_t *cr,
 	}
 	pango_font_description_set_family(font, node->font_family);
 	pango_font_description_set_absolute_size(font,
-		node->font_size * PANGO_SCALE);
+		node->font_size * node->raster_scale * PANGO_SCALE);
 	pango_font_description_set_style(font, to_pango_style(node->font_slant));
 	pango_font_description_set_weight(font,
 		to_pango_weight(node->font_weight));
@@ -205,12 +215,14 @@ static bool text_node_rasterize(struct wlf_text_node *node) {
 		return false;
 	}
 
-	node->natural_width = metrics.width;
-	node->baseline = metrics.baseline;
+	node->natural_width = metrics.width / node->raster_scale;
+	node->baseline = metrics.baseline / node->raster_scale;
 	int width = (int)metrics.width;
 	int height = (int)metrics.height;
-	if (node->max_width >= 0 && width > node->max_width) {
-		width = node->max_width;
+	int max_pixel_width = node->max_width >= 0 ?
+		(int)ceil(node->max_width * node->raster_scale) : -1;
+	if (max_pixel_width >= 0 && width > max_pixel_width) {
+		width = max_pixel_width;
 	}
 	if (node->text[0] == '\0' || width <= 0 || height <= 0) {
 		g_object_unref(layout);
@@ -261,8 +273,8 @@ static bool text_node_rasterize(struct wlf_text_node *node) {
 	}
 
 	text_node_set_texture(node, texture);
-	node->base.state.width = width;
-	node->base.state.height = height;
+	node->base.state.width = (uint32_t)ceil(width / node->raster_scale);
+	node->base.state.height = (uint32_t)ceil(height / node->raster_scale);
 	wlf_scene_node_update(&node->base, NULL);
 	return true;
 }
@@ -270,6 +282,7 @@ static bool text_node_rasterize(struct wlf_text_node *node) {
 static void text_node_destroy(struct wlf_scene_node *base) {
 	struct wlf_text_node *node = wlf_text_node_from_node(base);
 	wlf_linked_list_remove(&node->renderer_destroy.link);
+	wlf_linked_list_remove(&node->window_scale.link);
 	text_node_set_texture(node, NULL);
 	free(node->font_family);
 	free(node->text);
@@ -291,7 +304,7 @@ static const struct wlf_scene_node_impl text_node_impl = {
 };
 
 struct wlf_text_node *wlf_text_node_create(struct wlf_scene_node *parent,
-		double x, double y, const char *text, const char *font_family,
+		int x, int y, const char *text, const char *font_family,
 		double font_size, const struct wlf_color *color) {
 	const char *text_value = text != NULL ? text : "";
 	if (parent == NULL || parent->window == NULL ||
@@ -319,11 +332,14 @@ struct wlf_text_node *wlf_text_node_create(struct wlf_scene_node *parent,
 	node->base.state.x = x;
 	node->base.state.y = y;
 	node->font_size = font_size;
+	node->raster_scale = parent->window->state.scale;
 	node->color = color != NULL ? *color : WLF_COLOR_WHITE;
 	node->max_width = -1;
 	node->renderer = parent->window->state.renderer;
 	node->renderer_destroy.notify = handle_renderer_destroy;
 	wlf_signal_add(&node->renderer->events.destroy, &node->renderer_destroy);
+	node->window_scale.notify = handle_window_scale;
+	wlf_signal_add(&parent->window->events.scale, &node->window_scale);
 	if (!text_node_rasterize(node)) {
 		wlf_scene_node_destroy(&node->base);
 		return NULL;
@@ -449,8 +465,8 @@ void wlf_text_node_render(struct wlf_text_node *node,
 		struct wlf_texture_pass *pass,
 		struct wlf_render_target_info *render_target_info,
 		const pixman_region32_t *clip) {
-	double x = 0;
-	double y = 0;
+	int x = 0;
+	int y = 0;
 	if (!wlf_scene_node_coords(&node->base, &x, &y)) {
 		return;
 	}

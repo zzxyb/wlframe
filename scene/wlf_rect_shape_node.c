@@ -25,7 +25,7 @@ static void bounds(const struct wlf_rect_shape *shape,
 }
 
 struct wlf_rect_shape_node *wlf_rect_shape_node_create(
-		struct wlf_scene_node *parent, double x, double y,
+		struct wlf_scene_node *parent, int x, int y,
 		struct wlf_rect_shape *shape) {
 	if (shape == NULL) return NULL;
 	struct wlf_rect_shape_node *node = calloc(1, sizeof(*node));
@@ -63,7 +63,7 @@ static void render_at(struct wlf_rect_shape_node *node,
 void wlf_rect_shape_node_render(struct wlf_rect_shape_node *node,
 		struct wlf_rect_shape_pass *pass,
 		struct wlf_render_target_info *target, const pixman_region32_t *clip) {
-	double x, y;
+	int x, y;
 	if (node == NULL || !wlf_scene_node_coords(&node->base, &x, &y)) {
 		return;
 	}

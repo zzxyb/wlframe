@@ -37,6 +37,11 @@ static void pixman_texture_pass_render(struct wlf_texture_pass *pass,
 		return;
 	}
 
+	double target_scale = render_target_info->scale;
+	dst.x *= target_scale;
+	dst.y *= target_scale;
+	dst.width *= target_scale;
+	dst.height *= target_scale;
 	int x = (int)floor(dst.x);
 	int y = (int)floor(dst.y);
 	int width = (int)ceil(dst.x + dst.width) - x;
@@ -45,7 +50,12 @@ static void pixman_texture_pass_render(struct wlf_texture_pass *pass,
 	pixman_region32_init_rect(&dst_region, x, y, width, height);
 	pixman_region32_init(&clipped);
 	if (options->clip != NULL) {
-		pixman_region32_intersect(&clipped, &dst_region, options->clip);
+		pixman_region32_t scaled_clip;
+		pixman_region32_init(&scaled_clip);
+		wlf_render_target_info_scale_region(render_target_info,
+			options->clip, &scaled_clip);
+		pixman_region32_intersect(&clipped, &dst_region, &scaled_clip);
+		pixman_region32_fini(&scaled_clip);
 	} else {
 		pixman_region32_copy(&clipped, &dst_region);
 	}
