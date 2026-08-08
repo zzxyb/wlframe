@@ -24,6 +24,10 @@ struct wl_seat;
 struct wlf_wl_keyboard;
 struct wlf_wl_pointer;
 struct wlf_wl_touch;
+struct wlf_pointer;
+struct wlf_keyboard;
+struct wlf_touch;
+struct wlf_window;
 
 /** @brief Seat capabilities bitmask (mirrors wl_seat_capability). */
 enum wlf_wl_seat_capability {
@@ -40,6 +44,24 @@ struct wlf_wl_seat {
 	uint32_t version;
 	uint32_t capabilities;    /**< Current capability bitmask. */
 	char *name;               /**< Seat identifier (heap-allocated). */
+	struct wlf_pointer *pointer;
+	struct wlf_keyboard *keyboard;
+	struct wlf_touch *touch;
+	struct wlf_window *pointer_window;
+	struct wlf_window *keyboard_window;
+	struct wlf_window *touch_window;
+	struct {
+		struct wlf_listener pointer_enter, pointer_leave, pointer_motion;
+		struct wlf_listener pointer_button, pointer_axis, pointer_frame;
+		struct wlf_listener keyboard_keymap, keyboard_enter, keyboard_leave;
+		struct wlf_listener keyboard_key, keyboard_modifiers;
+		struct wlf_listener keyboard_repeat_info;
+		struct wlf_listener touch_down, touch_up, touch_motion, touch_cancel;
+		struct wlf_listener touch_frame, touch_shape, touch_orientation;
+		struct wlf_listener pointer_window_destroy;
+		struct wlf_listener keyboard_window_destroy;
+		struct wlf_listener touch_window_destroy;
+	} listeners;
 
 	struct {
 		struct wlf_signal destroy;       /**< Emitted before destruction. */

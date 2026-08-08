@@ -57,6 +57,7 @@ struct wlf_wl_surface {
 	struct wl_callback *throttle_callback; /**< Pending display sync callback used to throttle commits. */
 	struct wl_callback *frame_callback; /**< Pending compositor frame callback. */
 	struct wlf_window *frame_window; /**< Window notified when frame_callback fires. */
+	struct wlf_window *window; /**< Owning window used for input event routing. */
 	int32_t preferred_buffer_scale;       /**< Current preferred buffer scale factor. */
 	uint32_t preferred_buffer_transform;  /**< Current preferred buffer transform. */
 	uint32_t version;                     /**< Bound wl_surface protocol version. */
@@ -77,6 +78,13 @@ struct wlf_wl_surface {
  * @return Pointer to the newly created wlf_wl_surface, or NULL on failure.
  */
 struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *compositor);
+
+/** Associates the native surface with its owning window. */
+void wlf_wl_surface_set_window(struct wlf_wl_surface *surface,
+	struct wlf_window *window);
+
+/** Resolves a wlframe window from one of its native Wayland surfaces. */
+struct wlf_window *wlf_wl_surface_get_window(struct wl_surface *surface);
 
 /**
  * @brief Destroys a wlf_wl_surface.

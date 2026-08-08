@@ -14,6 +14,8 @@ void wlf_pointer_init(struct wlf_pointer *pointer,
 
 	wlf_signal_init(&pointer->events.destroy);
 
+	wlf_signal_init(&pointer->events.enter);
+	wlf_signal_init(&pointer->events.leave);
 	wlf_signal_init(&pointer->events.motion);
 	wlf_signal_init(&pointer->events.motion_absolute);
 	wlf_signal_init(&pointer->events.button);
@@ -41,6 +43,8 @@ void wlf_pointer_destroy(struct wlf_pointer *pointer) {
 
 	assert(wlf_linked_list_empty(&pointer->events.destroy.listener_list));
 
+	assert(wlf_linked_list_empty(&pointer->events.enter.listener_list));
+	assert(wlf_linked_list_empty(&pointer->events.leave.listener_list));
 	assert(wlf_linked_list_empty(&pointer->events.motion.listener_list));
 	assert(wlf_linked_list_empty(&pointer->events.motion_absolute.listener_list));
 	assert(wlf_linked_list_empty(&pointer->events.button.listener_list));

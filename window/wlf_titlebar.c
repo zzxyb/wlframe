@@ -2,6 +2,7 @@
 
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/platform/wlf_theme.h"
+#include "wlf/scene/wlf_event_node.h"
 #include "wlf/scene/wlf_rect_node.h"
 #include "wlf/scene/wlf_scene_node.h"
 #include "wlf/scene/wlf_scene_tree.h"
@@ -16,7 +17,7 @@
 
 enum {
 	TITLEBAR_HORIZONTAL_PADDING = 5,
-	TITLEBAR_BUTTON_GAP = 2,
+	TITLEBAR_BUTTON_GAP = 0,
 	TITLEBAR_BUTTON_SIZE = 24,
 	TITLEBAR_ICON_SIZE = 16,
 	TITLEBAR_FONT_SIZE = 16,
@@ -61,6 +62,18 @@ static const struct wlf_color separator_unfocused = {
 	.g = 0.0,
 	.b = 0.0,
 	.a = 0.10,
+};
+
+static const struct wlf_color button_hover_light = {
+	.r = 0.0, .g = 0.0, .b = 0.0, .a = 0.09,
+};
+
+static const struct wlf_color button_hover_dark = {
+	.r = 1.0, .g = 1.0, .b = 1.0, .a = 0.12,
+};
+
+static const struct wlf_color close_button_hover = {
+	.r = 0xe8 / 255.0, .g = 0x11 / 255.0, .b = 0x23 / 255.0, .a = 0.88,
 };
 
 static const char minimize_icon_source[] =
@@ -128,8 +141,95 @@ static struct wlf_svg_node *create_svg_icon(struct wlf_scene_node *parent,
 	return icon;
 }
 
-static bool create_button(struct wlf_titlebar_button *button,
-		struct wlf_scene_node *parent, const char *icon_source) {
+static void update_button_hover(struct wlf_titlebar_button *button) {
+	struct wlf_color color = {0};
+	if (button->hovered) {
+		if (button->type == WLF_TITLEBAR_BUTTON_CLOSE) {
+			color = close_button_hover;
+		} else {
+			struct wlf_theme *theme =
+				button->titlebar->window->state.backend->theme;
+			color = theme != NULL &&
+				theme->appearance == WLF_THEME_APPEARANCE_DARK ?
+				button_hover_dark : button_hover_light;
+		}
+	}
+	button->background->color = color;
+	wlf_scene_node_update(&button->background->base, NULL);
+}
+
+static void handle_button_pointer_enter(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_titlebar_button *button =
+		wlf_container_of(listener, button, listeners.pointer_enter);
+	struct wlf_titlebar_button *buttons[] = {
+		&button->titlebar->minimize_button,
+		&button->titlebar->maximize_button,
+		&button->titlebar->close_button,
+	};
+	for (size_t i = 0; i < sizeof(buttons) / sizeof(buttons[0]); ++i) {
+		if (buttons[i] == button) {
+			continue;
+		}
+		if (buttons[i]->event_node->pointer_inside) {
+			wlf_event_node_notify_pointer_leave(buttons[i]->event_node, data);
+		} else if (buttons[i]->hovered) {
+			buttons[i]->hovered = false;
+			update_button_hover(buttons[i]);
+		}
+	}
+	button->hovered = true;
+	update_button_hover(button);
+}
+
+static void handle_button_pointer_leave(struct wlf_listener *listener,
+		void *data) {
+	(void)data;
+	struct wlf_titlebar_button *button =
+		wlf_container_of(listener, button, listeners.pointer_leave);
+	button->hovered = false;
+	update_button_hover(button);
+}
+
+static void handle_button_pointer_button(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_titlebar_button *button =
+		wlf_container_of(listener, button, listeners.pointer_button);
+	const struct wlf_pointer_button_event *event = data;
+	if (event->button != WLF_POINTER_BUTTON_LEFT ||
+			event->state != WLF_POINTER_BUTTON_STATE_RELEASED ||
+			!button->hovered) {
+		return;
+	}
+
+	struct wlf_window *window = button->titlebar->window;
+	switch (button->type) {
+	case WLF_TITLEBAR_BUTTON_MINIMIZE:
+		wlf_window_set_state(window,
+			window->state.state | WLF_WINDOW_MINIMIZED);
+		break;
+	case WLF_TITLEBAR_BUTTON_MAXIMIZE:
+		if (window->state.state & WLF_WINDOW_MAXIMIZED) {
+			wlf_window_set_state(window,
+				window->state.state & ~WLF_WINDOW_MAXIMIZED);
+		} else {
+			wlf_window_set_state(window,
+				(window->state.state & ~WLF_WINDOW_MINIMIZED) |
+				WLF_WINDOW_MAXIMIZED);
+		}
+		break;
+	case WLF_TITLEBAR_BUTTON_CLOSE:
+		wlf_window_close(window);
+		break;
+	}
+}
+
+static bool create_button(struct wlf_titlebar *titlebar,
+		struct wlf_titlebar_button *button,
+		enum wlf_titlebar_button_type type, const char *icon_source) {
+	button->titlebar = titlebar;
+	button->type = type;
+	struct wlf_scene_node *parent = &titlebar->tree->base;
 	button->tree = wlf_scene_tree_create(parent);
 	if (button->tree == NULL) {
 		return false;
@@ -150,7 +250,31 @@ static bool create_button(struct wlf_titlebar_button *button,
 	if (button->icon == NULL) {
 		return false;
 	}
+	button->event_node = wlf_event_node_create(&button->tree->base,
+		0, 0, TITLEBAR_BUTTON_SIZE, TITLEBAR_BUTTON_SIZE);
+	if (button->event_node == NULL) {
+		return false;
+	}
+	button->event_node->base.state.focus_policy = NO_FOCUS;
+	button->listeners.pointer_enter.notify = handle_button_pointer_enter;
+	button->listeners.pointer_leave.notify = handle_button_pointer_leave;
+	button->listeners.pointer_button.notify = handle_button_pointer_button;
+	wlf_signal_add(&button->event_node->events.pointer_enter,
+		&button->listeners.pointer_enter);
+	wlf_signal_add(&button->event_node->events.pointer_leave,
+		&button->listeners.pointer_leave);
+	wlf_signal_add(&button->event_node->events.pointer_button,
+		&button->listeners.pointer_button);
 	return true;
+}
+
+static void remove_button_listeners(struct wlf_titlebar_button *button) {
+	if (button->event_node == NULL) {
+		return;
+	}
+	wlf_linked_list_remove(&button->listeners.pointer_button.link);
+	wlf_linked_list_remove(&button->listeners.pointer_leave.link);
+	wlf_linked_list_remove(&button->listeners.pointer_enter.link);
 }
 
 static bool replace_button_icon(struct wlf_titlebar_button *button,
@@ -163,6 +287,7 @@ static bool replace_button_icon(struct wlf_titlebar_button *button,
 	}
 	wlf_scene_node_destroy(&button->icon->base);
 	button->icon = icon;
+	wlf_scene_node_raise_to_top(&button->event_node->base);
 	return true;
 }
 
@@ -218,6 +343,9 @@ struct wlf_titlebar_button *wlf_titlebar_get_button(
 
 void wlf_titlebar_arrange(struct wlf_titlebar *titlebar) {
 	int width = titlebar->window->state.geometry.width;
+	if (width < 0) {
+		width = 0;
+	}
 	titlebar->background->base.state.width = width;
 	titlebar->background->base.state.height = WLF_TITLEBAR_HEIGHT;
 	wlf_scene_node_update(&titlebar->background->base, NULL);
@@ -226,6 +354,11 @@ void wlf_titlebar_arrange(struct wlf_titlebar *titlebar) {
 	wlf_scene_node_set_position(&titlebar->separator->base,
 		0, WLF_TITLEBAR_HEIGHT - 1);
 	wlf_scene_node_update(&titlebar->separator->base, NULL);
+	pixman_region32_t move_region;
+	pixman_region32_init_rect(&move_region, 0, 0,
+		(uint32_t)width, WLF_TITLEBAR_HEIGHT);
+	wlf_event_node_set_input_region(titlebar->move_event_node, &move_region);
+	pixman_region32_fini(&move_region);
 
 	int controls_x = width - TITLEBAR_HORIZONTAL_PADDING;
 	struct wlf_titlebar_button *buttons[] = {
@@ -283,6 +416,9 @@ void wlf_titlebar_set_active(struct wlf_titlebar *titlebar, bool active) {
 	set_button_icon_opacity(&titlebar->minimize_button, icon_opacity);
 	set_button_icon_opacity(&titlebar->maximize_button, icon_opacity);
 	set_button_icon_opacity(&titlebar->close_button, icon_opacity);
+	update_button_hover(&titlebar->minimize_button);
+	update_button_hover(&titlebar->maximize_button);
+	update_button_hover(&titlebar->close_button);
 	wlf_scene_node_update(&titlebar->background->base, NULL);
 	wlf_scene_node_update(&titlebar->separator->base, NULL);
 }
@@ -306,6 +442,25 @@ void wlf_titlebar_set_button_visible(struct wlf_titlebar *titlebar,
 	struct wlf_titlebar_button *button = wlf_titlebar_get_button(titlebar, type);
 	if (button == NULL || button->visible == visible) {
 		return;
+	}
+	if (!visible) {
+		if (titlebar->window->pointer_event_node == button->event_node) {
+			struct wlf_event_pointer_focus_event event = {
+				.window = titlebar->window,
+				.x = titlebar->window->pointer_x,
+				.y = titlebar->window->pointer_y,
+			};
+			wlf_event_node_notify_pointer_leave(button->event_node, &event);
+			titlebar->window->pointer_event_node = NULL;
+		}
+		button->hovered = false;
+		update_button_hover(button);
+		if (titlebar->window->keyboard_event_node == button->event_node) {
+			titlebar->window->keyboard_event_node = NULL;
+		}
+		if (titlebar->window->touch_event_node == button->event_node) {
+			titlebar->window->touch_event_node = NULL;
+		}
 	}
 	button->visible = visible;
 	wlf_scene_node_set_enabled(&button->tree->base, visible);
@@ -366,6 +521,17 @@ static void handle_theme_changed(struct wlf_listener *listener, void *data) {
 	wlf_titlebar_set_active(titlebar, titlebar->window->state.focused);
 }
 
+static void handle_titlebar_pointer_button(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_titlebar *titlebar =
+		wlf_container_of(listener, titlebar, listeners.pointer_button);
+	const struct wlf_pointer_button_event *event = data;
+	if (event->button == WLF_POINTER_BUTTON_LEFT &&
+			event->state == WLF_POINTER_BUTTON_STATE_PRESSED) {
+		wlf_window_begin_move(titlebar->window, event->pointer, event->serial);
+	}
+}
+
 struct wlf_titlebar *wlf_titlebar_create(struct wlf_scene_node *parent,
 		struct wlf_window *window) {
 	struct wlf_titlebar *titlebar = calloc(1, sizeof(*titlebar));
@@ -398,15 +564,31 @@ struct wlf_titlebar *wlf_titlebar_create(struct wlf_scene_node *parent,
 	titlebar->window_icon = create_svg_icon(&titlebar->content->base,
 		window_icon_source, TITLEBAR_HORIZONTAL_PADDING,
 		(WLF_TITLEBAR_HEIGHT - TITLEBAR_ICON_SIZE) / 2);
+	titlebar->move_event_node = wlf_event_node_create(&titlebar->tree->base,
+		0, 0, window->state.geometry.width, WLF_TITLEBAR_HEIGHT);
+	if (titlebar->move_event_node != NULL) {
+		titlebar->move_event_node->base.state.focus_policy = NO_FOCUS;
+		titlebar->listeners.pointer_button.notify =
+			handle_titlebar_pointer_button;
+		wlf_signal_add(&titlebar->move_event_node->events.pointer_button,
+			&titlebar->listeners.pointer_button);
+	}
 	if (titlebar->background == NULL || titlebar->separator == NULL ||
 			titlebar->window_icon == NULL ||
 			titlebar->title_text == NULL ||
-			!create_button(&titlebar->minimize_button,
-				&titlebar->tree->base, minimize_icon_source) ||
-			!create_button(&titlebar->maximize_button,
-				&titlebar->tree->base, maximize_icon_source) ||
-			!create_button(&titlebar->close_button,
-				&titlebar->tree->base, close_icon_source)) {
+			titlebar->move_event_node == NULL ||
+			!create_button(titlebar, &titlebar->minimize_button,
+				WLF_TITLEBAR_BUTTON_MINIMIZE, minimize_icon_source) ||
+			!create_button(titlebar, &titlebar->maximize_button,
+				WLF_TITLEBAR_BUTTON_MAXIMIZE, maximize_icon_source) ||
+			!create_button(titlebar, &titlebar->close_button,
+				WLF_TITLEBAR_BUTTON_CLOSE, close_icon_source)) {
+		remove_button_listeners(&titlebar->close_button);
+		remove_button_listeners(&titlebar->maximize_button);
+		remove_button_listeners(&titlebar->minimize_button);
+		if (titlebar->move_event_node != NULL) {
+			wlf_linked_list_remove(&titlebar->listeners.pointer_button.link);
+		}
 		wlf_scene_node_destroy(&titlebar->tree->base);
 		free(titlebar);
 		return NULL;
@@ -437,6 +619,10 @@ void wlf_titlebar_destroy(struct wlf_titlebar *titlebar) {
 	if (titlebar->theme_listener_attached) {
 		wlf_linked_list_remove(&titlebar->listeners.theme_changed.link);
 	}
+	remove_button_listeners(&titlebar->close_button);
+	remove_button_listeners(&titlebar->maximize_button);
+	remove_button_listeners(&titlebar->minimize_button);
+	wlf_linked_list_remove(&titlebar->listeners.pointer_button.link);
 	wlf_linked_list_remove(&titlebar->listeners.focus_out.link);
 	wlf_linked_list_remove(&titlebar->listeners.focus_in.link);
 	wlf_linked_list_remove(&titlebar->listeners.resize.link);

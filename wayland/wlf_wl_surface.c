@@ -125,6 +125,20 @@ struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *composito
 	return surface;
 }
 
+void wlf_wl_surface_set_window(struct wlf_wl_surface *surface,
+		struct wlf_window *window) {
+	assert(surface != NULL);
+	surface->window = window;
+}
+
+struct wlf_window *wlf_wl_surface_get_window(struct wl_surface *surface) {
+	if (surface == NULL) {
+		return NULL;
+	}
+	struct wlf_wl_surface *wlf_surface = wl_surface_get_user_data(surface);
+	return wlf_surface != NULL ? wlf_surface->window : NULL;
+}
+
 void wlf_wl_surface_destroy(struct wlf_wl_surface *surface) {
 	if (surface == NULL) {
 		return;

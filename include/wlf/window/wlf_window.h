@@ -31,6 +31,9 @@
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/swapchain/wlf_swapchain.h"
+#include "wlf/types/wlf_pointer.h"
+#include "wlf/types/wlf_keyboard.h"
+#include "wlf/types/wlf_touch.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -40,6 +43,7 @@ struct wlf_window;
 struct wlf_scene;
 struct wlf_scene_tree;
 struct wlf_titlebar;
+struct wlf_event_node;
 
 /**
  * @brief Window states.
@@ -93,6 +97,8 @@ struct wlf_window_impl {
 	void (*set_min_size)(struct wlf_window *window, int width, int height);                  /**< Set the minimum window size */
 	void (*set_max_size)(struct wlf_window *window, int width, int height);                  /**< Set the maximum window size */
 	void (*set_position)(struct wlf_window *window, int x, int y);                          /**< Set the window position */
+	void (*begin_move)(struct wlf_window *window, struct wlf_pointer *pointer,
+		uint32_t serial); /**< Begin compositor/native interactive move. */
 	void (*set_state)(struct wlf_window *window, enum wlf_window_state_flags state);        /**< Set the window state */
 	void (*set_flags)(struct wlf_window *window, uint32_t flags);                            /**< Set window behavior flags */
 	void (*set_input_region)(struct wlf_window *window, const pixman_region32_t *region);    /**< Set the input region */
@@ -143,6 +149,10 @@ struct wlf_window {
 	struct wlf_listener theme_changed;
 	bool theme_listener_attached;
 	bool uses_theme_background;
+	struct wlf_event_node *pointer_event_node;
+	struct wlf_event_node *keyboard_event_node;
+	struct wlf_event_node *touch_event_node;
+	double pointer_x, pointer_y;
 	struct {
 		bool enable_set_position;          /**< Whether set_position is supported */
 		bool enable_set_min_size;          /**< Whether set_min_size is supported */
@@ -160,6 +170,26 @@ struct wlf_window {
 		struct wlf_signal scale;        /**< Emitted after the buffer scale changes */
 		struct wlf_signal show;         /**< Emitted when window is shown */
 		struct wlf_signal hide;         /**< Emitted when window is hidden */
+		struct wlf_signal pointer_enter;
+		struct wlf_signal pointer_leave;
+		struct wlf_signal pointer_motion;
+		struct wlf_signal pointer_button;
+		struct wlf_signal pointer_axis;
+		struct wlf_signal pointer_frame;
+		struct wlf_signal keyboard_enter;
+		struct wlf_signal keyboard_leave;
+		struct wlf_signal keyboard_keymap;
+		struct wlf_signal keyboard_key;
+		struct wlf_signal keyboard_modifiers;
+		struct wlf_signal keyboard_repeat_info;
+		struct wlf_signal tablet;
+		struct wlf_signal touch_down;
+		struct wlf_signal touch_up;
+		struct wlf_signal touch_motion;
+		struct wlf_signal touch_cancel;
+		struct wlf_signal touch_frame;
+		struct wlf_signal touch_shape;
+		struct wlf_signal touch_orientation;
 	} events;
 };
 
@@ -248,6 +278,10 @@ void wlf_window_set_max_size(struct wlf_window *window, int width, int height);
  */
 void wlf_window_set_position(struct wlf_window *window, int x, int y);
 
+/** Starts a native interactive move from a pointer press serial. */
+void wlf_window_begin_move(struct wlf_window *window,
+	struct wlf_pointer *pointer, uint32_t serial);
+
 /** Changes the logical-to-buffer pixel scale and schedules a full repaint. */
 void wlf_window_set_scale(struct wlf_window *window, double scale);
 
@@ -310,5 +344,48 @@ void wlf_window_init_renderer(struct wlf_window *window, struct wlf_renderer *re
 
 /** Requests the backend to deliver a frame/expose event. */
 void wlf_window_schedule_frame(struct wlf_window *window);
+
+void wlf_window_pointer_enter(struct wlf_window *window,
+	const struct wlf_pointer_enter_event *event);
+void wlf_window_pointer_leave(struct wlf_window *window,
+	const struct wlf_pointer_leave_event *event);
+void wlf_window_pointer_motion(struct wlf_window *window,
+	const struct wlf_pointer_motion_absolute_event *event);
+void wlf_window_pointer_button(struct wlf_window *window,
+	const struct wlf_pointer_button_event *event);
+void wlf_window_pointer_axis(struct wlf_window *window,
+	const struct wlf_pointer_axis_event *event);
+void wlf_window_pointer_frame(struct wlf_window *window, void *event);
+
+void wlf_window_keyboard_enter(struct wlf_window *window,
+	const struct wlf_keyboard_enter_event *event);
+void wlf_window_keyboard_leave(struct wlf_window *window,
+	const struct wlf_keyboard_leave_event *event);
+void wlf_window_keyboard_keymap(struct wlf_window *window,
+	const struct wlf_keyboard_keymap_event *event);
+void wlf_window_keyboard_key(struct wlf_window *window,
+	const struct wlf_keyboard_key_event *event);
+void wlf_window_keyboard_modifiers(struct wlf_window *window,
+	const struct wlf_keyboard_modifiers_event *event);
+void wlf_window_keyboard_repeat_info(struct wlf_window *window,
+	const struct wlf_keyboard_repeat_info_event *event);
+
+void wlf_window_touch_down(struct wlf_window *window,
+	const struct wlf_touch_down_event *event);
+void wlf_window_touch_up(struct wlf_window *window,
+	const struct wlf_touch_up_event *event);
+void wlf_window_touch_motion(struct wlf_window *window,
+	const struct wlf_touch_motion_event *event);
+void wlf_window_touch_cancel(struct wlf_window *window,
+	const struct wlf_touch_cancel_event *event);
+void wlf_window_touch_frame(struct wlf_window *window, void *event);
+void wlf_window_touch_shape(struct wlf_window *window,
+	const struct wlf_touch_shape_event *event);
+void wlf_window_touch_orientation(struct wlf_window *window,
+	const struct wlf_touch_orientation_event *event);
+
+/** Forwards a protocol-specific tablet event to the current event node. */
+void wlf_window_tablet_event(struct wlf_window *window, void *event,
+	double x, double y);
 
 #endif // WINDOW_WLF_WINDOW_H
