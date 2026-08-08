@@ -81,4 +81,8 @@ void wlf_event_node_notify_pointer_leave(struct wlf_event_node *node,
 bool wlf_scene_node_is_event(const struct wlf_scene_node *node);
 struct wlf_event_node *wlf_event_node_from_node(struct wlf_scene_node *node);
 
+/** Returns the topmost event node containing a scene-global point. */
+struct wlf_event_node *wlf_event_node_at(struct wlf_scene_node *root,
+	double x, double y);
+
 #endif // SCENE_WLF_EVENT_NODE_H

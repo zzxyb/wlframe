@@ -309,6 +309,13 @@ static void xdg_dialog_window_schedule_frame(struct wlf_window *base) {
 	}
 }
 
+static void xdg_dialog_window_arm_frame(struct wlf_window *base) {
+	struct wlf_xdg_dialog_window *window = dialog_from_window(base);
+	if (window != NULL) {
+		wlf_wl_surface_arm_frame(window->surface, base);
+	}
+}
+
 static const struct wlf_window_impl xdg_dialog_window_impl = {
 	.destroy = xdg_dialog_window_destroy,
 	.close = xdg_dialog_window_close,
@@ -330,6 +337,7 @@ static const struct wlf_window_impl xdg_dialog_window_impl = {
 	.set_mask = NULL,
 	.set_background_color = NULL,
 	.native_handle = xdg_dialog_window_native_handle,
+	.arm_frame = xdg_dialog_window_arm_frame,
 	.schedule_frame = xdg_dialog_window_schedule_frame,
 };
 

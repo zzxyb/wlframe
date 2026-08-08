@@ -152,6 +152,13 @@ static void layer_window_schedule_frame(struct wlf_window *base) {
 	}
 }
 
+static void layer_window_arm_frame(struct wlf_window *base) {
+	struct wlf_wlr_layer_window *window = layer_from_window(base);
+	if (window != NULL) {
+		wlf_wl_surface_arm_frame(window->surface, base);
+	}
+}
+
 static const struct wlf_window_impl layer_window_impl = {
 	.destroy = layer_window_destroy,
 	.close = layer_window_close,
@@ -162,6 +169,7 @@ static const struct wlf_window_impl layer_window_impl = {
 	.set_input_region = layer_window_set_input_region,
 	.set_opaque_region = layer_window_set_opaque_region,
 	.native_handle = layer_window_native_handle,
+	.arm_frame = layer_window_arm_frame,
 	.schedule_frame = layer_window_schedule_frame,
 };
 

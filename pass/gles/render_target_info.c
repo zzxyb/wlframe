@@ -41,6 +41,15 @@ struct wlf_gles_render_target_info *wlf_gles_begin_egl_render_pass(
 		free(target);
 		return NULL;
 	}
+	if (!swapchain->swap_interval_configured) {
+		if (!eglSwapInterval(renderer->egl->display, 0)) {
+			wlf_log(WLF_ERROR, "failed to disable EGL swap throttling: %s",
+				wlf_egl_error_str(eglGetError()));
+			free(target);
+			return NULL;
+		}
+		swapchain->swap_interval_configured = true;
+	}
 
 	wlf_render_target_info_init(&target->base, &render_target_info_impl);
 	target->base.logical_width = swapchain->base.width;

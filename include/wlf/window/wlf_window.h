@@ -30,7 +30,6 @@
 #include "wlf/allocator/wlf_allocator.h"
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/platform/wlf_backend.h"
-#include "wlf/swapchain/wlf_swapchain.h"
 #include "wlf/types/wlf_pointer.h"
 #include "wlf/types/wlf_keyboard.h"
 #include "wlf/types/wlf_touch.h"
@@ -43,7 +42,9 @@ struct wlf_window;
 struct wlf_scene;
 struct wlf_scene_tree;
 struct wlf_titlebar;
+struct wlf_swapchain;
 struct wlf_event_node;
+struct wlf_window_touch_point;
 
 /**
  * @brief Window states.
@@ -83,7 +84,11 @@ enum wlf_window_flags {
 	WLF_WINDOW_FLAG_MODAL        = 1 << 4, /**< Window is modal */
 };
 
-/** Edge/corner used for native interactive resize requests. */
+/**
+ * @brief Edge or corner used for native interactive resize requests.
+ *
+ * Values may be combined to identify a corner, for example top-left.
+ */
 enum wlf_window_resize_edge {
 	WLF_WINDOW_RESIZE_EDGE_NONE = 0,
 	WLF_WINDOW_RESIZE_EDGE_TOP = 1,
@@ -122,6 +127,7 @@ struct wlf_window_impl {
 	void (*set_mask)(struct wlf_window *window, const pixman_region32_t *mask);              /**< Set the shape mask */
 	void (*set_background_color)(struct wlf_window *window, const struct wlf_color *color);  /**< Set the background color */
 	void *(*native_handle)(struct wlf_window *window);
+	void (*arm_frame)(struct wlf_window *window);                                             /**< Request a frame callback without committing */
 	void (*schedule_frame)(struct wlf_window *window);                                        /**< Schedule a window frame */
 };
 
@@ -146,8 +152,7 @@ struct wlf_window_state {
 
 	bool visible;                       /**< Whether window is currently visible */
 	bool focused;                       /**< Whether window has focus */
-	/** Whether this window is currently using server-side decorations. */
-	bool server_side_decorated;
+	bool server_side_decorated; /**< Whether this window is currently using server-side decorations. */
 };
 
 /**
@@ -160,14 +165,14 @@ struct wlf_window {
 	void *data;                    /**< User data pointer */
 
 	struct wlf_window_state state;
-	/** Internal system-theme subscription and background override state. */
-	struct wlf_listener theme_changed;
-	bool theme_listener_attached;
-	bool uses_theme_background;
-	struct wlf_event_node *pointer_event_node;
-	struct wlf_event_node *keyboard_event_node;
-	struct wlf_event_node *touch_event_node;
-	double pointer_x, pointer_y;
+	struct wlf_listener theme_changed; /**< Internal system-theme subscription. */
+	bool theme_listener_attached; /**< Whether the theme listener is registered. */
+	bool uses_theme_background; /**< Whether the background follows the theme. */
+	struct wlf_event_node *pointer_event_node; /**< Event node under the pointer. */
+	struct wlf_event_node *pointer_grab_event_node; /**< Node captured by the current button press. */
+	struct wlf_event_node *keyboard_event_node; /**< Event node receiving keyboard focus. */
+	struct wlf_window_touch_point *touch_points; /**< Active touch-point state. */
+	double pointer_x, pointer_y; /**< Latest pointer coordinates in window space. */
 	struct {
 		bool enable_set_position;          /**< Whether set_position is supported */
 		bool enable_set_min_size;          /**< Whether set_min_size is supported */
@@ -213,6 +218,7 @@ struct wlf_window {
  * @param window Pointer to the window object to initialize.
  * @param type Window type.
  * @param impl Platform-specific window implementation callbacks.
+ * @param backend Backend that owns the window.
  * @param width Initial window width.
  * @param height Initial window height.
  */
@@ -251,7 +257,11 @@ void wlf_window_hide(struct wlf_window *window);
  */
 void wlf_window_set_title(struct wlf_window *window, const char *title);
 
-/** Returns this window's active client-side titlebar, if any. */
+/**
+ * @brief Returns this window's active client-side titlebar, if any.
+ * @param window Window to inspect.
+ * @return Active titlebar, or NULL when client-side decoration is disabled.
+ */
 struct wlf_titlebar *wlf_window_get_titlebar(struct wlf_window *window);
 
 /**
@@ -293,19 +303,39 @@ void wlf_window_set_max_size(struct wlf_window *window, int width, int height);
  */
 void wlf_window_set_position(struct wlf_window *window, int x, int y);
 
-/** Starts a native interactive move from a pointer press serial. */
+/**
+ * @brief Starts a native interactive move from a pointer press serial.
+ * @param window Window to move.
+ * @param pointer Pointer that generated the press.
+ * @param serial Serial associated with the press.
+ */
 void wlf_window_begin_move(struct wlf_window *window,
 	struct wlf_pointer *pointer, uint32_t serial);
 
-/** Starts a native interactive resize from a pointer press serial. */
+/**
+ * @brief Starts a native interactive resize from a pointer press serial.
+ * @param window Window to resize.
+ * @param pointer Pointer that generated the press.
+ * @param serial Serial associated with the press.
+ * @param edge Edge or corner being dragged.
+ */
 void wlf_window_begin_resize(struct wlf_window *window,
 	struct wlf_pointer *pointer, uint32_t serial,
 	enum wlf_window_resize_edge edge);
 
-/** Changes the logical-to-buffer pixel scale and schedules a full repaint. */
+/**
+ * @brief Changes the logical-to-buffer pixel scale and schedules a full repaint.
+ * @param window Window whose scale is changed.
+ * @param scale New positive scale factor.
+ */
 void wlf_window_set_scale(struct wlf_window *window, double scale);
 
-/** Returns a logical size converted to a covering buffer-pixel size. */
+/**
+ * @brief Converts a logical size to a covering buffer-pixel size.
+ * @param window Window supplying the scale factor.
+ * @param logical_length Logical length to convert.
+ * @return Corresponding buffer-pixel length rounded up.
+ */
 uint32_t wlf_window_scale_length(const struct wlf_window *window,
 	uint32_t logical_length);
 
@@ -358,53 +388,197 @@ void wlf_window_set_mask(struct wlf_window *window, const pixman_region32_t *mas
  */
 void wlf_window_set_background_color(struct wlf_window *window, const struct wlf_color *color);
 
+/**
+ * @brief Returns the platform-native handle for a window.
+ * @param window Window whose handle is requested.
+ * @return Native handle, or NULL when the backend does not expose one.
+ */
 void *wlf_window_native_handle(struct wlf_window *window);
 
+/**
+ * @brief Associates a renderer with a window.
+ * @param window Window receiving the renderer.
+ * @param renderer Renderer used for subsequent scene commits.
+ */
 void wlf_window_init_renderer(struct wlf_window *window, struct wlf_renderer *renderer);
 
-/** Requests the backend to deliver a frame/expose event. */
+/**
+ * @brief Requests the backend to deliver a frame/expose event.
+ * @param window Window for which a frame is requested.
+ */
 void wlf_window_schedule_frame(struct wlf_window *window);
 
+/**
+ * @brief Arms a frame/expose event for the next surface commit.
+ * @param window Window for which a frame is armed.
+ */
+void wlf_window_arm_frame(struct wlf_window *window);
+
+/**
+ * @brief Forwards a pointer-enter event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Pointer-enter event payload.
+ */
 void wlf_window_pointer_enter(struct wlf_window *window,
 	const struct wlf_pointer_enter_event *event);
+
+/**
+ * @brief Forwards a pointer-leave event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Pointer-leave event payload.
+ */
 void wlf_window_pointer_leave(struct wlf_window *window,
 	const struct wlf_pointer_leave_event *event);
+
+/**
+ * @brief Forwards pointer motion to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Pointer-motion event payload.
+ */
 void wlf_window_pointer_motion(struct wlf_window *window,
 	const struct wlf_pointer_motion_absolute_event *event);
+
+/**
+ * @brief Forwards a pointer-button event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Pointer-button event payload.
+ */
 void wlf_window_pointer_button(struct wlf_window *window,
 	const struct wlf_pointer_button_event *event);
+
+/**
+ * @brief Forwards a pointer-axis event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Pointer-axis event payload.
+ */
 void wlf_window_pointer_axis(struct wlf_window *window,
 	const struct wlf_pointer_axis_event *event);
+
+/**
+ * @brief Forwards the end of a pointer event frame.
+ * @param window Window receiving the event.
+ * @param event Backend-specific frame payload, when available.
+ */
 void wlf_window_pointer_frame(struct wlf_window *window, void *event);
 
+/**
+ * @brief Forwards a keyboard-enter event to the focused event node.
+ * @param window Window receiving the event.
+ * @param event Keyboard-enter event payload.
+ */
 void wlf_window_keyboard_enter(struct wlf_window *window,
 	const struct wlf_keyboard_enter_event *event);
+
+/**
+ * @brief Forwards a keyboard-leave event to the focused event node.
+ * @param window Window receiving the event.
+ * @param event Keyboard-leave event payload.
+ */
 void wlf_window_keyboard_leave(struct wlf_window *window,
 	const struct wlf_keyboard_leave_event *event);
+
+/**
+ * @brief Forwards a keyboard keymap event to the focused event node.
+ * @param window Window receiving the event.
+ * @param event Keyboard-keymap event payload.
+ */
 void wlf_window_keyboard_keymap(struct wlf_window *window,
 	const struct wlf_keyboard_keymap_event *event);
+
+/**
+ * @brief Forwards a keyboard-key event to the focused event node.
+ * @param window Window receiving the event.
+ * @param event Keyboard-key event payload.
+ */
 void wlf_window_keyboard_key(struct wlf_window *window,
 	const struct wlf_keyboard_key_event *event);
+
+/**
+ * @brief Forwards keyboard modifier state to the focused event node.
+ * @param window Window receiving the event.
+ * @param event Keyboard-modifier event payload.
+ */
 void wlf_window_keyboard_modifiers(struct wlf_window *window,
 	const struct wlf_keyboard_modifiers_event *event);
+
+/**
+ * @brief Forwards keyboard repeat information to the focused event node.
+ * @param window Window receiving the event.
+ * @param event Keyboard-repeat event payload.
+ */
 void wlf_window_keyboard_repeat_info(struct wlf_window *window,
 	const struct wlf_keyboard_repeat_info_event *event);
 
+/**
+ * @brief Forwards a touch-down event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Touch-down event payload.
+ */
 void wlf_window_touch_down(struct wlf_window *window,
 	const struct wlf_touch_down_event *event);
+
+/**
+ * @brief Forwards a touch-up event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Touch-up event payload.
+ */
 void wlf_window_touch_up(struct wlf_window *window,
 	const struct wlf_touch_up_event *event);
+
+/**
+ * @brief Forwards touch motion to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Touch-motion event payload.
+ */
 void wlf_window_touch_motion(struct wlf_window *window,
 	const struct wlf_touch_motion_event *event);
+
+/**
+ * @brief Forwards a touch-cancel event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Touch-cancel event payload.
+ */
 void wlf_window_touch_cancel(struct wlf_window *window,
 	const struct wlf_touch_cancel_event *event);
+
+/**
+ * @brief Forwards the end of a touch event frame.
+ * @param window Window receiving the event.
+ * @param event Backend-specific frame payload, when available.
+ */
 void wlf_window_touch_frame(struct wlf_window *window, void *event);
+
+/**
+ * @brief Forwards a touch-shape event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Touch-shape event payload.
+ */
 void wlf_window_touch_shape(struct wlf_window *window,
 	const struct wlf_touch_shape_event *event);
+
+/**
+ * @brief Forwards a touch-orientation event to the window event tree.
+ * @param window Window receiving the event.
+ * @param event Touch-orientation event payload.
+ */
 void wlf_window_touch_orientation(struct wlf_window *window,
 	const struct wlf_touch_orientation_event *event);
 
-/** Forwards a protocol-specific tablet event to the current event node. */
+/**
+ * @brief Drops active touch-point references to an event node being disabled or destroyed.
+ * @param window Window whose touch-point state is updated.
+ * @param node Event node no longer available for touch delivery.
+ */
+void wlf_window_forget_touch_event_node(struct wlf_window *window,
+	struct wlf_event_node *node);
+
+/**
+ * @brief Forwards a protocol-specific tablet event to the current event node.
+ * @param window Window receiving the event.
+ * @param event Backend-specific tablet event payload.
+ * @param x Tablet x coordinate in window space.
+ * @param y Tablet y coordinate in window space.
+ */
 void wlf_window_tablet_event(struct wlf_window *window, void *event,
 	double x, double y);
 

@@ -142,6 +142,18 @@ static struct wlf_svg_node *create_svg_icon(struct wlf_scene_node *parent,
 	return icon;
 }
 
+static void enforce_button_layer_order(struct wlf_titlebar_button *button) {
+	if (button->background == NULL || button->icon == NULL ||
+			button->event_node == NULL) {
+		return;
+	}
+	/* Render bottom-to-top as background -> icon. The event node remains the
+	 * topmost hit target but never contributes pixels. */
+	wlf_scene_node_lower_to_bottom(&button->background->base);
+	wlf_scene_node_raise_to_top(&button->icon->base);
+	wlf_scene_node_raise_to_top(&button->event_node->base);
+}
+
 static void update_button_hover(struct wlf_titlebar_button *button) {
 	struct wlf_color color = {0};
 	if (button->hovered) {
@@ -155,30 +167,15 @@ static void update_button_hover(struct wlf_titlebar_button *button) {
 				button_hover_dark : button_hover_light;
 		}
 	}
-	button->background->color = color;
-	wlf_scene_node_update(&button->background->base, NULL);
+	enforce_button_layer_order(button);
+	wlf_rect_node_set_color(button->background, &color);
 }
 
 static void handle_button_pointer_enter(struct wlf_listener *listener,
 		void *data) {
+	(void)data;
 	struct wlf_titlebar_button *button =
 		wlf_container_of(listener, button, listeners.pointer_enter);
-	struct wlf_titlebar_button *buttons[] = {
-		&button->titlebar->minimize_button,
-		&button->titlebar->maximize_button,
-		&button->titlebar->close_button,
-	};
-	for (size_t i = 0; i < sizeof(buttons) / sizeof(buttons[0]); ++i) {
-		if (buttons[i] == button) {
-			continue;
-		}
-		if (buttons[i]->event_node->pointer_inside) {
-			wlf_event_node_notify_pointer_leave(buttons[i]->event_node, data);
-		} else if (buttons[i]->hovered) {
-			buttons[i]->hovered = false;
-			update_button_hover(buttons[i]);
-		}
-	}
 	button->hovered = true;
 	update_button_hover(button);
 }
@@ -192,16 +189,9 @@ static void handle_button_pointer_leave(struct wlf_listener *listener,
 	update_button_hover(button);
 }
 
-static void handle_button_pointer_button(struct wlf_listener *listener,
-		void *data) {
-	struct wlf_titlebar_button *button =
-		wlf_container_of(listener, button, listeners.pointer_button);
-	const struct wlf_pointer_button_event *event = data;
-	if (event->button != WLF_POINTER_BUTTON_LEFT ||
-			event->state != WLF_POINTER_BUTTON_STATE_RELEASED ||
-			!button->hovered) {
-		return;
-	}
+static void activate_button(struct wlf_titlebar_button *button) {
+	button->hovered = false;
+	update_button_hover(button);
 
 	struct wlf_window *window = button->titlebar->window;
 	switch (button->type) {
@@ -223,6 +213,61 @@ static void handle_button_pointer_button(struct wlf_listener *listener,
 		wlf_window_close(window);
 		break;
 	}
+}
+
+static void handle_button_pointer_button(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_titlebar_button *button =
+		wlf_container_of(listener, button, listeners.pointer_button);
+	const struct wlf_pointer_button_event *event = data;
+	if (event->button != WLF_POINTER_BUTTON_LEFT) {
+		return;
+	}
+	if (event->state == WLF_POINTER_BUTTON_STATE_PRESSED) {
+		button->pressed = button->hovered;
+		return;
+	}
+	bool activate = button->pressed && button->hovered;
+	button->pressed = false;
+	if (!activate) {
+		return;
+	}
+	activate_button(button);
+}
+
+static void handle_button_touch_down(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_titlebar_button *button =
+		wlf_container_of(listener, button, listeners.touch_down);
+	const struct wlf_touch_down_event *event = data;
+	if (button->touch_pressed) {
+		return;
+	}
+	button->touch_pressed = true;
+	button->touch_id = event->touch_id;
+	button->hovered = true;
+	update_button_hover(button);
+}
+
+static void handle_button_touch_up(struct wlf_listener *listener, void *data) {
+	struct wlf_titlebar_button *button =
+		wlf_container_of(listener, button, listeners.touch_up);
+	const struct wlf_touch_up_event *event = data;
+	if (!button->touch_pressed || button->touch_id != event->touch_id) {
+		return;
+	}
+	button->touch_pressed = false;
+	activate_button(button);
+}
+
+static void handle_button_touch_cancel(struct wlf_listener *listener,
+		void *data) {
+	(void)data;
+	struct wlf_titlebar_button *button =
+		wlf_container_of(listener, button, listeners.touch_cancel);
+	button->touch_pressed = false;
+	button->hovered = false;
+	update_button_hover(button);
 }
 
 static bool create_button(struct wlf_titlebar *titlebar,
@@ -260,12 +305,22 @@ static bool create_button(struct wlf_titlebar *titlebar,
 	button->listeners.pointer_enter.notify = handle_button_pointer_enter;
 	button->listeners.pointer_leave.notify = handle_button_pointer_leave;
 	button->listeners.pointer_button.notify = handle_button_pointer_button;
+	button->listeners.touch_down.notify = handle_button_touch_down;
+	button->listeners.touch_up.notify = handle_button_touch_up;
+	button->listeners.touch_cancel.notify = handle_button_touch_cancel;
 	wlf_signal_add(&button->event_node->events.pointer_enter,
 		&button->listeners.pointer_enter);
 	wlf_signal_add(&button->event_node->events.pointer_leave,
 		&button->listeners.pointer_leave);
 	wlf_signal_add(&button->event_node->events.pointer_button,
 		&button->listeners.pointer_button);
+	wlf_signal_add(&button->event_node->events.touch_down,
+		&button->listeners.touch_down);
+	wlf_signal_add(&button->event_node->events.touch_up,
+		&button->listeners.touch_up);
+	wlf_signal_add(&button->event_node->events.touch_cancel,
+		&button->listeners.touch_cancel);
+	enforce_button_layer_order(button);
 	return true;
 }
 
@@ -273,6 +328,9 @@ static void remove_button_listeners(struct wlf_titlebar_button *button) {
 	if (button->event_node == NULL) {
 		return;
 	}
+	wlf_linked_list_remove(&button->listeners.touch_cancel.link);
+	wlf_linked_list_remove(&button->listeners.touch_up.link);
+	wlf_linked_list_remove(&button->listeners.touch_down.link);
 	wlf_linked_list_remove(&button->listeners.pointer_button.link);
 	wlf_linked_list_remove(&button->listeners.pointer_leave.link);
 	wlf_linked_list_remove(&button->listeners.pointer_enter.link);
@@ -365,7 +423,7 @@ static bool replace_button_icon(struct wlf_titlebar_button *button,
 	}
 	wlf_scene_node_destroy(&button->icon->base);
 	button->icon = icon;
-	wlf_scene_node_raise_to_top(&button->event_node->base);
+	enforce_button_layer_order(button);
 	return true;
 }
 
@@ -527,9 +585,9 @@ void wlf_titlebar_set_active(struct wlf_titlebar *titlebar, bool active) {
 			WLF_THEME_COLOR_TITLEBAR_TEXT_INACTIVE];
 		separator = &theme->palette[WLF_THEME_COLOR_TITLEBAR_SEPARATOR];
 	}
-	titlebar->background->color = *background;
+	wlf_rect_node_set_color(titlebar->background, background);
 	wlf_text_node_set_color(titlebar->title_text, text);
-	titlebar->separator->color = *separator;
+	wlf_rect_node_set_color(titlebar->separator, separator);
 	float icon_opacity = active ? 0.88f : 0.62f;
 	set_button_icon_opacity(&titlebar->minimize_button, icon_opacity);
 	set_button_icon_opacity(&titlebar->maximize_button, icon_opacity);
@@ -537,8 +595,6 @@ void wlf_titlebar_set_active(struct wlf_titlebar *titlebar, bool active) {
 	update_button_hover(&titlebar->minimize_button);
 	update_button_hover(&titlebar->maximize_button);
 	update_button_hover(&titlebar->close_button);
-	wlf_scene_node_update(&titlebar->background->base, NULL);
-	wlf_scene_node_update(&titlebar->separator->base, NULL);
 }
 
 bool wlf_titlebar_set_icon(struct wlf_titlebar *titlebar,
@@ -572,13 +628,13 @@ void wlf_titlebar_set_button_visible(struct wlf_titlebar *titlebar,
 			titlebar->window->pointer_event_node = NULL;
 		}
 		button->hovered = false;
+		button->touch_pressed = false;
 		update_button_hover(button);
 		if (titlebar->window->keyboard_event_node == button->event_node) {
 			titlebar->window->keyboard_event_node = NULL;
 		}
-		if (titlebar->window->touch_event_node == button->event_node) {
-			titlebar->window->touch_event_node = NULL;
-		}
+		wlf_window_forget_touch_event_node(
+			titlebar->window, button->event_node);
 	}
 	button->visible = visible;
 	wlf_scene_node_set_enabled(&button->tree->base, visible);
@@ -688,8 +744,6 @@ struct wlf_titlebar *wlf_titlebar_create(struct wlf_scene_node *parent,
 		0, 0, window->state.geometry.width, WLF_TITLEBAR_HEIGHT);
 	if (titlebar->move_event_node != NULL) {
 		titlebar->move_event_node->base.state.focus_policy = NO_FOCUS;
-		wlf_event_node_set_cursor_shape(titlebar->move_event_node,
-			WLF_CURSOR_SHAPE_GRAB);
 		titlebar->listeners.pointer_button.notify =
 			handle_titlebar_pointer_button;
 		wlf_signal_add(&titlebar->move_event_node->events.pointer_button,
@@ -717,6 +771,11 @@ struct wlf_titlebar *wlf_titlebar_create(struct wlf_scene_node *parent,
 		free(titlebar);
 		return NULL;
 	}
+	/* Resize handles overlap the outermost pixels of the titlebar. Controls
+	 * remain above them so their complete visible 24x24 area is clickable. */
+	wlf_scene_node_raise_to_top(&titlebar->minimize_button.tree->base);
+	wlf_scene_node_raise_to_top(&titlebar->maximize_button.tree->base);
+	wlf_scene_node_raise_to_top(&titlebar->close_button.tree->base);
 
 	titlebar->listeners.resize.notify = handle_resize;
 	titlebar->listeners.focus_in.notify = handle_focus_in;

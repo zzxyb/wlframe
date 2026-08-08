@@ -72,7 +72,7 @@ int main(void) {
 	 * in scene stacking order. */
 	struct wlf_color occluder_color = wlf_color_from_rgb8(40, 190, 105);
 	struct wlf_rect_node *occluder = wlf_rect_node_create(&scene->tree->base,
-		240, 90, 160, 180, &occluder_color);
+		240, 90, 360, 180, &occluder_color);
 	if (rect == NULL || occluder == NULL) {
 		wlf_window_destroy(window);
 		wlf_renderer_destroy(renderer);

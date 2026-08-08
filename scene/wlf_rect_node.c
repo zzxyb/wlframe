@@ -137,6 +137,24 @@ struct wlf_rect_node *wlf_rect_node_create(struct wlf_scene_node *parent,
 	return rect;
 }
 
+void wlf_rect_node_set_color(struct wlf_rect_node *rect,
+		const struct wlf_color *color) {
+	if (rect == NULL || color == NULL ||
+			wlf_color_equal(&rect->color, color)) {
+		return;
+	}
+	pixman_region32_t damage;
+	pixman_region32_init(&damage);
+	int x = 0, y = 0;
+	if (wlf_scene_node_coords(&rect->base, &x, &y)) {
+		pixman_region32_union_rect(&damage, &damage, x, y,
+			rect->base.state.width, rect->base.state.height);
+	}
+	rect->color = *color;
+	wlf_scene_node_update(&rect->base, &damage);
+	pixman_region32_fini(&damage);
+}
+
 bool wlf_scene_node_is_rect(const struct wlf_scene_node *node) {
 	return node != NULL && node->impl == &rect_node_impl;
 }

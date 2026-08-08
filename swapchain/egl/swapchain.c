@@ -56,6 +56,9 @@ static void swapchain_present(struct wlf_swapchain *swapchain,
 		wlf_gles_renderer_from_renderer(swapchain->window->state.renderer);
 	struct wlf_egl *egl = gles_renderer->egl;
 
+	/* Submit wlframe's pacing callback with Mesa's buffer commit. */
+	wlf_window_arm_frame(swapchain->window);
+
 	EGLBoolean ret;
 	if (damage != NULL && (gles_renderer->egl->exts.EXT_swap_buffers_with_damage ||
 				gles_renderer->egl->exts.KHR_swap_buffers_with_damage)) {
@@ -66,7 +69,9 @@ static void swapchain_present(struct wlf_swapchain *swapchain,
 		for (int i = 0; i < nrects; ++i) {
 			const pixman_box32_t *r = &rects[i];
 			egl_damage[4*i] = r->x1;
-			egl_damage[4*i + 1] = r->y1;
+			/* wlframe/pixman regions use a top-left origin, while EGL
+			 * swap-damage rectangles use a bottom-left origin. */
+			egl_damage[4*i + 1] = swapchain->height - r->y2;
 			egl_damage[4*i + 2] = r->x2 - r->x1;
 			egl_damage[4*i + 3] = r->y2 - r->y1;
 		}
@@ -136,7 +141,6 @@ struct wlf_swapchain *wlf_egl_swapchain_create(struct wlf_window *window,
 
 	struct wlf_gles_renderer *gles_renderer =
 		wlf_gles_renderer_from_renderer(window->state.renderer);
-	eglSwapInterval(gles_renderer->egl->display, 0);
 
 #if WLF_HAS_LINUX_PLATFORM
 	if (wlf_backend_is_wayland(window->state.backend)) {
