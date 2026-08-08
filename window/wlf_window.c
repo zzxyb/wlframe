@@ -1,6 +1,7 @@
 #include "wlf/window/wlf_window.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/window/wlf_titlebar.h"
+#include "wlf/platform/wlf_theme.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
 
@@ -18,10 +19,30 @@ static uint32_t get_render_format(bool has_alpha) {
 	return WLF_FORMAT_XRGB8888;
 }
 
+static void handle_theme_changed(struct wlf_listener *listener, void *data) {
+	struct wlf_window *window =
+		wlf_container_of(listener, window, theme_changed);
+	struct wlf_theme *theme = data;
+	if (!window->uses_theme_background) {
+		return;
+	}
+	window->state.background_color =
+		theme->palette[WLF_THEME_COLOR_WINDOW_BACKGROUND];
+	if (window->impl->set_background_color != NULL) {
+		window->impl->set_background_color(window,
+			&window->state.background_color);
+	}
+	if (window->scene != NULL) {
+		wlf_scene_damage_whole(window->scene);
+	}
+}
+
 void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 		const struct wlf_window_impl *impl, struct wlf_backend *backend,
 		uint32_t width, uint32_t height) {
 	assert(impl->destroy);
+	assert(backend != NULL);
+	(void)wlf_backend_init_theme(backend);
 
 	*window = (struct wlf_window){
 		.impl = impl,
@@ -44,6 +65,15 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 	};
 
 	wlf_render_format_init(&window->state.format, get_render_format(false));
+	window->uses_theme_background = true;
+	if (backend->theme != NULL) {
+		window->state.background_color = backend->theme->palette[
+			WLF_THEME_COLOR_WINDOW_BACKGROUND];
+		window->theme_changed.notify = handle_theme_changed;
+		wlf_signal_add(&backend->theme->events.theme_changed,
+			&window->theme_changed);
+		window->theme_listener_attached = true;
+	}
 
 	wlf_signal_init(&window->events.destroy);
 	wlf_signal_init(&window->events.expose);
@@ -63,6 +93,10 @@ void wlf_window_destroy(struct wlf_window *window) {
 	}
 
 	wlf_signal_emit_mutable(&window->events.destroy, window);
+	if (window->theme_listener_attached) {
+		wlf_linked_list_remove(&window->theme_changed.link);
+		window->theme_listener_attached = false;
+	}
 	if (window->scene != NULL) {
 		wlf_scene_destroy(window->scene);
 	}
@@ -120,6 +154,11 @@ void wlf_window_set_title(struct wlf_window *window, const char *title) {
 	if (window->scene != NULL && window->scene->titlebar != NULL) {
 		wlf_titlebar_set_title(window->scene->titlebar, new_title);
 	}
+}
+
+struct wlf_titlebar *wlf_window_get_titlebar(struct wlf_window *window) {
+	return window != NULL && window->scene != NULL ?
+		window->scene->titlebar : NULL;
 }
 
 void wlf_window_set_geometry(struct wlf_window *window,
@@ -256,6 +295,7 @@ void wlf_window_set_mask(struct wlf_window *window,
 
 void wlf_window_set_background_color(struct wlf_window *window,
 		const struct wlf_color *color) {
+	window->uses_theme_background = false;
 	window->state.background_color = *color;
 
 	if (window->impl->set_background_color) {

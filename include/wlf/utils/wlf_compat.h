@@ -1,3 +1,16 @@
+/**
+ * @file        wlf_compat.h
+ * @brief       Cross-platform compatibility helpers for wlframe.
+ * @details     This file provides small portability definitions and standard
+ *              library compatibility helpers used by platform-specific code.
+ * @author      YaoBing Xiao
+ * @date        2026-08-09
+ * @version     v1.0
+ * @par Copyright(c):
+ * @par History:
+ *      version: v1.0, YaoBing Xiao, 2026-08-09, initial version\n
+ */
+
 #ifndef UTILS_WLF_COMPAT_H
 #define UTILS_WLF_COMPAT_H
 

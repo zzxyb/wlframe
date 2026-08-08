@@ -39,6 +39,7 @@
 struct wlf_window;
 struct wlf_scene;
 struct wlf_scene_tree;
+struct wlf_titlebar;
 
 /**
  * @brief Window states.
@@ -138,6 +139,10 @@ struct wlf_window {
 	void *data;                    /**< User data pointer */
 
 	struct wlf_window_state state;
+	/** Internal system-theme subscription and background override state. */
+	struct wlf_listener theme_changed;
+	bool theme_listener_attached;
+	bool uses_theme_background;
 	struct {
 		bool enable_set_position;          /**< Whether set_position is supported */
 		bool enable_set_min_size;          /**< Whether set_min_size is supported */
@@ -200,6 +205,9 @@ void wlf_window_hide(struct wlf_window *window);
  * @param title New window title.
  */
 void wlf_window_set_title(struct wlf_window *window, const char *title);
+
+/** Returns this window's active client-side titlebar, if any. */
+struct wlf_titlebar *wlf_window_get_titlebar(struct wlf_window *window);
 
 /**
  * @brief Set the window geometry (position and size).

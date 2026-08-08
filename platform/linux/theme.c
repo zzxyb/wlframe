@@ -280,6 +280,7 @@ static struct wlf_color linux_theme_default_accent(
 static void linux_theme_fill_palette(struct wlf_linux_theme *theme,
 		struct wlf_color palette[WLF_THEME_COLOR_COUNT],
 		enum wlf_theme_appearance appearance) {
+	wlf_theme_fill_default_palette(palette, appearance);
 	palette[WLF_THEME_COLOR_HIGHLIGHT] = linux_theme_default_accent(appearance);
 
 	if (theme != NULL && theme->use_portal &&

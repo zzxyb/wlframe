@@ -25,6 +25,13 @@ struct wlf_svg_node;
 struct wlf_text_node;
 struct wlf_window;
 
+/** Built-in CSD window controls. */
+enum wlf_titlebar_button_type {
+	WLF_TITLEBAR_BUTTON_MINIMIZE,
+	WLF_TITLEBAR_BUTTON_MAXIMIZE,
+	WLF_TITLEBAR_BUTTON_CLOSE,
+};
+
 enum {
 	WLF_TITLEBAR_HEIGHT = 28,
 };
@@ -34,6 +41,8 @@ struct wlf_titlebar_button {
 	struct wlf_scene_tree *tree;
 	struct wlf_rect_node *background;
 	struct wlf_svg_node *icon;
+	bool visible;
+	bool custom_icon;
 };
 
 /** A wsm-inspired client-side titlebar scene subtree. */
@@ -42,6 +51,9 @@ struct wlf_titlebar {
 	struct wlf_scene_tree *tree;
 	struct wlf_rect_node *background;
 	struct wlf_rect_node *separator;
+	/** Public container for application-supplied titlebar scene nodes. */
+	struct wlf_scene_tree *content;
+	struct wlf_svg_node *window_icon;
 	struct wlf_text_node *title_text;
 	struct wlf_titlebar_button minimize_button;
 	struct wlf_titlebar_button maximize_button;
@@ -50,7 +62,9 @@ struct wlf_titlebar {
 		struct wlf_listener resize;
 		struct wlf_listener focus_in;
 		struct wlf_listener focus_out;
+		struct wlf_listener theme_changed;
 	} listeners;
+	bool theme_listener_attached;
 };
 
 /**
@@ -69,6 +83,29 @@ void wlf_titlebar_arrange(struct wlf_titlebar *titlebar);
 /** Updates the displayed title. NULL is treated as an empty title. */
 void wlf_titlebar_set_title(struct wlf_titlebar *titlebar,
 	const char *title);
+
+/**
+ * Returns the titlebar content container. Nodes created below this tree are
+ * owned by the titlebar and may be positioned freely by the caller.
+ */
+struct wlf_scene_tree *wlf_titlebar_get_content_tree(
+	struct wlf_titlebar *titlebar);
+
+/** Returns a built-in control so callers may customize its scene subtree. */
+struct wlf_titlebar_button *wlf_titlebar_get_button(
+	struct wlf_titlebar *titlebar, enum wlf_titlebar_button_type type);
+
+/** Replaces the upper-left window icon from an SVG document. */
+bool wlf_titlebar_set_icon(struct wlf_titlebar *titlebar,
+	const char *svg_source);
+
+/** Shows or hides one of the built-in window controls. */
+void wlf_titlebar_set_button_visible(struct wlf_titlebar *titlebar,
+	enum wlf_titlebar_button_type type, bool visible);
+
+/** Replaces a built-in window control icon from an SVG document. */
+bool wlf_titlebar_set_button_icon(struct wlf_titlebar *titlebar,
+	enum wlf_titlebar_button_type type, const char *svg_source);
 
 /** Applies focused or unfocused wsm-inspired titlebar colors. */
 void wlf_titlebar_set_active(struct wlf_titlebar *titlebar, bool active);
