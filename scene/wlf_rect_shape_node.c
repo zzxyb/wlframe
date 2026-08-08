@@ -34,6 +34,7 @@ struct wlf_rect_shape_node *wlf_rect_shape_node_create(
 	}
 	node->shape = shape;
 	node->blend_mode = WLF_RENDER_BLEND_MODE_PREMULTIPLIED;
+	wlf_scene_node_update(&node->base, NULL);
 	return node;
 }
 

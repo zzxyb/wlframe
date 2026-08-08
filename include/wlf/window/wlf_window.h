@@ -37,6 +37,7 @@
 #include <pixman.h>
 
 struct wlf_window;
+struct wlf_scene;
 struct wlf_scene_tree;
 
 /**
@@ -99,6 +100,7 @@ struct wlf_window_impl {
 	void (*set_mask)(struct wlf_window *window, const pixman_region32_t *mask);              /**< Set the shape mask */
 	void (*set_background_color)(struct wlf_window *window, const struct wlf_color *color);  /**< Set the background color */
 	void *(*native_handle)(struct wlf_window *window);
+	void (*schedule_frame)(struct wlf_window *window);                                        /**< Schedule a window frame */
 };
 
 struct wlf_window_state {
@@ -128,6 +130,7 @@ struct wlf_window_state {
  */
 struct wlf_window {
 	const struct wlf_window_impl *impl; /**< Platform-specific implementation */
+	struct wlf_scene *scene;            /**< Scene attached to this window */
 	struct wlf_scene_tree *tree;        /**< root node */
 	void *data;                    /**< User data pointer */
 
@@ -285,5 +288,8 @@ void wlf_window_set_background_color(struct wlf_window *window, const struct wlf
 void *wlf_window_native_handle(struct wlf_window *window);
 
 void wlf_window_init_renderer(struct wlf_window *window, struct wlf_renderer *renderer);
+
+/** Requests the backend to deliver a frame/expose event. */
+void wlf_window_schedule_frame(struct wlf_window *window);
 
 #endif // WINDOW_WLF_WINDOW_H

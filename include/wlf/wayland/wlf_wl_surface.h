@@ -34,6 +34,7 @@ struct wl_region;
 struct wl_surface;
 struct wlf_wl_compositor;
 struct wlf_wl_region;
+struct wlf_window;
 
 /**
  * @brief Payload for wlf_wl_surface enter/leave events.
@@ -54,6 +55,8 @@ struct wlf_wl_surface {
 	struct wl_surface *wl_surface;        /**< Underlying Wayland surface object. */
 	struct wl_compositor *wl_compositor;  /**< Compositor used to create regions. */
 	struct wl_callback *throttle_callback; /**< Pending display sync callback used to throttle commits. */
+	struct wl_callback *frame_callback; /**< Pending compositor frame callback. */
+	struct wlf_window *frame_window; /**< Window notified when frame_callback fires. */
 	int32_t preferred_buffer_scale;       /**< Current preferred buffer scale factor. */
 	uint32_t preferred_buffer_transform;  /**< Current preferred buffer transform. */
 	uint32_t version;                     /**< Bound wl_surface protocol version. */
@@ -122,6 +125,10 @@ void wlf_wl_surface_damage_buffer(struct wlf_wl_surface *surface,
  * @return Raw wl_callback that will be called before the next repaint, or NULL on failure.
  */
 struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface);
+
+/** Schedules one compositor-paced expose event for @p window. */
+bool wlf_wl_surface_schedule_frame(struct wlf_wl_surface *surface,
+	struct wlf_window *window);
 
 /**
  * @brief Sets the opaque region of the surface.

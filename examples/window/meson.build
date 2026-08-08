@@ -3,6 +3,10 @@ window_examples = {
 		'src': ['window_test.c'],
 		'dep': [],
 	},
+	'scene_damage_test': {
+		'src': ['scene_damage_test.c'],
+		'dep': [],
+	},
 }
 
 if is_linux

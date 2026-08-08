@@ -35,4 +35,12 @@ wlframe reads these environment variables
 * **`WLF_RENDER_DEBUG`**
   When set to `1`, enables verbose renderer-level debug output and Vulkan validation layers for troubleshooting rendering issues.
 
+## scene damage
+
+* **`WLF_SCENE_DEBUG_DAMAGE`**
+  Controls scene damage visualization:
+
+  * `none` — normal damage-based rendering (default)
+  * `rerender` — redraw and submit the whole window whenever a frame is damaged
+  * `highlight` — overlay damaged pixels in red and fade them out over 250 ms
 

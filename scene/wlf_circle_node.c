@@ -30,6 +30,7 @@ struct wlf_circle_node *wlf_circle_node_create(struct wlf_scene_node *parent,
 	}
 	node->shape = shape;
 	node->blend_mode = WLF_RENDER_BLEND_MODE_PREMULTIPLIED;
+	wlf_scene_node_update(&node->base, NULL);
 	return node;
 }
 

@@ -1,4 +1,5 @@
 #include "wlf/scene/wlf_scene_node.h"
+#include "wlf/scene/wlf_scene.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/window/wlf_window.h"
 
@@ -221,15 +222,7 @@ struct wlf_linked_list *wlf_scene_node_get_children(struct wlf_scene_node *node)
 void wlf_scene_node_get_opaque_region(struct wlf_scene_node *node, double x,
 		double y, pixman_region32_t *opaque) {
 	if (node->impl->get_opaque_region == NULL) {
-		if (node->state.opacity != 1) {
-			return;
-		}
-
-		double width, height;
-		wlf_scene_node_get_size(node, &width, &height);
-		pixman_region32_fini(opaque);
-		pixman_region32_init_rect(opaque, (int)x, (int)y,
-			(uint32_t)width, (uint32_t)height);
+		/* Unknown node types are conservatively treated as non-opaque. */
 		return;
 	}
 
@@ -245,11 +238,10 @@ bool wlf_scene_node_invisible(struct wlf_scene_node *node) {
 }
 
 void wlf_scene_node_visibility(struct wlf_scene_node *node, pixman_region32_t *visible) {
-	if (node->impl->visibility == NULL) {
+	if (!node->state.enabled) {
 		return;
 	}
-
-	node->impl->visibility(node, visible);
+	pixman_region32_union(visible, visible, &node->state.visible);
 }
 
 struct wlf_scene_node *wlf_scene_node_at(struct wlf_scene_node *node,
@@ -287,6 +279,37 @@ bool wlf_scene_node_coords(struct wlf_scene_node *node,
 
 void wlf_scene_node_update(struct wlf_scene_node *node, pixman_region32_t *damage) {
 	if (node->impl->update == NULL) {
+		pixman_region32_t old_visible;
+		pixman_region32_t new_visible;
+		pixman_region32_t changed;
+		pixman_region32_init(&old_visible);
+		pixman_region32_init(&new_visible);
+		pixman_region32_init(&changed);
+
+		if (damage != NULL) {
+			pixman_region32_copy(&old_visible, damage);
+		} else {
+			pixman_region32_copy(&old_visible, &node->state.visible);
+		}
+		if (node->window != NULL && node->window->scene != NULL) {
+			wlf_scene_recalculate_visibility(node->window->scene);
+		} else {
+			double x, y;
+			if (wlf_scene_node_coords(node, &x, &y)) {
+				wlf_scene_node_bounds(node, x, y, &new_visible);
+				pixman_region32_copy(&node->state.visible, &new_visible);
+			}
+		}
+		pixman_region32_copy(&new_visible, &node->state.visible);
+		pixman_region32_union(&changed, &old_visible, &new_visible);
+
+		if (node->window != NULL && node->window->scene != NULL) {
+			wlf_scene_damage(node->window->scene, &changed);
+		}
+
+		pixman_region32_fini(&changed);
+		pixman_region32_fini(&new_visible);
+		pixman_region32_fini(&old_visible);
 		return;
 	}
 

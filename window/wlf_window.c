@@ -1,4 +1,5 @@
 #include "wlf/window/wlf_window.h"
+#include "wlf/scene/wlf_scene.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
 
@@ -23,6 +24,7 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 		.impl = impl,
 		.state.type = type,
 		.state.opacity = 1.0f,
+		.state.background_color = WLF_COLOR_BLACK,
 		.state.backend = backend,
 		.state.geometry = {
 			.width = (int)width,
@@ -54,6 +56,11 @@ void wlf_window_destroy(struct wlf_window *window) {
 	}
 
 	wlf_signal_emit_mutable(&window->events.destroy, window);
+	if (window->scene != NULL) {
+		wlf_scene_destroy(window->scene);
+	}
+	wlf_swapchain_destroy(window->state.swapchain);
+	window->state.swapchain = NULL;
 	free(window->state.title);
 	wlf_render_format_finish(&window->state.format);
 	if (window->impl->destroy) {
@@ -107,18 +114,28 @@ void wlf_window_set_title(struct wlf_window *window, const char *title) {
 
 void wlf_window_set_geometry(struct wlf_window *window,
 		const struct wlf_rect *geometry) {
+	bool resized = window->state.geometry.width != geometry->width ||
+		window->state.geometry.height != geometry->height;
 	window->state.geometry = *geometry;
 	if (window->impl->set_geometry) {
 		window->impl->set_geometry(window, &window->state.geometry);
 	}
+	if (resized) {
+		wlf_signal_emit_mutable(&window->events.resize, window);
+	}
 }
 
 void wlf_window_set_size(struct wlf_window *window, int width, int height) {
+	bool resized = window->state.geometry.width != width ||
+		window->state.geometry.height != height;
 	window->state.geometry.width = width;
 	window->state.geometry.height = height;
 
 	if (window->impl->set_size) {
 		window->impl->set_size(window, width, height);
+	}
+	if (resized) {
+		wlf_signal_emit_mutable(&window->events.resize, window);
 	}
 }
 
@@ -203,6 +220,9 @@ void wlf_window_set_background_color(struct wlf_window *window,
 	if (window->impl->set_background_color) {
 		window->impl->set_background_color(window, &window->state.background_color);
 	}
+	if (window->scene != NULL) {
+		wlf_scene_damage_whole(window->scene);
+	}
 }
 
 void *wlf_window_native_handle(struct wlf_window *window) {
@@ -218,4 +238,18 @@ void wlf_window_init_renderer(struct wlf_window *window, struct wlf_renderer *re
 	window->state.swapchain =
 		wlf_swapchain_auto_create(window, window->state.geometry.width,
 			window->state.geometry.height, &window->state.format);
+}
+
+void wlf_window_schedule_frame(struct wlf_window *window) {
+	if (window == NULL) {
+		return;
+	}
+
+	if (window->impl->schedule_frame != NULL) {
+		window->impl->schedule_frame(window);
+		return;
+	}
+
+	/* Backends without explicit frame callbacks render on the expose signal. */
+	wlf_signal_emit_mutable(&window->events.expose, window);
 }
