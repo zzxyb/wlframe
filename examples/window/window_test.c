@@ -13,7 +13,12 @@
 #include "wlf/scene/wlf_rect_node.h"
 #include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/scene/wlf_texture_node.h"
-#include "wlf/scene/wlf_shape_node.h"
+#include "wlf/scene/wlf_rect_shape_node.h"
+#include "wlf/scene/wlf_circle_node.h"
+#include "wlf/scene/wlf_ellipse_node.h"
+#include "wlf/scene/wlf_line_node.h"
+#include "wlf/scene/wlf_poly_node.h"
+#include "wlf/scene/wlf_path_node.h"
 #include "wlf/image/wlf_image.h"
 #include "wlf/swapchain/egl/swapchain.h"
 #include "wlf/swapchain/shm/swapchain.h"
@@ -31,7 +36,12 @@ struct render_state {
 	struct wlf_listener expose;
 	struct wlf_rect_pass *rect_pass;
 	struct wlf_texture_pass *texture_pass;
-	struct wlf_vector_pass *vector_pass;
+	struct wlf_rect_shape_pass *rect_shape_pass;
+	struct wlf_circle_pass *circle_pass;
+	struct wlf_ellipse_pass *ellipse_pass;
+	struct wlf_line_pass *line_pass;
+	struct wlf_poly_pass *poly_pass;
+	struct wlf_path_pass *path_pass;
 	struct wlf_rect_node *rect;
 	struct wlf_texture_node *image;
 	struct wlf_rect_shape_node *rounded_rect;
@@ -59,17 +69,17 @@ static void render_scene(struct render_state *state, struct wlf_window *window,
 	wlf_rect_node_render(state->rect, state->rect_pass, target, damage);
 	wlf_texture_node_render(state->image, state->texture_pass, target, damage);
 	wlf_rect_shape_node_render(state->rounded_rect,
-		state->vector_pass, target, damage);
+		state->rect_shape_pass, target, damage);
 	wlf_circle_node_render(state->circle,
-		state->vector_pass, target, damage);
+		state->circle_pass, target, damage);
 	wlf_ellipse_node_render(state->ellipse,
-		state->vector_pass, target, damage);
+		state->ellipse_pass, target, damage);
 	wlf_line_node_render(state->line,
-		state->vector_pass, target, damage);
+		state->line_pass, target, damage);
 	wlf_poly_node_render(state->poly,
-		state->vector_pass, target, damage);
+		state->poly_pass, target, damage);
 	wlf_path_node_render(state->path,
-		state->vector_pass, target, damage);
+		state->path_pass, target, damage);
 }
 
 static void handle_expose(struct wlf_listener *listener, void *data) {
@@ -152,6 +162,15 @@ static struct wlf_vector_pass *create_vector_pass(
 	return NULL;
 }
 
+static void destroy_shape_passes(struct render_state *state) {
+	wlf_render_rect_shape_pass_destroy(state->rect_shape_pass);
+	wlf_render_circle_pass_destroy(state->circle_pass);
+	wlf_render_ellipse_pass_destroy(state->ellipse_pass);
+	wlf_render_line_pass_destroy(state->line_pass);
+	wlf_render_poly_pass_destroy(state->poly_pass);
+	wlf_render_path_pass_destroy(state->path_pass);
+}
+
 static void set_shape_style(struct wlf_shape_state *state,
 		struct wlf_color fill, struct wlf_color stroke, float stroke_width) {
 	state->fill_color = fill;
@@ -203,13 +222,20 @@ int main(int argc, char *argv[]) {
 		},
 		.rect_pass = create_rect_pass(renderer),
 		.texture_pass = create_texture_pass(renderer),
-		.vector_pass = create_vector_pass(renderer),
+		.rect_shape_pass = wlf_rect_shape_pass_create(create_vector_pass(renderer)),
+		.circle_pass = wlf_circle_pass_create(create_vector_pass(renderer)),
+		.ellipse_pass = wlf_ellipse_pass_create(create_vector_pass(renderer)),
+		.line_pass = wlf_line_pass_create(create_vector_pass(renderer)),
+		.poly_pass = wlf_poly_pass_create(create_vector_pass(renderer)),
+		.path_pass = wlf_path_pass_create(create_vector_pass(renderer)),
 	};
 	if (render.rect_pass == NULL || render.texture_pass == NULL ||
-			render.vector_pass == NULL) {
+			render.rect_shape_pass == NULL || render.circle_pass == NULL ||
+			render.ellipse_pass == NULL || render.line_pass == NULL ||
+			render.poly_pass == NULL || render.path_pass == NULL) {
 		wlf_render_rect_pass_destroy(render.rect_pass);
 		wlf_render_texture_pass_destroy(render.texture_pass);
-		wlf_render_vector_pass_destroy(render.vector_pass);
+		destroy_shape_passes(&render);
 		wlf_scene_node_destroy(&tree->base);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
@@ -220,7 +246,7 @@ int main(int argc, char *argv[]) {
 		&rect_color);
 	if (render.rect == NULL) {
 		wlf_scene_node_destroy(&tree->base);
-		wlf_render_vector_pass_destroy(render.vector_pass);
+		destroy_shape_passes(&render);
 		wlf_render_texture_pass_destroy(render.texture_pass);
 		wlf_render_rect_pass_destroy(render.rect_pass);
 		wlf_backend_destroy(backend);
@@ -231,7 +257,7 @@ int main(int argc, char *argv[]) {
 	if (image == NULL) {
 		wlf_log(WLF_ERROR, "Failed to load image: %s", image_path);
 		wlf_scene_node_destroy(&tree->base);
-		wlf_render_vector_pass_destroy(render.vector_pass);
+		destroy_shape_passes(&render);
 		wlf_render_texture_pass_destroy(render.texture_pass);
 		wlf_render_rect_pass_destroy(render.rect_pass);
 		wlf_backend_destroy(backend);
@@ -246,7 +272,7 @@ int main(int argc, char *argv[]) {
 	if (texture == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create texture for: %s", image_path);
 		wlf_scene_node_destroy(&tree->base);
-		wlf_render_vector_pass_destroy(render.vector_pass);
+		destroy_shape_passes(&render);
 		wlf_render_texture_pass_destroy(render.texture_pass);
 		wlf_render_rect_pass_destroy(render.rect_pass);
 		wlf_backend_destroy(backend);
@@ -259,7 +285,7 @@ int main(int argc, char *argv[]) {
 	if (render.image == NULL) {
 		wlf_texture_destroy(texture);
 		wlf_scene_node_destroy(&tree->base);
-		wlf_render_vector_pass_destroy(render.vector_pass);
+		destroy_shape_passes(&render);
 		wlf_render_texture_pass_destroy(render.texture_pass);
 		wlf_render_rect_pass_destroy(render.rect_pass);
 		wlf_backend_destroy(backend);
@@ -322,7 +348,7 @@ int main(int argc, char *argv[]) {
 			render.poly == NULL || render.path == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create shape scene node");
 		wlf_scene_node_destroy(&tree->base);
-		wlf_render_vector_pass_destroy(render.vector_pass);
+		destroy_shape_passes(&render);
 		wlf_render_texture_pass_destroy(render.texture_pass);
 		wlf_render_rect_pass_destroy(render.rect_pass);
 		wlf_backend_destroy(backend);
@@ -337,7 +363,7 @@ int main(int argc, char *argv[]) {
 	wlf_backend_exe(backend);
 	wlf_linked_list_remove(&render.expose.link);
 	wlf_scene_node_destroy(&tree->base);
-	wlf_render_vector_pass_destroy(render.vector_pass);
+	destroy_shape_passes(&render);
 	wlf_render_texture_pass_destroy(render.texture_pass);
 	wlf_render_rect_pass_destroy(render.rect_pass);
 	wlf_backend_destroy(backend);
