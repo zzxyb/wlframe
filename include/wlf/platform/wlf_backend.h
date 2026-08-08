@@ -75,6 +75,10 @@ struct wlf_backend_impl {
 struct wlf_backend {
 	const struct wlf_backend_impl *impl;  /**< Backend implementation */
 	bool running;  /**< True while backend event loop is running */
+	struct {
+		/** Whether the platform can provide server-side window decorations. */
+		bool server_side_decorations;
+	} features;
 
 	struct {
 		int fd;  /**< File descriptor to monitor */
@@ -155,5 +159,13 @@ bool wlf_backend_remove_event_source(struct wlf_backend *backend,
  * @param backend Pointer to backend
  */
 void wlf_backend_quit(struct wlf_backend *backend);
+
+/**
+ * @brief Reports whether the backend can provide server-side decorations.
+ * @param backend Backend to query.
+ * @return true when native/server-side window decorations are available.
+ */
+bool wlf_backend_supports_server_side_decorations(
+	const struct wlf_backend *backend);
 
 #endif // PLATFORM_WLF_BACKEND_H
