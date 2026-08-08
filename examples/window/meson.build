@@ -5,11 +5,14 @@ window_examples = {
 	},
 }
 
-foreach example, info : window_examples
-	executable(
-		example,
-		info.get('src', []),
-		dependencies: [wlframe] + info.get('dep', []),
-		install: false,
-	)
-endforeach
+if is_linux
+	# The current window example uses Wayland, wl_shm, and Pixman APIs.
+	foreach example, info : window_examples
+		executable(
+			example,
+			info.get('src', []),
+			dependencies: [wlframe] + info.get('dep', []),
+			install: false,
+		)
+	endforeach
+endif

@@ -19,9 +19,7 @@
 #include <stdbool.h>
 #include <stdarg.h>
 #include <errno.h>
-#if __STDC_VERSION__ < 202311L
 #include <string.h>
-#endif
 
 /**
  * @brief Enum for log importance levels.
