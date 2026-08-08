@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <wayland-client-protocol.h>
 
