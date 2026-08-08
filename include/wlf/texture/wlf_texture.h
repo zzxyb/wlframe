@@ -156,9 +156,9 @@ struct wlf_texture *wlf_texture_from_pixels(struct wlf_renderer *renderer,
 /**
  * @brief Creates a texture from an 8-bit wlframe image.
  *
- * RGB, RGBA, grayscale and grayscale-alpha images are normalized to
- * premultiplied RGBA before upload, so every format accepted by
- * wlf_image_load() can be displayed through the same rendering path.
+ * Uses the image's native 8-bit format when supported by the renderer.
+ * Images with straight alpha, or formats unsupported by the renderer, are
+ * converted to premultiplied ABGR8888 before upload.
  *
  * @param renderer The renderer to create the texture on.
  * @param image    Source image to upload.

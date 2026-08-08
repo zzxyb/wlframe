@@ -36,7 +36,7 @@ static const struct wlf_pixel_format_info wlf_pixel_formats[] = {
 
 	{ WLF_FORMAT_R8, 0, 1, 1, 1 },
 
-	{ WLF_FORMAT_RG88, 0, 2, 1, 1 },
+	{ WLF_FORMAT_GR88, 0, 2, 1, 1 },
 
 	{ WLF_FORMAT_R16F, 0, 2, 1, 1 },
 	{ WLF_FORMAT_R32F, 0, 4, 1, 1 },
@@ -71,7 +71,7 @@ static const uint32_t opaque_pixel_formats[] = {
 	WLF_FORMAT_XRGB2101010,
 	WLF_FORMAT_XBGR2101010,
 	WLF_FORMAT_R8,
-	WLF_FORMAT_RG88,
+	WLF_FORMAT_GR88,
 	WLF_FORMAT_R16F,
 	WLF_FORMAT_R32F,
 	WLF_FORMAT_RG1616F,

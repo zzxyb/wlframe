@@ -20,31 +20,6 @@ static const struct wlf_texture_impl texture_impl = {
 	.destroy = texture_destroy,
 };
 
-static bool get_gl_format(uint32_t format, GLenum *gl_format, GLenum *gl_type) {
-	switch (format) {
-	case WLF_FORMAT_ABGR8888:
-	case WLF_FORMAT_XBGR8888:
-		*gl_format = GL_RGBA;
-		*gl_type = GL_UNSIGNED_BYTE;
-		return true;
-	case WLF_FORMAT_ARGB8888:
-	case WLF_FORMAT_XRGB8888:
-		*gl_format = GL_BGRA_EXT;
-		*gl_type = GL_UNSIGNED_BYTE;
-		return true;
-	case WLF_FORMAT_RGB888:
-		*gl_format = GL_RGB;
-		*gl_type = GL_UNSIGNED_BYTE;
-		return true;
-	case WLF_FORMAT_RGB565:
-		*gl_format = GL_RGB;
-		*gl_type = GL_UNSIGNED_SHORT_5_6_5;
-		return true;
-	default:
-		return false;
-	}
-}
-
 struct wlf_texture *wlf_gles_texture_from_buffer(
 		struct wlf_gles_renderer *renderer, struct wlf_buffer *buffer) {
 	void *data = NULL;
@@ -55,12 +30,14 @@ struct wlf_texture *wlf_gles_texture_from_buffer(
 		return NULL;
 	}
 
-	GLenum gl_format, gl_type;
+	const struct wlf_gles_pixel_format *gles_format =
+		wlf_gles_pixel_format_from_wlf(format);
 	const struct wlf_pixel_format_info *format_info =
 		wlf_get_pixel_format_info(format);
 	int32_t packed_stride = format_info != NULL ?
 		pixel_format_info_min_stride(format_info, buffer->width) : 0;
-	if (!get_gl_format(format, &gl_format, &gl_type) ||
+	if (gles_format == NULL ||
+			!wlf_gles_pixel_format_is_supported(renderer, gles_format) ||
 			packed_stride <= 0 || stride != (size_t)packed_stride) {
 		wlf_log(WLF_ERROR, "unsupported GLES texture format or row stride");
 		wlf_buffer_end_data_ptr_access(buffer);
@@ -81,8 +58,11 @@ struct wlf_texture *wlf_gles_texture_from_buffer(
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, gl_format, buffer->width, buffer->height,
-		0, gl_format, gl_type, data);
+	GLint internal_format = gles_format->gl_internalformat != 0 ?
+		gles_format->gl_internalformat : (GLint)gles_format->gl_format;
+	glTexImage2D(GL_TEXTURE_2D, 0, internal_format,
+		buffer->width, buffer->height, 0,
+		gles_format->gl_format, gles_format->gl_type, data);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	wlf_buffer_end_data_ptr_access(buffer);
 

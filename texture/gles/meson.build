@@ -1,1 +1,3 @@
-wlf_files += files('texture.c')
+wlf_files += files(
+	'texture.c',
+)

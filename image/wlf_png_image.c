@@ -116,28 +116,17 @@ static bool png_image_load(struct wlf_image *image, const char *filename, bool e
 
 	if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
 		png_set_tRNS_to_alpha(png_ptr);
-		image->is_opaque = true;
-		image->has_alpha_channel = true;
 	}
 	if (color_type == PNG_COLOR_TYPE_PALETTE) {
 		png_set_palette_to_rgb(png_ptr);
-		image->format = WLF_COLOR_TYPE_RGB;
-		image->is_opaque = true;
 	} else if (color_type == PNG_COLOR_TYPE_GRAY) {
 		if (bit_depth < 8) {
 			png_set_expand_gray_1_2_4_to_8(png_ptr);
 		}
-		image->format = WLF_COLOR_TYPE_GRAY;
 	} else if (color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
 		png_set_gray_to_rgb(png_ptr);
-		image->format = WLF_COLOR_TYPE_GRAY_ALPHA;
-		image->has_alpha_channel = true;
-	} else if (color_type == PNG_COLOR_TYPE_RGB) {
-		image->format = WLF_COLOR_TYPE_RGB;
-	} else if (color_type == PNG_COLOR_TYPE_RGBA) {
-		image->format = WLF_COLOR_TYPE_RGBA;
-		image->has_alpha_channel = true;
-	} else {
+	} else if (color_type != PNG_COLOR_TYPE_RGB &&
+			color_type != PNG_COLOR_TYPE_RGBA) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		fclose(fp);
 		return false;
@@ -145,6 +134,36 @@ static bool png_image_load(struct wlf_image *image, const char *filename, bool e
 
 	png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
+
+	/* Record the format after libpng has applied all requested transforms.
+	 * In particular, tRNS and gray-to-RGB can change the number of channels. */
+	switch (png_get_channels(png_ptr, info_ptr)) {
+	case 1:
+		image->format = WLF_COLOR_TYPE_GRAY;
+		image->has_alpha_channel = false;
+		image->is_opaque = true;
+		break;
+	case 2:
+		image->format = WLF_COLOR_TYPE_GRAY_ALPHA;
+		image->has_alpha_channel = true;
+		image->is_opaque = false;
+		break;
+	case 3:
+		image->format = WLF_COLOR_TYPE_RGB;
+		image->has_alpha_channel = false;
+		image->is_opaque = true;
+		break;
+	case 4:
+		image->format = WLF_COLOR_TYPE_RGBA;
+		image->has_alpha_channel = true;
+		image->is_opaque = false;
+		break;
+	default:
+		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
+		fclose(fp);
+		wlf_log(WLF_ERROR, "Unsupported PNG channel count");
+		return false;
+	}
 
 	png_size_t rowbytes = png_get_rowbytes(png_ptr, info_ptr);
 	image->data = (unsigned char *)malloc(rowbytes * height);
