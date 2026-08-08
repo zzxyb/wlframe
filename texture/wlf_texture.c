@@ -1,5 +1,7 @@
 #include "wlf/texture/wlf_texture.h"
+#include "wlf/image/wlf_image.h"
 #include "wlf/types/wlf_pixel_format.h"
+#include "wlf/utils/wlf_log.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -60,6 +62,72 @@ struct wlf_texture *wlf_texture_from_pixels(struct wlf_renderer *renderer,
 
 	wlf_readonly_data_buffer_drop(buffer);
 
+	return texture;
+}
+
+struct wlf_texture *wlf_texture_from_image(struct wlf_renderer *renderer,
+		const struct wlf_image *image) {
+	if (renderer == NULL || image == NULL || image->data == NULL ||
+			image->width == 0 || image->height == 0 || image->stride == 0) {
+		return NULL;
+	}
+
+	/* wlf_image_load() requests 8-bit output from all decoders. Deriving the
+	 * channel count from the decoded row also handles PNG transforms (palette,
+	 * tRNS and gray-to-RGB) without exposing decoder-specific details here. */
+	uint32_t channels = image->stride / image->width;
+	if (channels < 1 || channels > 4 ||
+			image->stride < image->width * channels) {
+		wlf_log(WLF_ERROR, "unsupported image pixel layout");
+		return NULL;
+	}
+
+	size_t rgba_stride = (size_t)image->width * 4;
+	if (image->height > SIZE_MAX / rgba_stride) {
+		wlf_log(WLF_ERROR, "image dimensions are too large");
+		return NULL;
+	}
+	uint8_t *rgba = malloc(rgba_stride * image->height);
+	if (rgba == NULL) {
+		wlf_log_errno(WLF_ERROR, "failed to allocate image upload buffer");
+		return NULL;
+	}
+
+	for (uint32_t y = 0; y < image->height; y++) {
+		const uint8_t *src = image->data + (size_t)y * image->stride;
+		uint8_t *dst = rgba + (size_t)y * rgba_stride;
+		for (uint32_t x = 0; x < image->width; x++) {
+			uint8_t r, g, b, a = 255;
+			switch (channels) {
+			case 1:
+				r = g = b = src[x];
+				break;
+			case 2:
+				r = g = b = src[x * 2];
+				a = src[x * 2 + 1];
+				break;
+			case 3:
+				r = src[x * 3];
+				g = src[x * 3 + 1];
+				b = src[x * 3 + 2];
+				break;
+			default:
+				r = src[x * 4];
+				g = src[x * 4 + 1];
+				b = src[x * 4 + 2];
+				a = src[x * 4 + 3];
+				break;
+			}
+			dst[x * 4] = (uint8_t)((r * a + 127) / 255);
+			dst[x * 4 + 1] = (uint8_t)((g * a + 127) / 255);
+			dst[x * 4 + 2] = (uint8_t)((b * a + 127) / 255);
+			dst[x * 4 + 3] = a;
+		}
+	}
+
+	struct wlf_texture *texture = wlf_texture_from_pixels(renderer,
+		WLF_FORMAT_ABGR8888, rgba_stride, image->width, image->height, rgba);
+	free(rgba);
 	return texture;
 }
 
