@@ -20,10 +20,10 @@ static bool bounds(const struct wlf_path_shape *shape,
 		}
 	}
 	if (!isfinite(*minx)) return false;
-	if (shape->state.has_stroke && shape->state.stroke_width > 0) {
-		double pad = shape->state.stroke_width / 2;
-		*minx -= pad; *miny -= pad; *maxx += pad; *maxy += pad;
-	}
+	double pad = 1;
+	if (shape->state.has_stroke && shape->state.stroke_width > 0)
+		pad += shape->state.stroke_width / 2;
+	*minx -= pad; *miny -= pad; *maxx += pad; *maxy += pad;
 	return true;
 }
 

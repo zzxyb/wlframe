@@ -7,6 +7,7 @@
 #include <string.h>
 
 #define WLF_PI 3.14159265358979323846
+#define AA_WIDTH 1.0
 
 static bool reserve(struct wlf_shape_vertices *vertices, size_t count) {
 	if (vertices->failed) return false;
@@ -30,10 +31,17 @@ void wlf_shape_vertices_finish(struct wlf_shape_vertices *vertices) {
 
 void wlf_shape_add_triangle(struct wlf_shape_vertices *vertices,
 		double ax, double ay, double bx, double by, double cx, double cy) {
+	wlf_shape_add_triangle_coverage(vertices,
+		ax, ay, 1, bx, by, 1, cx, cy, 1);
+}
+
+void wlf_shape_add_triangle_coverage(struct wlf_shape_vertices *vertices,
+		double ax, double ay, float ac, double bx, double by, float bc,
+		double cx, double cy, float cc) {
 	if (!reserve(vertices, 3)) return;
-	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ ax, ay };
-	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ bx, by };
-	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ cx, cy };
+	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ ax, ay, ac };
+	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ bx, by, bc };
+	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ cx, cy, cc };
 }
 
 void wlf_shape_add_quad(struct wlf_shape_vertices *vertices,
@@ -41,6 +49,15 @@ void wlf_shape_add_quad(struct wlf_shape_vertices *vertices,
 		double cx, double cy, double dx, double dy) {
 	wlf_shape_add_triangle(vertices, ax, ay, bx, by, cx, cy);
 	wlf_shape_add_triangle(vertices, ax, ay, cx, cy, dx, dy);
+}
+
+void wlf_shape_add_quad_coverage(struct wlf_shape_vertices *vertices,
+		double ax, double ay, float ac, double bx, double by, float bc,
+		double cx, double cy, float cc, double dx, double dy, float dc) {
+	wlf_shape_add_triangle_coverage(vertices,
+		ax, ay, ac, bx, by, bc, cx, cy, cc);
+	wlf_shape_add_triangle_coverage(vertices,
+		ax, ay, ac, cx, cy, cc, dx, dy, dc);
 }
 
 void wlf_shape_add_segment(struct wlf_shape_vertices *vertices,
@@ -52,6 +69,25 @@ void wlf_shape_add_segment(struct wlf_shape_vertices *vertices,
 	double ny = dx / length * width / 2;
 	wlf_shape_add_quad(vertices, x1 + nx, y1 + ny, x2 + nx, y2 + ny,
 		x2 - nx, y2 - ny, x1 - nx, y1 - ny);
+	double ax = nx / (width / 2) * AA_WIDTH;
+	double ay = ny / (width / 2) * AA_WIDTH;
+	double tx = dx / length * AA_WIDTH;
+	double ty = dy / length * AA_WIDTH;
+	wlf_shape_add_quad_coverage(vertices,
+		x1 + nx, y1 + ny, 1, x2 + nx, y2 + ny, 1,
+		x2 + nx + ax, y2 + ny + ay, 0,
+		x1 + nx + ax, y1 + ny + ay, 0);
+	wlf_shape_add_quad_coverage(vertices,
+		x1 - nx, y1 - ny, 1, x1 - nx - ax, y1 - ny - ay, 0,
+		x2 - nx - ax, y2 - ny - ay, 0, x2 - nx, y2 - ny, 1);
+	wlf_shape_add_quad_coverage(vertices,
+		x1 - nx, y1 - ny, 1, x1 + nx, y1 + ny, 1,
+		x1 + nx - tx, y1 + ny - ty, 0,
+		x1 - nx - tx, y1 - ny - ty, 0);
+	wlf_shape_add_quad_coverage(vertices,
+		x2 + nx, y2 + ny, 1, x2 - nx, y2 - ny, 1,
+		x2 - nx + tx, y2 - ny + ty, 0,
+		x2 + nx + tx, y2 + ny + ty, 0);
 }
 
 static double polygon_area(const float *points, int count) {
@@ -130,6 +166,51 @@ void wlf_shape_add_polygon_stroke(struct wlf_shape_vertices *vertices,
 			points[i * 2 + 1] + oy, points[j * 2] + ox,
 			points[j * 2 + 1] + oy, width);
 	}
+}
+
+void wlf_shape_add_polygon_fringe(struct wlf_shape_vertices *vertices,
+		const float *points, int count, double ox, double oy, double width) {
+	if (points == NULL || count < 3 || width <= 0) return;
+	bool ccw = polygon_area(points, count) > 0;
+	double *outer = malloc((size_t)count * 2 * sizeof(*outer));
+	if (outer == NULL) {
+		vertices->failed = true;
+		return;
+	}
+	for (int i = 0; i < count; i++) {
+		int prev = (i + count - 1) % count;
+		int next = (i + 1) % count;
+		double p1x = points[i * 2] - points[prev * 2];
+		double p1y = points[i * 2 + 1] - points[prev * 2 + 1];
+		double p2x = points[next * 2] - points[i * 2];
+		double p2y = points[next * 2 + 1] - points[i * 2 + 1];
+		double l1 = hypot(p1x, p1y), l2 = hypot(p2x, p2y);
+		if (l1 <= 0 || l2 <= 0) {
+			outer[i * 2] = points[i * 2];
+			outer[i * 2 + 1] = points[i * 2 + 1];
+			continue;
+		}
+		double sign = ccw ? 1 : -1;
+		double n1x = sign * p1y / l1, n1y = -sign * p1x / l1;
+		double n2x = sign * p2y / l2, n2y = -sign * p2x / l2;
+		double mx = n1x + n2x, my = n1y + n2y;
+		double ml = hypot(mx, my);
+		if (ml <= 0) { mx = n2x; my = n2y; ml = 1; }
+		mx /= ml; my /= ml;
+		double denom = mx * n2x + my * n2y;
+		double scale = denom > 0.25 ? width / denom : width * 4;
+		outer[i * 2] = points[i * 2] + mx * scale;
+		outer[i * 2 + 1] = points[i * 2 + 1] + my * scale;
+	}
+	for (int i = 0; i < count; i++) {
+		int next = (i + 1) % count;
+		wlf_shape_add_quad_coverage(vertices,
+			points[i * 2] + ox, points[i * 2 + 1] + oy, 1,
+			points[next * 2] + ox, points[next * 2 + 1] + oy, 1,
+			outer[next * 2] + ox, outer[next * 2 + 1] + oy, 0,
+			outer[i * 2] + ox, outer[i * 2 + 1] + oy, 0);
+	}
+	free(outer);
 }
 
 int wlf_shape_rounded_rect_points(const struct wlf_rect_shape *rect,

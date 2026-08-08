@@ -47,7 +47,16 @@ static void vector_pass_render(struct wlf_vector_pass *pass,
 		return;
 	}
 
-	size_t triangle_count = options->vertex_count / 3;
+	size_t triangle_count = 0;
+	for (size_t i = 0; i < options->vertex_count; i += 3) {
+		if (options->vertices[i].coverage >= 1 &&
+				options->vertices[i + 1].coverage >= 1 &&
+				options->vertices[i + 2].coverage >= 1) triangle_count++;
+	}
+	if (triangle_count == 0) {
+		pixman_image_unref(solid);
+		return;
+	}
 	if (triangle_count > INT_MAX) {
 		wlf_log(WLF_ERROR, "Too many triangles for pixman vector pass");
 		pixman_image_unref(solid);
@@ -58,9 +67,11 @@ static void vector_pass_render(struct wlf_vector_pass *pass,
 		pixman_image_unref(solid);
 		return;
 	}
-	for (size_t i = 0; i < triangle_count; i++) {
-		const struct wlf_vector_vertex *v = &options->vertices[i * 3];
-		triangles[i] = (pixman_triangle_t){
+	size_t triangle_index = 0;
+	for (size_t i = 0; i < options->vertex_count; i += 3) {
+		const struct wlf_vector_vertex *v = &options->vertices[i];
+		if (v[0].coverage < 1 || v[1].coverage < 1 || v[2].coverage < 1) continue;
+		triangles[triangle_index++] = (pixman_triangle_t){
 			.p1 = { pixman_double_to_fixed(v[0].x), pixman_double_to_fixed(v[0].y) },
 			.p2 = { pixman_double_to_fixed(v[1].x), pixman_double_to_fixed(v[1].y) },
 			.p3 = { pixman_double_to_fixed(v[2].x), pixman_double_to_fixed(v[2].y) },

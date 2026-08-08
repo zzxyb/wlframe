@@ -8,8 +8,8 @@ WLF_DEFINE_SHAPE_NODE(ellipse_node, wlf_ellipse_node,
 
 static void bounds(const struct wlf_ellipse_shape *shape,
 		double *minx, double *miny, double *maxx, double *maxy) {
-	double pad = shape->state.has_stroke && shape->state.stroke_width > 0 ?
-		shape->state.stroke_width / 2 : 0;
+	double pad = 1 + (shape->state.has_stroke && shape->state.stroke_width > 0 ?
+		shape->state.stroke_width / 2 : 0);
 	*minx = shape->cx - shape->rx - pad;
 	*miny = shape->cy - shape->ry - pad;
 	*maxx = shape->cx + shape->rx + pad;

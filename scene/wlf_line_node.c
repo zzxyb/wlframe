@@ -9,8 +9,8 @@ WLF_DEFINE_SHAPE_NODE(line_node, wlf_line_node,
 
 static void bounds(const struct wlf_line_shape *shape,
 		double *minx, double *miny, double *maxx, double *maxy) {
-	double pad = shape->state.has_stroke && shape->state.stroke_width > 0 ?
-		shape->state.stroke_width / 2 : 0;
+	double pad = 1 + (shape->state.has_stroke && shape->state.stroke_width > 0 ?
+		shape->state.stroke_width / 2 : 0);
 	*minx = fmin(shape->x1, shape->x2) - pad;
 	*miny = fmin(shape->y1, shape->y2) - pad;
 	*maxx = fmax(shape->x1, shape->x2) + pad;

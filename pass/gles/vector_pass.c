@@ -4,8 +4,8 @@
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/utils/wlf_log.h"
 
-#include "rect_frag_src.h"
-#include "rect_vert_src.h"
+#include "vector_frag_src.h"
+#include "vector_vert_src.h"
 
 #include <GLES2/gl2.h>
 #include <limits.h>
@@ -15,6 +15,7 @@ struct wlf_gles_vector_pass {
 	struct wlf_vector_pass base;
 	GLuint program;
 	GLint attrib_pos;
+	GLint attrib_coverage;
 	GLint uniform_viewport;
 	GLint uniform_color;
 };
@@ -36,8 +37,8 @@ static GLuint compile_shader(GLenum type, const char *source) {
 }
 
 static bool link_program(struct wlf_gles_vector_pass *pass) {
-	GLuint vert = compile_shader(GL_VERTEX_SHADER, rect_vert_src);
-	GLuint frag = compile_shader(GL_FRAGMENT_SHADER, rect_frag_src);
+	GLuint vert = compile_shader(GL_VERTEX_SHADER, vector_vert_src);
+	GLuint frag = compile_shader(GL_FRAGMENT_SHADER, vector_frag_src);
 	if (vert == 0 || frag == 0) {
 		glDeleteShader(vert);
 		glDeleteShader(frag);
@@ -52,6 +53,7 @@ static bool link_program(struct wlf_gles_vector_pass *pass) {
 	glAttachShader(pass->program, vert);
 	glAttachShader(pass->program, frag);
 	glBindAttribLocation(pass->program, 0, "pos");
+	glBindAttribLocation(pass->program, 1, "coverage");
 	glLinkProgram(pass->program);
 	glDeleteShader(vert);
 	glDeleteShader(frag);
@@ -63,9 +65,11 @@ static bool link_program(struct wlf_gles_vector_pass *pass) {
 		return false;
 	}
 	pass->attrib_pos = glGetAttribLocation(pass->program, "pos");
+	pass->attrib_coverage = glGetAttribLocation(pass->program, "coverage");
 	pass->uniform_viewport = glGetUniformLocation(pass->program, "viewport");
 	pass->uniform_color = glGetUniformLocation(pass->program, "color");
-	if (pass->attrib_pos < 0 || pass->uniform_viewport < 0 ||
+	if (pass->attrib_pos < 0 || pass->attrib_coverage < 0 ||
+			pass->uniform_viewport < 0 ||
 			pass->uniform_color < 0) {
 		glDeleteProgram(pass->program);
 		pass->program = 0;
@@ -114,7 +118,10 @@ static void vector_pass_render(struct wlf_vector_pass *base,
 	glUniform4fv(pass->uniform_color, 1, rgba);
 	glVertexAttribPointer(pass->attrib_pos, 2, GL_FLOAT, GL_FALSE,
 		sizeof(struct wlf_vector_vertex), options->vertices);
+	glVertexAttribPointer(pass->attrib_coverage, 1, GL_FLOAT, GL_FALSE,
+		sizeof(struct wlf_vector_vertex), &options->vertices[0].coverage);
 	glEnableVertexAttribArray(pass->attrib_pos);
+	glEnableVertexAttribArray(pass->attrib_coverage);
 	if (options->blend_mode == WLF_RENDER_BLEND_MODE_NONE) {
 		glDisable(GL_BLEND);
 	} else {
@@ -137,6 +144,7 @@ static void vector_pass_render(struct wlf_vector_pass *base,
 		glDrawArrays(GL_TRIANGLES, 0, vertex_count);
 	}
 	glDisableVertexAttribArray(pass->attrib_pos);
+	glDisableVertexAttribArray(pass->attrib_coverage);
 	GLenum error = glGetError();
 	if (error != GL_NO_ERROR) {
 		wlf_log(WLF_ERROR, "GLES vector render failed: %s",
