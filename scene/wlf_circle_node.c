@@ -8,8 +8,8 @@ WLF_DEFINE_SHAPE_NODE(circle_node, wlf_circle_node,
 
 static void bounds(const struct wlf_circle_shape *shape,
 		double *minx, double *miny, double *maxx, double *maxy) {
-	double pad = shape->state.has_stroke && shape->state.stroke_width > 0 ?
-		shape->state.stroke_width / 2 : 0;
+	double pad = 1 + (shape->state.has_stroke && shape->state.stroke_width > 0 ?
+		shape->state.stroke_width / 2 : 0);
 	*minx = shape->cx - shape->r - pad;
 	*miny = shape->cy - shape->r - pad;
 	*maxx = shape->cx + shape->r + pad;

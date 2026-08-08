@@ -18,10 +18,10 @@ static bool bounds(const struct wlf_poly_shape *shape,
 		*maxx = fmax(*maxx, shape->points[i * 2]);
 		*maxy = fmax(*maxy, shape->points[i * 2 + 1]);
 	}
-	if (shape->state.has_stroke && shape->state.stroke_width > 0) {
-		double pad = shape->state.stroke_width / 2;
-		*minx -= pad; *miny -= pad; *maxx += pad; *maxy += pad;
-	}
+	double pad = 1;
+	if (shape->state.has_stroke && shape->state.stroke_width > 0)
+		pad += shape->state.stroke_width / 2;
+	*minx -= pad; *miny -= pad; *maxx += pad; *maxy += pad;
 	return true;
 }
 

@@ -13,10 +13,10 @@ static void bounds(const struct wlf_rect_shape *shape,
 	*miny = fmin(shape->y, shape->y + shape->height);
 	*maxx = fmax(shape->x, shape->x + shape->width);
 	*maxy = fmax(shape->y, shape->y + shape->height);
-	if (shape->state.has_stroke && shape->state.stroke_width > 0) {
-		double pad = shape->state.stroke_width / 2;
-		*minx -= pad; *miny -= pad; *maxx += pad; *maxy += pad;
-	}
+	double pad = 1;
+	if (shape->state.has_stroke && shape->state.stroke_width > 0)
+		pad += shape->state.stroke_width / 2;
+	*minx -= pad; *miny -= pad; *maxx += pad; *maxy += pad;
 }
 
 struct wlf_rect_shape_node *wlf_rect_shape_node_create(

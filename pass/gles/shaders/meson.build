@@ -6,6 +6,8 @@ shaders = [
 	'rect.frag',
 	'texture.vert',
 	'texture.frag',
+	'vector.vert',
+	'vector.frag',
 ]
 
 foreach name : shaders

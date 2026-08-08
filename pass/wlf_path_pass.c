@@ -31,8 +31,12 @@ void wlf_render_pass_add_path(struct wlf_path_pass *pass,
 	struct wlf_shape_vertices vertices = {0};
 	if (state->has_fill) {
 		for (const struct wlf_path *path = shape->paths; path != NULL; path = path->next) {
-			if (path->closed) wlf_shape_add_polygon_fill(&vertices,
-				path->pts, path->npts, options->offset_x, options->offset_y);
+			if (path->closed) {
+				wlf_shape_add_polygon_fill(&vertices, path->pts, path->npts,
+					options->offset_x, options->offset_y);
+				wlf_shape_add_polygon_fringe(&vertices, path->pts, path->npts,
+					options->offset_x, options->offset_y, 1);
+			}
 		}
 		wlf_shape_submit(pass->vector, target, &vertices, state->fill_color,
 			wlf_shape_state_fill_alpha(state) * options->opacity,

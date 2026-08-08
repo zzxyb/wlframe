@@ -32,6 +32,8 @@ void wlf_render_pass_add_poly(struct wlf_poly_pass *pass,
 	if (state->has_fill && shape->closed) {
 		wlf_shape_add_polygon_fill(&vertices, shape->points, shape->count,
 			options->offset_x, options->offset_y);
+		wlf_shape_add_polygon_fringe(&vertices, shape->points, shape->count,
+			options->offset_x, options->offset_y, 1);
 		wlf_shape_submit(pass->vector, target, &vertices, state->fill_color,
 			wlf_shape_state_fill_alpha(state) * options->opacity,
 			options->clip, options->blend_mode);
