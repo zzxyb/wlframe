@@ -43,6 +43,9 @@ jobs:
           libxml2 \
           webp \
           giflib \
+          cairo \
+          pango \
+          harfbuzz \
           pixman \
 
     - name: Setup build
