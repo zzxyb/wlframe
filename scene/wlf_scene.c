@@ -20,6 +20,7 @@
 #include "wlf/scene/wlf_rect_shape_node.h"
 #include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/scene/wlf_texture_node.h"
+#include "wlf/scene/wlf_text_node.h"
 #include "wlf/swapchain/egl/swapchain.h"
 #include "wlf/swapchain/shm/swapchain.h"
 #include "wlf/utils/wlf_log.h"
@@ -301,6 +302,9 @@ static void render_node(struct wlf_scene *scene, struct wlf_scene_node *node,
 			target, &clip);
 	} else if (wlf_scene_node_is_texture(node)) {
 		wlf_texture_node_render(wlf_texture_node_from_node(node),
+			scene->texture_pass, target, &clip);
+	} else if (wlf_scene_node_is_text(node)) {
+		wlf_text_node_render(wlf_text_node_from_node(node),
 			scene->texture_pass, target, &clip);
 	} else if (wlf_scene_node_is_rect_shape(node)) {
 		wlf_rect_shape_node_render(wlf_rect_shape_node_from_node(node),
