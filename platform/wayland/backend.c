@@ -58,6 +58,12 @@ static const struct wl_shm_listener shm_listener = {
 	.format = shm_handle_format,
 };
 
+static void update_seat_cursor(struct wlf_wl_backend *wayland) {
+	wlf_wl_seat_configure_cursor(wayland->wl_seat.seat,
+		wayland->wp_cursor_shape_manager_v1.cursor_shape_manager_v1,
+		wayland->wl_compositor.compositor, wayland->wl_shm.shm);
+}
+
 static void destroy_wl_compositor(struct wlf_wl_backend *wayland) {
 	if (wayland->wl_compositor.compositor == NULL) {
 		return;
@@ -763,6 +769,12 @@ static void display_global_added(void *data, struct wl_registry *wl_registry,
 
 	wlf_linked_list_insert(&wayland->interfaces, &new_reg->link);
 	wlf_signal_emit_mutable(&wayland->events.global_add, new_reg);
+	if (strcmp(interface, wl_seat_interface.name) == 0 ||
+			strcmp(interface, wl_compositor_interface.name) == 0 ||
+			strcmp(interface, wl_shm_interface.name) == 0 ||
+			strcmp(interface, wp_cursor_shape_manager_v1_interface.name) == 0) {
+		update_seat_cursor(wayland);
+	}
 }
 
 static void display_global_remove(void *data,
@@ -791,6 +803,8 @@ static void display_global_remove(void *data,
 	}
 
 	if (name == wayland->wp_cursor_shape_manager_v1.name) {
+		wlf_wl_seat_configure_cursor(wayland->wl_seat.seat, NULL,
+			wayland->wl_compositor.compositor, wayland->wl_shm.shm);
 		destroy_wp_cursor_shape_manager_v1(wayland);
 	}
 
@@ -843,10 +857,18 @@ static void display_global_remove(void *data,
 	}
 
 	if (name == wayland->wl_shm.name) {
+		if (wayland->wp_cursor_shape_manager_v1.cursor_shape_manager_v1 == NULL) {
+			wlf_wl_seat_configure_cursor(wayland->wl_seat.seat, NULL,
+				wayland->wl_compositor.compositor, NULL);
+		}
 		destroy_wl_shm(wayland);
 	}
 
 	if (name == wayland->wl_compositor.name) {
+		if (wayland->wp_cursor_shape_manager_v1.cursor_shape_manager_v1 == NULL) {
+			wlf_wl_seat_configure_cursor(wayland->wl_seat.seat, NULL,
+				NULL, wayland->wl_shm.shm);
+		}
 		destroy_wl_compositor(wayland);
 	}
 

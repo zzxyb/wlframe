@@ -65,6 +65,10 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 			.enable_set_max_size = impl->set_max_size != NULL,
 		},
 	};
+	if (type == WLF_WINDOW_TYPE_TOPLEVEL || type == WLF_WINDOW_TYPE_DIALOG) {
+		window->state.flags = WLF_WINDOW_FLAG_RESIZABLE |
+			WLF_WINDOW_FLAG_DECORATED;
+	}
 
 	wlf_render_format_init(&window->state.format, get_render_format(false));
 	window->uses_theme_background = true;
@@ -243,6 +247,18 @@ void wlf_window_begin_move(struct wlf_window *window,
 	window->impl->begin_move(window, pointer, serial);
 }
 
+void wlf_window_begin_resize(struct wlf_window *window,
+		struct wlf_pointer *pointer, uint32_t serial,
+		enum wlf_window_resize_edge edge) {
+	if (window == NULL || pointer == NULL || serial == 0 ||
+			edge == WLF_WINDOW_RESIZE_EDGE_NONE ||
+			!(window->state.flags & WLF_WINDOW_FLAG_RESIZABLE) ||
+			window->impl->begin_resize == NULL) {
+		return;
+	}
+	window->impl->begin_resize(window, pointer, serial, edge);
+}
+
 uint32_t wlf_window_scale_length(const struct wlf_window *window,
 		uint32_t logical_length) {
 	assert(window != NULL);
@@ -280,6 +296,9 @@ void wlf_window_set_state(struct wlf_window *window,
 		if (!wlf_scene_set_client_side_decorated(window->scene, client_side)) {
 			wlf_log(WLF_ERROR, "Failed to update client-side decoration state");
 		}
+		if (window->scene->titlebar != NULL) {
+			wlf_titlebar_arrange(window->scene->titlebar);
+		}
 	}
 }
 
@@ -288,6 +307,9 @@ void wlf_window_set_flags(struct wlf_window *window, uint32_t flags) {
 
 	if (window->impl->set_flags) {
 		window->impl->set_flags(window, flags);
+	}
+	if (window->scene != NULL && window->scene->titlebar != NULL) {
+		wlf_titlebar_arrange(window->scene->titlebar);
 	}
 }
 
@@ -396,6 +418,8 @@ static void window_update_pointer_node(struct wlf_window *window,
 			window->pointer_event_node, &event);
 	}
 	window->pointer_event_node = next;
+	(void)wlf_pointer_set_cursor_shape(pointer, next != NULL ?
+		next->cursor_shape : WLF_CURSOR_SHAPE_DEFAULT);
 	if (next != NULL) {
 		wlf_event_node_notify_pointer_enter(next, &event);
 	}
@@ -405,6 +429,8 @@ void wlf_window_pointer_enter(struct wlf_window *window,
 		const struct wlf_pointer_enter_event *event) {
 	window->pointer_x = event->x;
 	window->pointer_y = event->y;
+	(void)wlf_pointer_set_cursor_shape(event->pointer,
+		WLF_CURSOR_SHAPE_DEFAULT);
 	wlf_signal_emit_mutable(&window->events.pointer_enter, (void *)event);
 	window_update_pointer_node(window, event->pointer, event->x, event->y);
 }

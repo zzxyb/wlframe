@@ -248,6 +248,10 @@ static bool seat_create_pointer(struct wlf_wl_seat *seat) {
 	if (seat->pointer == NULL) {
 		return false;
 	}
+	wlf_wl_pointer_configure_cursor(
+		wlf_wl_pointer_from_pointer(seat->pointer),
+		seat->cursor_shape_manager, seat->cursor_compositor,
+		seat->cursor_shm);
 	seat->listeners.pointer_enter.notify = handle_pointer_enter;
 	seat->listeners.pointer_leave.notify = handle_pointer_leave;
 	seat->listeners.pointer_motion.notify = handle_pointer_motion;
@@ -400,4 +404,20 @@ void wlf_wl_seat_destroy(struct wlf_wl_seat *seat) {
 
 	free(seat->name);
 	free(seat);
+}
+
+void wlf_wl_seat_configure_cursor(struct wlf_wl_seat *seat,
+		struct wp_cursor_shape_manager_v1 *shape_manager,
+		struct wl_compositor *compositor, struct wl_shm *shm) {
+	if (seat == NULL) {
+		return;
+	}
+	seat->cursor_shape_manager = shape_manager;
+	seat->cursor_compositor = compositor;
+	seat->cursor_shm = shm;
+	if (seat->pointer != NULL) {
+		wlf_wl_pointer_configure_cursor(
+			wlf_wl_pointer_from_pointer(seat->pointer),
+			shape_manager, compositor, shm);
+	}
 }

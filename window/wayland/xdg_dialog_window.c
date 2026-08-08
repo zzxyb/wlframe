@@ -275,6 +275,19 @@ static void xdg_dialog_window_begin_move(struct wlf_window *base,
 	wlf_xdg_toplevel_move(window->xdg_toplevel, wl_pointer->seat, serial);
 }
 
+static void xdg_dialog_window_begin_resize(struct wlf_window *base,
+		struct wlf_pointer *pointer, uint32_t serial,
+		enum wlf_window_resize_edge edge) {
+	struct wlf_xdg_dialog_window *window = dialog_from_window(base);
+	if (window == NULL || !wlf_pointer_is_wayland(pointer)) {
+		return;
+	}
+	struct wlf_wl_pointer *wl_pointer =
+		wlf_wl_pointer_from_pointer(pointer);
+	wlf_xdg_toplevel_resize(window->xdg_toplevel, wl_pointer->seat, serial,
+		(enum wlf_xdg_toplevel_resize_edge)edge);
+}
+
 static void xdg_dialog_window_set_opaque_region(struct wlf_window *base,
 		const pixman_region32_t *region) {
 	struct wlf_xdg_dialog_window *window = dialog_from_window(base);
@@ -308,6 +321,7 @@ static const struct wlf_window_impl xdg_dialog_window_impl = {
 	.set_max_size = xdg_dialog_window_set_max_size,
 	.set_position = NULL,
 	.begin_move = xdg_dialog_window_begin_move,
+	.begin_resize = xdg_dialog_window_begin_resize,
 	.set_state = NULL,
 	.set_flags = xdg_dialog_window_set_flags,
 	.set_input_region = xdg_dialog_window_set_input_region,

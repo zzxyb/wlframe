@@ -123,6 +123,11 @@ if is_linux
 		fallback: 'wayland',
 		default_options: wayland_project_options,
 	)
+	wayland_cursor = dependency('wayland-cursor',
+		version: '>=1.23',
+		fallback: 'wayland',
+		default_options: wayland_project_options,
+	)
 	wayland_protos = dependency('wayland-protocols',
 		version: '>=1.44',
 		fallback: 'wayland-protocols',
@@ -257,6 +262,7 @@ elif is_linux
 		math,
 		rt,
 		wayland_client,
+		wayland_cursor,
 		wayland_protos,
 		vulkan,
 		gbm,

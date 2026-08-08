@@ -15,6 +15,7 @@
 #define SCENE_WLF_EVENT_NODE_H
 
 #include "wlf/scene/wlf_scene_node.h"
+#include "wlf/types/wlf_cursor.h"
 
 struct wlf_pointer;
 struct wlf_window;
@@ -31,6 +32,7 @@ struct wlf_event_node {
 	struct wlf_scene_node base;
 	pixman_region32_t input_region;
 	bool pointer_inside; /**< Whether the pointer currently targets this node. */
+	enum wlf_cursor_shape cursor_shape; /**< Shape used while pointer targets this node. */
 	struct {
 		struct wlf_signal pointer_enter;
 		struct wlf_signal pointer_leave;
@@ -63,6 +65,10 @@ struct wlf_event_node *wlf_event_node_create(struct wlf_scene_node *parent,
 /** Replaces the node-local input region. NULL clears it. */
 void wlf_event_node_set_input_region(struct wlf_event_node *node,
 	const pixman_region32_t *region);
+
+/** Sets the cursor shape shown while this node is the pointer target. */
+void wlf_event_node_set_cursor_shape(struct wlf_event_node *node,
+	enum wlf_cursor_shape shape);
 
 /** Updates pointer focus state and emits pointer_enter once per transition. */
 void wlf_event_node_notify_pointer_enter(struct wlf_event_node *node,
