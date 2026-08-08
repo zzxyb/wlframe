@@ -74,7 +74,8 @@ enum wlf_pixel_format {
 	WLF_FORMAT_R16F = WLF_FOURCC('R','1','6','F'),      /**< 16-bit float, single red channel */
 	WLF_FORMAT_R32F = WLF_FOURCC('R','3','2','F'),      /**< 32-bit float, single red channel */
 
-	WLF_FORMAT_RG88 = WLF_FOURCC('G','R','0','8'),      /**< 16-bit RG, 8 bits per channel */
+	WLF_FORMAT_GR88 = WLF_FOURCC('G','R','8','8'),      /**< 16-bit G:R, 8 bits per channel */
+	WLF_FORMAT_RG88 = WLF_FORMAT_GR88,                  /**< Compatibility alias for GR88 */
 	WLF_FORMAT_RG1616F = WLF_FOURCC('G','R','1','6'),   /**< 32-bit float RG, 16 bits per channel */
 	WLF_FORMAT_RG3232F = WLF_FOURCC('G','R','3','2'),   /**< 64-bit float RG, 32 bits per channel */
 
@@ -82,7 +83,7 @@ enum wlf_pixel_format {
 	WLF_FORMAT_RGBA32323232F = WLF_FOURCC('A','B','4','F'),  /**< 128-bit float RGBA, 32 bits per channel */
 
 	/* Single channel */
-	WLF_FORMAT_R8 = WLF_FOURCC('R','0','0','8'),        /**< 8-bit single red channel */
+	WLF_FORMAT_R8 = WLF_FOURCC('R','8',' ',' '),        /**< 8-bit single red channel */
 
 	/* YUV packed */
 	WLF_FORMAT_YVYU = WLF_FOURCC('Y','V','Y','U'),      /**< Packed YUV 4:2:2, YVYU order */
