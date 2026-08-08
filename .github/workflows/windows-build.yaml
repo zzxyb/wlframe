@@ -45,6 +45,9 @@ jobs:
           libwebp `
           giflib `
           pixman `
+          cairo `
+          pango `
+          harfbuzz `
           pkgconf `
           --triplet $env:VCPKG_TRIPLET
 
