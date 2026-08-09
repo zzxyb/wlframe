@@ -193,6 +193,7 @@ void wlf_scene_node_set_opacity(struct wlf_scene_node *node,
 	if (node->impl->set_opacity == NULL) {
 		node->state.opacity = opacity;
 		wlf_scene_node_update(node, NULL);
+		return;
 	}
 
 	node->impl->set_opacity(node, opacity);
