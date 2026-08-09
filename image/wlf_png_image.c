@@ -143,6 +143,7 @@ static bool png_image_load(struct wlf_image *image, const char *filename, bool e
 		return false;
 	}
 
+	png_set_interlace_handling(png_ptr);
 	png_read_update_info(png_ptr, info_ptr);
 
 	png_size_t rowbytes = png_get_rowbytes(png_ptr, info_ptr);
@@ -156,7 +157,7 @@ static bool png_image_load(struct wlf_image *image, const char *filename, bool e
 	free(row_pointers);
 	image->width = width;
 	image->height = height;
-	image->bit_depth = bit_depth;
+	image->bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 	if (rowbytes > UINT32_MAX) {
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		fclose(fp);
