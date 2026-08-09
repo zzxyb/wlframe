@@ -4,6 +4,8 @@ embed = files('embed.sh')
 shaders = [
 	'rect.vert',
 	'rect.frag',
+	'texture.vert',
+	'texture.frag',
 ]
 
 foreach name : shaders
