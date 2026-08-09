@@ -13,6 +13,14 @@
 #include <stdint.h>
 #include <string.h>
 
+static void egl_buffer_destroy(struct wlf_buffer *buffer) {
+	wlf_buffer_finish(buffer);
+}
+
+static const struct wlf_buffer_impl egl_buffer_impl = {
+	.destroy = egl_buffer_destroy,
+};
+
 #if WLF_HAS_LINUX_PLATFORM
 static bool egl_supports_platform_window_surface(const struct wlf_egl *egl) {
 	return egl->exts.EXT_platform_base &&
@@ -24,6 +32,7 @@ static bool egl_supports_platform_window_surface(const struct wlf_egl *egl) {
 static void swapchain_destroy(struct wlf_swapchain *swapchain) {
 	struct wlf_egl_swapchain *egl_swapchain =
 		wlf_egl_swapchain_from_swapchain(swapchain);
+	wlf_buffer_drop(&egl_swapchain->buffer);
 
 	if (egl_swapchain->surface != EGL_NO_SURFACE) {
 		struct wlf_gles_renderer *gles_renderer =
@@ -89,9 +98,11 @@ static bool swapchain_resize(struct wlf_swapchain *swapchain, int width,
 		int height) {
 	swapchain->width = width;
 	swapchain->height = height;
-#if WLF_HAS_LINUX_PLATFORM
 	struct wlf_egl_swapchain *egl_swapchain =
 		wlf_egl_swapchain_from_swapchain(swapchain);
+	egl_swapchain->buffer.width = width;
+	egl_swapchain->buffer.height = height;
+#if WLF_HAS_LINUX_PLATFORM
 	if (egl_swapchain->egl_window != NULL) {
 		wl_egl_window_resize(egl_swapchain->egl_window, width, height, 0, 0);
 	}
@@ -116,6 +127,8 @@ struct wlf_swapchain *wlf_egl_swapchain_create(struct wlf_window *window,
 
 	wlf_swapchain_init(&swapchain->base, NULL, &swapchain_impl, width, height);
 	swapchain->base.window = window;
+	wlf_buffer_init(&swapchain->buffer, &egl_buffer_impl, width, height);
+	swapchain->base.back = &swapchain->buffer;
 	if (!wlf_render_format_copy(&swapchain->base.format, format)) {
 		wlf_swapchain_destroy(&swapchain->base);
 		return NULL;
@@ -191,4 +204,19 @@ struct wlf_egl_swapchain *wlf_egl_swapchain_from_swapchain(
 		wlf_container_of(swapchain, egl_swapchain, base);
 
 	return egl_swapchain;
+}
+
+bool wlf_buffer_is_egl(struct wlf_buffer *buffer) {
+	return buffer != NULL && buffer->impl == &egl_buffer_impl;
+}
+
+struct wlf_egl_swapchain *wlf_egl_swapchain_from_buffer(
+		struct wlf_buffer *buffer) {
+	if (!wlf_buffer_is_egl(buffer)) {
+		return NULL;
+	}
+
+	struct wlf_egl_swapchain *swapchain =
+		wlf_container_of(buffer, swapchain, buffer);
+	return swapchain;
 }

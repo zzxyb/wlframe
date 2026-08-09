@@ -75,6 +75,7 @@ struct wlf_swapchain {
 	const struct wlf_swapchain_impl *impl; /**< Virtual method table */
 	struct wlf_allocator *allocator;       /**< Allocator used to create buffers (NULL if destroyed) */
 	struct wlf_window *window;
+	struct wlf_buffer *back;                /**< Generic buffer used for rendering */
 
 	int width, height;                     /**< Size of all buffers in pixels */
 	struct wlf_render_format format;
@@ -104,6 +105,15 @@ void wlf_swapchain_init(struct wlf_swapchain *swapchain, struct wlf_allocator *a
 
 struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window,
 	int width, int height, const struct wlf_render_format *format);
+
+/**
+ * @brief Returns the buffer currently available for rendering.
+ *
+ * @param swapchain Swapchain to query.
+ * @return Back buffer, or NULL if the swapchain has no generic buffer.
+ */
+struct wlf_buffer *wlf_swapchain_get_back_buffer(
+	struct wlf_swapchain *swapchain);
 
 /**
  * @brief Destroys a swapchain.

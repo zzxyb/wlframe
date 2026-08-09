@@ -86,6 +86,17 @@ void wlf_renderer_destroy(struct wlf_renderer *render) {
 	}
 }
 
+struct wlf_render_target_info *wlf_renderer_begin_buffer_pass(
+		struct wlf_renderer *renderer, struct wlf_buffer *buffer,
+		const struct wlf_buffer_pass_options *options) {
+	if (renderer == NULL || renderer->impl == NULL ||
+			renderer->impl->begin_buffer_pass == NULL) {
+		return NULL;
+	}
+
+	return renderer->impl->begin_buffer_pass(renderer, buffer, options);
+}
+
 void wlf_renderer_init(struct wlf_renderer *render,
 		const struct wlf_renderer_impl *impl) {
 	assert(impl);

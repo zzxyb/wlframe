@@ -55,6 +55,7 @@ static void swapchain_present(struct wlf_swapchain *swapchain,
 	struct wlf_buffer *tmp = shm_swapchain->front;
 	shm_swapchain->front = shm_swapchain->back;
 	shm_swapchain->back = tmp;
+	shm_swapchain->base.back = shm_swapchain->back;
 }
 
 static bool swapchain_resize(struct wlf_swapchain *swapchain, int width,
@@ -84,6 +85,7 @@ static bool swapchain_resize(struct wlf_swapchain *swapchain, int width,
 	wlf_buffer_drop(shm_swapchain->back);
 	shm_swapchain->front = front;
 	shm_swapchain->back = back;
+	shm_swapchain->base.back = back;
 	swapchain->width = width;
 	swapchain->height = height;
 
@@ -131,6 +133,7 @@ struct wlf_swapchain *wlf_shm_swapchain_create(struct wlf_window *window,
 		wlf_swapchain_destroy(&swapchain->base);
 		return NULL;
 	}
+	swapchain->base.back = swapchain->back;
 
 	return &swapchain->base;
 }

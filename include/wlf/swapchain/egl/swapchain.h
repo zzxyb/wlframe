@@ -33,6 +33,7 @@
  */
 struct wlf_egl_swapchain {
 	struct wlf_swapchain base; /**< Generic swapchain interface. */
+	struct wlf_buffer buffer;  /**< Generic handle for the EGL surface. */
 
 #if WLF_HAS_LINUX_PLATFORM
 	struct wl_egl_window *egl_window; /**< Native Wayland EGL window. */
@@ -65,5 +66,16 @@ bool wlf_swapchain_is_egl(const struct wlf_swapchain *swapchain);
  * @return Enclosing EGL swapchain, or NULL when the type does not match.
  */
 struct wlf_egl_swapchain *wlf_egl_swapchain_from_swapchain(struct wlf_swapchain *swapchain);
+
+/**
+ * @brief Checks whether a generic buffer represents an EGL surface.
+ */
+bool wlf_buffer_is_egl(struct wlf_buffer *buffer);
+
+/**
+ * @brief Gets the EGL swapchain represented by a generic buffer.
+ */
+struct wlf_egl_swapchain *wlf_egl_swapchain_from_buffer(
+	struct wlf_buffer *buffer);
 
 #endif // EGL_SWAPCHAIN_H

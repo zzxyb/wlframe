@@ -2,11 +2,9 @@
 #include "wlf/pass/gles/rect_pass.h"
 #include "wlf/pass/gles/texture_pass.h"
 #include "wlf/pass/gles/vector_pass.h"
-#include "wlf/pass/gles/render_target_info.h"
 #include "wlf/pass/pixman/rect_pass.h"
 #include "wlf/pass/pixman/texture_pass.h"
 #include "wlf/pass/pixman/vector_pass.h"
-#include "wlf/pass/pixman/render_target_info.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
@@ -21,8 +19,6 @@
 #include "wlf/scene/wlf_poly_node.h"
 #include "wlf/scene/wlf_path_node.h"
 #include "wlf/image/wlf_image.h"
-#include "wlf/swapchain/egl/swapchain.h"
-#include "wlf/swapchain/shm/swapchain.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/window/wayland/xdg_toplevel_window.h"
@@ -94,37 +90,14 @@ static void handle_expose(struct wlf_listener *listener, void *data) {
 	pixman_region32_init_rect(&damage, 0, 0,
 		window->state.geometry.width, window->state.geometry.height);
 
-	if (wlf_renderer_is_gles(window->state.renderer) &&
-			wlf_swapchain_is_egl(window->state.swapchain)) {
-		struct wlf_egl_swapchain *swapchain =
-			wlf_egl_swapchain_from_swapchain(window->state.swapchain);
-		struct wlf_gles_render_target_info *target =
-			wlf_gles_begin_egl_render_pass(swapchain);
-		if (target != NULL) {
-			render_scene(state, window, &target->base, &damage);
-			wlf_render_target_info_destroy(&target->base);
-			wlf_swapchain_present(window->state.swapchain, &damage);
-		}
-	} else if (wlf_renderer_is_pixman(window->state.renderer) &&
-			wlf_swapchain_is_shm(window->state.swapchain)) {
-		struct wlf_shm_swapchain *swapchain =
-			wlf_shm_swapchain_from_swapchain(window->state.swapchain);
-		struct wlf_pixman_renderer *renderer =
-			wlf_pixman_renderer_from_renderer(window->state.renderer);
-		struct wlf_pixman_buffer *buffer =
-			wlf_pixman_buffer_get(renderer, swapchain->back);
-		if (buffer == NULL) {
-			buffer = wlf_pixman_buffer_create(renderer, swapchain->back);
-		}
-		if (buffer != NULL) {
-			struct wlf_pixman_render_target_info *target =
-				wlf_pixman_begin_pixman_render_pass(buffer);
-			if (target != NULL) {
-				render_scene(state, window, &target->base, &damage);
-				wlf_render_target_info_destroy(&target->base);
-				wlf_swapchain_present(window->state.swapchain, &damage);
-			}
-		}
+	struct wlf_render_target_info *target = wlf_renderer_begin_buffer_pass(
+		window->state.renderer,
+		wlf_swapchain_get_back_buffer(window->state.swapchain),
+		&(struct wlf_buffer_pass_options){ .damage = &damage });
+	if (target != NULL) {
+		render_scene(state, window, target, &damage);
+		wlf_render_target_info_destroy(target);
+		wlf_swapchain_present(window->state.swapchain, &damage);
 	}
 	pixman_region32_fini(&damage);
 }

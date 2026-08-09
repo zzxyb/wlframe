@@ -23,6 +23,15 @@
 
 struct wlf_renderer;
 struct wlf_backend;
+struct wlf_render_target_info;
+
+/**
+ * @struct wlf_buffer_pass_options
+ * @brief Options used when beginning a render pass for a buffer.
+ */
+struct wlf_buffer_pass_options {
+	const pixman_region32_t *damage; /**< Damage that will be rendered. */
+};
 
 /**
  * @enum wlf_renderer_type
@@ -45,6 +54,9 @@ enum wlf_renderer_type {
  */
 struct wlf_renderer_impl {
 	void (*destroy)(struct wlf_renderer *render);
+	struct wlf_render_target_info *(*begin_buffer_pass)(
+		struct wlf_renderer *renderer, struct wlf_buffer *buffer,
+		const struct wlf_buffer_pass_options *options);
 	struct wlf_texture *(*texture_from_buffer)(struct wlf_renderer *renderer,
 		struct wlf_buffer *buffer);
 };
@@ -88,6 +100,18 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend);
  * @param render Pointer to the renderer to destroy
  */
 void wlf_renderer_destroy(struct wlf_renderer *render);
+
+/**
+ * @brief Begins a render pass for a buffer using the renderer backend.
+ *
+ * @param renderer Renderer that will perform the rendering.
+ * @param buffer Buffer to render into.
+ * @param options Render-pass options, or NULL for default options.
+ * @return Backend-independent render target info, or NULL on failure.
+ */
+struct wlf_render_target_info *wlf_renderer_begin_buffer_pass(
+	struct wlf_renderer *renderer, struct wlf_buffer *buffer,
+	const struct wlf_buffer_pass_options *options);
 
 /**
  * @brief Initializes a renderer instance with the given implementation.
