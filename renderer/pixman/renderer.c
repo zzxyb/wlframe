@@ -3,6 +3,7 @@
 #include "wlf/texture/wlf_texture.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/buffer/pixman/buffer.h"
+#include "wlf/pass/pixman/render_target_info.h"
 #include "wlf/texture/pixman/texture.h"
 
 #include <pixman.h>
@@ -74,8 +75,33 @@ static struct wlf_texture *pixman_renderer_texture_from_buffer(struct wlf_render
 	return &texture->wlf_texture;
 }
 
+static struct wlf_render_target_info *pixman_renderer_begin_buffer_pass(
+		struct wlf_renderer *renderer, struct wlf_buffer *buffer,
+		const struct wlf_buffer_pass_options *options) {
+	(void)options;
+	if (buffer == NULL) {
+		return NULL;
+	}
+
+	struct wlf_pixman_renderer *pixman_renderer =
+		wlf_pixman_renderer_from_renderer(renderer);
+	struct wlf_pixman_buffer *pixman_buffer =
+		wlf_pixman_buffer_get(pixman_renderer, buffer);
+	if (pixman_buffer == NULL) {
+		pixman_buffer = wlf_pixman_buffer_create(pixman_renderer, buffer);
+	}
+	if (pixman_buffer == NULL) {
+		return NULL;
+	}
+
+	struct wlf_pixman_render_target_info *target =
+		wlf_pixman_begin_pixman_render_pass(pixman_buffer);
+	return target != NULL ? &target->base : NULL;
+}
+
 static const struct wlf_renderer_impl pixman_renderer_impl = {
 	.destroy = pixman_renderer_destroy,
+	.begin_buffer_pass = pixman_renderer_begin_buffer_pass,
 	.texture_from_buffer = pixman_renderer_texture_from_buffer,
 };
 

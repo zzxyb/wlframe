@@ -26,6 +26,11 @@ void wlf_swapchain_init(struct wlf_swapchain *swapchain, struct wlf_allocator *a
 	wlf_signal_init(&swapchain->events.destroy);
 }
 
+struct wlf_buffer *wlf_swapchain_get_back_buffer(
+		struct wlf_swapchain *swapchain) {
+	return swapchain != NULL ? swapchain->back : NULL;
+}
+
 struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window, int width,
 		int height, const struct wlf_render_format *format) {
 	assert(width > 0 && height > 0);

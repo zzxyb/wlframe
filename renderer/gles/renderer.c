@@ -5,6 +5,9 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/texture/gles/texture.h"
+#include "wlf/pass/gles/render_target_info.h"
+#include "wlf/swapchain/egl/swapchain.h"
+#include "wlf/window/wlf_window.h"
 #include "wlf/config.h"
 
 #include <stdlib.h>
@@ -28,8 +31,29 @@ static struct wlf_texture *renderer_texture_from_buffer(
 		wlf_gles_renderer_from_renderer(renderer), buffer);
 }
 
+static struct wlf_render_target_info *renderer_begin_buffer_pass(
+		struct wlf_renderer *renderer, struct wlf_buffer *buffer,
+		const struct wlf_buffer_pass_options *options) {
+	(void)options;
+	if (!wlf_buffer_is_egl(buffer)) {
+		return NULL;
+	}
+
+	struct wlf_egl_swapchain *swapchain =
+		wlf_egl_swapchain_from_buffer(buffer);
+	if (swapchain == NULL || swapchain->base.window == NULL ||
+			swapchain->base.window->state.renderer != renderer) {
+		return NULL;
+	}
+
+	struct wlf_gles_render_target_info *target =
+		wlf_gles_begin_egl_render_pass(swapchain);
+	return target != NULL ? &target->base : NULL;
+}
+
 static const struct wlf_renderer_impl renderer_impl = {
 	.destroy = renderer_destroy,
+	.begin_buffer_pass = renderer_begin_buffer_pass,
 	.texture_from_buffer = renderer_texture_from_buffer,
 };
 
