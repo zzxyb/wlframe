@@ -21,6 +21,7 @@
  * @author      YaoBing Xiao
  * @date        2026-05-22
  * @version     v1.0
+ * @par Copyright(c):
  * @par History:
  *      version: v1.0, YaoBing Xiao, 2026-05-22, initial version\n
  */
