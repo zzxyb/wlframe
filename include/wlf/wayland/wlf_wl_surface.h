@@ -53,6 +53,7 @@ struct wlf_wl_surface_output_event {
 struct wlf_wl_surface {
 	struct wl_surface *wl_surface;        /**< Underlying Wayland surface object. */
 	struct wl_compositor *wl_compositor;  /**< Compositor used to create regions. */
+	struct wl_callback *throttle_callback; /**< Pending display sync callback used to throttle commits. */
 	int32_t preferred_buffer_scale;       /**< Current preferred buffer scale factor. */
 	uint32_t preferred_buffer_transform;  /**< Current preferred buffer transform. */
 	uint32_t version;                     /**< Bound wl_surface protocol version. */
@@ -63,6 +64,7 @@ struct wlf_wl_surface {
 		struct wlf_signal leave;                      /**< Emitted when the surface leaves an output. Payload: wlf_wl_surface_output_event. */
 		struct wlf_signal preferred_buffer_scale;     /**< Emitted when preferred_buffer_scale changes. Payload: wlf_wl_surface. */
 		struct wlf_signal preferred_buffer_transform; /**< Emitted when preferred_buffer_transform changes. Payload: wlf_wl_surface. */
+		struct wlf_signal throttle_done;              /**< Emitted when the pending throttle sync callback completes. Payload: wlf_wl_surface. */
 	} events;
 };
 
