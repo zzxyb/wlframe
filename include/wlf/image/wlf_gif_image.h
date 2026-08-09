@@ -5,6 +5,12 @@
  *              functions, providing a unified interface for creating,
  *              converting, loading, and saving GIF images (including
  *              animated GIFs) within wlframe.
+ * @author      YaoBing Xiao
+ * @date        2026-08-09
+ * @version     v1.0
+ * @par Copyright(c):
+ * @par History:
+ *      version: v1.0, YaoBing Xiao, 2026-08-09, initial version\n
  */
 
 #ifndef IMAGE_WLF_GIF_IMAGE_H
