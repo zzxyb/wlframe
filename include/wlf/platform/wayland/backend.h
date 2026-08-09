@@ -43,6 +43,7 @@ struct zwlr_layer_shell_v1;
 struct zwp_primary_selection_device_manager_v1;
 struct zwp_pointer_gestures_v1;
 struct zwp_keyboard_shortcuts_inhibit_manager_v1;
+struct wp_presentation;
 struct wlf_wl_seat;
 
 /**
@@ -186,6 +187,12 @@ struct wlf_wl_backend {
 		uint32_t bind_version;
 		uint32_t name;
 	} zwp_keyboard_shortcuts_inhibit_manager_v1;
+
+	struct {
+		struct wp_presentation *presentation;
+		uint32_t bind_version;
+		uint32_t name;
+	} wp_presentation;
 
 	struct {
 		struct wlf_signal global_add;   /**< Signal emitted when a global is added */

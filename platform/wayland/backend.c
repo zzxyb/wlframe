@@ -26,6 +26,7 @@
 #include "wayland/protocols/primary-selection-unstable-v1-client-protocol.h"
 #include "wayland/protocols/pointer-gestures-unstable-v1-client-protocol.h"
 #include "wayland/protocols/keyboard-shortcuts-inhibit-unstable-v1-client-protocol.h"
+#include "wayland/protocols/presentation-time-client-protocol.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -298,6 +299,17 @@ static void destroy_zwp_keyboard_shortcuts_inhibit_manager_v1(struct wlf_wl_back
 	wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.keyboard_shortcuts_inhibit_manager_v1 = NULL;
 	wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.bind_version = 0;
 	wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.name = 0;
+}
+
+static void destroy_wp_presentation(struct wlf_wl_backend *wayland) {
+	if (wayland->wp_presentation.presentation == NULL) {
+		return;
+	}
+
+	wp_presentation_destroy(wayland->wp_presentation.presentation);
+	wayland->wp_presentation.presentation = NULL;
+	wayland->wp_presentation.bind_version = 0;
+	wayland->wp_presentation.name = 0;
 }
 
 static void display_global_added(void *data, struct wl_registry *wl_registry,
@@ -760,6 +772,27 @@ static void display_global_added(void *data, struct wl_registry *wl_registry,
 		wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.name = name;
 		wlf_log(WLF_DEBUG, "Successfully bound interface (name: %s, version: %u)",
 			interface, bind_version);
+	} else if (strcmp(interface, wp_presentation_interface.name) == 0) {
+		if (version > (uint32_t)wp_presentation_interface.version) {
+			wlf_log(WLF_DEBUG, "Server %s version %u is higher than client version %u, "
+				"using client version", interface, version,
+				(uint32_t)wp_presentation_interface.version);
+			bind_version = (uint32_t)wp_presentation_interface.version;
+		}
+
+		wayland->wp_presentation.presentation = wl_registry_bind(wl_registry,
+			name,
+			&wp_presentation_interface,
+			bind_version);
+		if (wayland->wp_presentation.presentation == NULL) {
+			wlf_log(WLF_ERROR, "Failed to bind %s interface", interface);
+			return;
+		}
+
+		wayland->wp_presentation.bind_version = bind_version;
+		wayland->wp_presentation.name = name;
+		wlf_log(WLF_DEBUG, "Successfully bound interface (name: %s, version: %u)",
+			interface, bind_version);
 	}
 
 	struct wlf_wl_interface *new_reg = wlf_wl_interface_create(interface, version, name);
@@ -788,6 +821,10 @@ static void display_global_remove(void *data,
 
 	if (name == wayland->zwp_keyboard_shortcuts_inhibit_manager_v1.name) {
 		destroy_zwp_keyboard_shortcuts_inhibit_manager_v1(wayland);
+	}
+
+	if (name == wayland->wp_presentation.name) {
+		destroy_wp_presentation(wayland);
 	}
 
 	if (name == wayland->zwp_primary_selection_device_manager_v1.name) {
@@ -905,6 +942,7 @@ static void backend_destroy(struct wlf_backend *backend) {
 
 	destroy_zwp_keyboard_shortcuts_inhibit_manager_v1(wayland);
 	destroy_zwp_primary_selection_device_manager_v1(wayland);
+	destroy_wp_presentation(wayland);
 	destroy_wp_fractional_scale_manager_v1(wayland);
 	destroy_xdg_toplevel_icon_manager_v1(wayland);
 	destroy_wp_cursor_shape_manager_v1(wayland);
