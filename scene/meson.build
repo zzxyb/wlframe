@@ -3,6 +3,6 @@ wlf_files += files(
 	'wlf_rect_node.c',
 	'wlf_scene_tree.c',
 	'wlf_scene.c',
-	'wlf_shape_node.c',
 	'wlf_texture_node.c',
+	'wlf_shape_node.c',
 )
