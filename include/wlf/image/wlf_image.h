@@ -26,6 +26,8 @@
 #include <stdbool.h>
 
 struct wlf_image;
+struct wlf_renderer;
+struct wlf_texture;
 
 /**
  * @brief Supported image types.
@@ -164,5 +166,15 @@ bool wlf_image_save(struct wlf_image *image, const char *filename);
  * @return Pointer to a newly allocated wlf_image structure, or NULL on failure.
  */
 struct wlf_image *wlf_image_load(const char *filename);
+
+/**
+ * Creates a renderer texture from an 8-bit wlframe image.
+ *
+ * RGB, RGBA, grayscale and grayscale-alpha images are normalized to
+ * premultiplied RGBA before upload, so every format accepted by
+ * wlf_image_load() can be displayed through the same rendering path.
+ */
+struct wlf_texture *wlf_texture_from_image(struct wlf_renderer *renderer,
+	const struct wlf_image *image);
 
 #endif // IMAGE_WLF_IMAGE_H
