@@ -39,24 +39,37 @@ static struct wlf_texture *pixman_renderer_texture_from_buffer(struct wlf_render
 			&data, &drm_format, &stride)) {
 		return NULL;
 	}
+	if (stride == 0 || wlf_buffer->height > SIZE_MAX / stride) {
+		wlf_buffer_end_data_ptr_access(wlf_buffer);
+		return NULL;
+	}
+	size_t size = stride * wlf_buffer->height;
+	void *copy = malloc(size);
+	if (copy == NULL) {
+		wlf_buffer_end_data_ptr_access(wlf_buffer);
+		return NULL;
+	}
+	memcpy(copy, data, size);
 	wlf_buffer_end_data_ptr_access(wlf_buffer);
 
 	struct wlf_pixman_texture *texture = wlf_pixman_texture_create(renderer,
 		drm_format, wlf_buffer->width, wlf_buffer->height);
 	if (texture == NULL) {
+		free(copy);
 		return NULL;
 	}
 
 	texture->image = pixman_image_create_bits_no_clear(texture->format,
-		wlf_buffer->width, wlf_buffer->height, data, stride);
+		wlf_buffer->width, wlf_buffer->height, copy, stride);
 	if (!texture->image) {
 		wlf_log(WLF_ERROR, "Failed to create pixman image");
 		wlf_linked_list_remove(&texture->link);
+		free(copy);
 		free(texture);
 		return NULL;
 	}
 
-	texture->buffer = wlf_buffer_lock(wlf_buffer);
+	texture->data = copy;
 
 	return &texture->wlf_texture;
 }

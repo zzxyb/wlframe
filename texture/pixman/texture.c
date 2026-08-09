@@ -11,7 +11,9 @@ static void texture_destroy(struct wlf_texture *wlf_texture) {
 	struct wlf_pixman_texture *texture = wlf_pixman_texture_from_texture(wlf_texture);
 	wlf_linked_list_remove(&texture->link);
 	pixman_image_unref(texture->image);
-	wlf_buffer_unlock(texture->buffer);
+	if (texture->buffer != NULL) {
+		wlf_buffer_unlock(texture->buffer);
+	}
 	free(texture->data);
 	free(texture);
 }
