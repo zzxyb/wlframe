@@ -201,17 +201,34 @@ static bool ppm_image_load(struct wlf_image *image, const char *filename, bool e
 			}
 		}
 	} else {
-		if (fread(image->data, 1, data_size, fp) != data_size) {
-			wlf_log(WLF_ERROR, "Error reading binary pixel data!");
-			free(image->data);
-			fclose(fp);
-			return false;
-		}
-
-		// Scale values to 0-255 range if max_val is not 255
-		if (max_val != 255) {
+		if (max_val <= 255) {
+			if (fread(image->data, 1, data_size, fp) != data_size) {
+				wlf_log(WLF_ERROR, "Error reading binary pixel data!");
+				free(image->data);
+				fclose(fp);
+				return false;
+			}
+			if (max_val != 255) {
+				for (size_t i = 0; i < data_size; i++) {
+					image->data[i] = (image->data[i] * 255) / max_val;
+				}
+			}
+		} else {
+			/* PPM stores 16-bit samples most-significant byte first. Keep the
+			 * public image data normalized to the same 8-bit RGB layout used by
+			 * the other decoders. */
 			for (size_t i = 0; i < data_size; i++) {
-				image->data[i] = (image->data[i] * 255) / max_val;
+				int high = fgetc(fp);
+				int low = fgetc(fp);
+				if (high == EOF || low == EOF) {
+					wlf_log(WLF_ERROR, "Error reading 16-bit pixel data!");
+					free(image->data);
+					fclose(fp);
+					return false;
+				}
+				unsigned int sample = ((unsigned int)high << 8) | (unsigned int)low;
+				image->data[i] = (unsigned char)((sample * 255U + max_val / 2U) /
+					(unsigned int)max_val);
 			}
 		}
 	}
@@ -219,7 +236,7 @@ static bool ppm_image_load(struct wlf_image *image, const char *filename, bool e
 	image->width = (uint32_t)width;
 	image->height = (uint32_t)height;
 	image->format = WLF_COLOR_TYPE_RGB;
-	image->bit_depth = (max_val <= 255) ? WLF_IMAGE_BIT_DEPTH_8 : WLF_IMAGE_BIT_DEPTH_16;
+	image->bit_depth = WLF_IMAGE_BIT_DEPTH_8;
 	image->stride = (uint32_t)stride;
 	image->has_alpha_channel = false;
 	image->is_opaque = true;
