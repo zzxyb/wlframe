@@ -1,13 +1,20 @@
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/pass/gles/rect_pass.h"
+#include "wlf/pass/gles/texture_pass.h"
+#include "wlf/pass/gles/vector_pass.h"
 #include "wlf/pass/gles/render_target_info.h"
 #include "wlf/pass/pixman/rect_pass.h"
+#include "wlf/pass/pixman/texture_pass.h"
+#include "wlf/pass/pixman/vector_pass.h"
 #include "wlf/pass/pixman/render_target_info.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
 #include "wlf/scene/wlf_rect_node.h"
 #include "wlf/scene/wlf_scene_tree.h"
+#include "wlf/scene/wlf_texture_node.h"
+#include "wlf/scene/wlf_shape_node.h"
+#include "wlf/image/wlf_image.h"
 #include "wlf/swapchain/egl/swapchain.h"
 #include "wlf/swapchain/shm/swapchain.h"
 #include "wlf/utils/wlf_log.h"
@@ -16,12 +23,23 @@
 #include "wlf/window/wlf_window.h"
 #include "wlf/utils/wlf_env.h"
 
+#include <math.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct render_state {
 	struct wlf_listener expose;
 	struct wlf_rect_pass *rect_pass;
+	struct wlf_texture_pass *texture_pass;
+	struct wlf_vector_pass *vector_pass;
 	struct wlf_rect_node *rect;
+	struct wlf_texture_node *image;
+	struct wlf_rect_shape_node *rounded_rect;
+	struct wlf_circle_node *circle;
+	struct wlf_ellipse_node *ellipse;
+	struct wlf_line_node *line;
+	struct wlf_poly_node *poly;
+	struct wlf_path_node *path;
 };
 
 static void render_scene(struct render_state *state, struct wlf_window *window,
@@ -39,6 +57,19 @@ static void render_scene(struct render_state *state, struct wlf_window *window,
 	};
 	wlf_render_pass_add_rect(state->rect_pass, target, &background);
 	wlf_rect_node_render(state->rect, state->rect_pass, target, damage);
+	wlf_texture_node_render(state->image, state->texture_pass, target, damage);
+	wlf_rect_shape_node_render(state->rounded_rect,
+		state->vector_pass, target, damage);
+	wlf_circle_node_render(state->circle,
+		state->vector_pass, target, damage);
+	wlf_ellipse_node_render(state->ellipse,
+		state->vector_pass, target, damage);
+	wlf_line_node_render(state->line,
+		state->vector_pass, target, damage);
+	wlf_poly_node_render(state->poly,
+		state->vector_pass, target, damage);
+	wlf_path_node_render(state->path,
+		state->vector_pass, target, damage);
 }
 
 static void handle_expose(struct wlf_listener *listener, void *data) {
@@ -97,9 +128,41 @@ static struct wlf_rect_pass *create_rect_pass(struct wlf_renderer *renderer) {
 	return NULL;
 }
 
+static struct wlf_texture_pass *create_texture_pass(
+		struct wlf_renderer *renderer) {
+	if (wlf_renderer_is_gles(renderer)) {
+		return wlf_gles_texture_pass_create();
+	}
+	if (wlf_renderer_is_pixman(renderer)) {
+		return wlf_pixman_texture_pass_create();
+	}
+	wlf_log(WLF_ERROR, "No texture pass for selected renderer");
+	return NULL;
+}
+
+static struct wlf_vector_pass *create_vector_pass(
+		struct wlf_renderer *renderer) {
+	if (wlf_renderer_is_gles(renderer)) {
+		return wlf_gles_vector_pass_create();
+	}
+	if (wlf_renderer_is_pixman(renderer)) {
+		return wlf_pixman_vector_pass_create();
+	}
+	wlf_log(WLF_ERROR, "No vector pass for selected renderer");
+	return NULL;
+}
+
+static void set_shape_style(struct wlf_shape_state *state,
+		struct wlf_color fill, struct wlf_color stroke, float stroke_width) {
+	state->fill_color = fill;
+	state->stroke_color = stroke;
+	state->stroke_width = stroke_width;
+	state->has_fill = true;
+	state->has_stroke = stroke_width > 0;
+}
+
 int main(int argc, char *argv[]) {
-	(void)argc;
-	(void)argv;
+	const char *image_path = argc > 1 ? argv[1] : WLF_WINDOW_TEST_IMAGE;
 
 	wlf_log_init(WLF_DEBUG, NULL);
 	struct wlf_backend *backend = wlf_backend_autocreate();
@@ -116,8 +179,14 @@ int main(int argc, char *argv[]) {
 	}
 
 	struct wlf_window *window =
-		wlf_xdg_toplevel_window_create_from_backend(backend, 400, 300);
+		wlf_xdg_toplevel_window_create_from_backend(backend, 760, 500);
+	if (window == NULL) {
+		wlf_renderer_destroy(renderer);
+		wlf_backend_destroy(backend);
+		return EXIT_FAILURE;
+	}
 	wlf_window_init_renderer(window, renderer);
+	wlf_window_set_title(window, "wlframe scene shapes and image test");
 
 	struct wlf_scene_tree *tree = wlf_root_scene_tree_create();
 	if (tree == NULL) {
@@ -133,20 +202,133 @@ int main(int argc, char *argv[]) {
 			.notify = handle_expose,
 		},
 		.rect_pass = create_rect_pass(renderer),
+		.texture_pass = create_texture_pass(renderer),
+		.vector_pass = create_vector_pass(renderer),
 	};
-	if (render.rect_pass == NULL) {
+	if (render.rect_pass == NULL || render.texture_pass == NULL ||
+			render.vector_pass == NULL) {
+		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_render_texture_pass_destroy(render.texture_pass);
+		wlf_render_vector_pass_destroy(render.vector_pass);
+		wlf_scene_node_destroy(&tree->base);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
 
 	struct wlf_color rect_color = wlf_color_from_rgba8(64, 148, 255, 230);
-	render.rect = wlf_rect_node_create(&tree->base, 80, 70, 240, 140,
+	render.rect = wlf_rect_node_create(&tree->base, 25, 25, 300, 220,
 		&rect_color);
 	if (render.rect == NULL) {
+		wlf_scene_node_destroy(&tree->base);
+		wlf_render_vector_pass_destroy(render.vector_pass);
+		wlf_render_texture_pass_destroy(render.texture_pass);
 		wlf_render_rect_pass_destroy(render.rect_pass);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
+
+	struct wlf_image *image = wlf_image_load(image_path);
+	if (image == NULL) {
+		wlf_log(WLF_ERROR, "Failed to load image: %s", image_path);
+		wlf_scene_node_destroy(&tree->base);
+		wlf_render_vector_pass_destroy(render.vector_pass);
+		wlf_render_texture_pass_destroy(render.texture_pass);
+		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_backend_destroy(backend);
+		return EXIT_FAILURE;
+	}
+	struct wlf_texture *texture = wlf_texture_from_image(renderer, image);
+	double scale = fmin(270.0 / image->width, 190.0 / image->height);
+	double image_width = image->width * scale;
+	double image_height = image->height * scale;
+	wlf_image_finish(image);
+	free(image);
+	if (texture == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create texture for: %s", image_path);
+		wlf_scene_node_destroy(&tree->base);
+		wlf_render_vector_pass_destroy(render.vector_pass);
+		wlf_render_texture_pass_destroy(render.texture_pass);
+		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_backend_destroy(backend);
+		return EXIT_FAILURE;
+	}
+	render.image = wlf_texture_node_create(&tree->base, texture,
+		40.0 + (270.0 - image_width) / 2.0,
+		40.0 + (190.0 - image_height) / 2.0,
+		image_width, image_height);
+	if (render.image == NULL) {
+		wlf_texture_destroy(texture);
+		wlf_scene_node_destroy(&tree->base);
+		wlf_render_vector_pass_destroy(render.vector_pass);
+		wlf_render_texture_pass_destroy(render.texture_pass);
+		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_backend_destroy(backend);
+		return EXIT_FAILURE;
+	}
+
+	struct wlf_rect_shape *rounded = wlf_rect_shape_from_shape(
+		wlf_rect_shape_create(0, 0, 115, 65, 18, 18));
+	set_shape_style(&rounded->state,
+		wlf_color_from_rgb8(55, 130, 245), WLF_COLOR_CYAN, 3);
+	render.rounded_rect =
+		wlf_rect_shape_node_create(&tree->base, 370, 35, rounded);
+
+	struct wlf_circle_shape *circle = wlf_circle_shape_from_shape(
+		wlf_circle_shape_create(45, 45, 42));
+	set_shape_style(&circle->state,
+		wlf_color_from_rgb8(245, 92, 105), WLF_COLOR_WHITE, 3);
+	render.circle = wlf_circle_node_create(&tree->base, 555, 25, circle);
+
+	struct wlf_ellipse_shape *ellipse = wlf_ellipse_shape_from_shape(
+		wlf_ellipse_shape_create(64, 35, 62, 32));
+	set_shape_style(&ellipse->state,
+		wlf_color_from_rgb8(65, 190, 125), WLF_COLOR_YELLOW, 3);
+	render.ellipse = wlf_ellipse_node_create(&tree->base, 365, 140, ellipse);
+
+	struct wlf_line_shape *line = wlf_line_shape_from_shape(
+		wlf_line_shape_create(0, 5, 125, 70));
+	line->state.has_fill = false;
+	line->state.has_stroke = true;
+	line->state.stroke_color = WLF_COLOR_ORANGE;
+	line->state.stroke_width = 9;
+	render.line = wlf_line_node_create(&tree->base, 545, 135, line);
+
+	const float star_points[] = {
+		60, 0, 74, 40, 118, 40, 82, 65, 96, 108,
+		60, 82, 24, 108, 38, 65, 2, 40, 46, 40,
+	};
+	struct wlf_poly_shape *poly = wlf_poly_shape_from_shape(
+		wlf_poly_shape_create(star_points, 10, true));
+	set_shape_style(&poly->state,
+		wlf_color_from_rgb8(150, 85, 220), WLF_COLOR_MAGENTA, 3);
+	render.poly = wlf_poly_node_create(&tree->base, 370, 275, poly);
+
+	struct wlf_path *path = calloc(1, sizeof(*path));
+	path->npts = 7;
+	path->closed = true;
+	path->pts = malloc((size_t)path->npts * 2 * sizeof(*path->pts));
+	const float path_points[] = {
+		0, 35, 28, 0, 62, 22, 95, 0, 125, 38, 95, 78, 25, 78,
+	};
+	memcpy(path->pts, path_points, sizeof(path_points));
+	struct wlf_path_shape *path_shape = wlf_path_shape_from_shape(
+		wlf_path_shape_create(path, true));
+	set_shape_style(&path_shape->state,
+		wlf_color_from_rgb8(30, 175, 190), WLF_COLOR_WHITE, 4);
+	render.path = wlf_path_node_create(&tree->base, 550, 285, path_shape);
+
+	if (render.rounded_rect == NULL || render.circle == NULL ||
+			render.ellipse == NULL || render.line == NULL ||
+			render.poly == NULL || render.path == NULL) {
+		wlf_log(WLF_ERROR, "Failed to create shape scene node");
+		wlf_scene_node_destroy(&tree->base);
+		wlf_render_vector_pass_destroy(render.vector_pass);
+		wlf_render_texture_pass_destroy(render.texture_pass);
+		wlf_render_rect_pass_destroy(render.rect_pass);
+		wlf_backend_destroy(backend);
+		return EXIT_FAILURE;
+	}
+	wlf_log(WLF_INFO, "Displaying image: %s", image_path);
 	wlf_signal_add(&window->events.expose, &render.expose);
 
 	wlf_window_show(window);
@@ -154,6 +336,9 @@ int main(int argc, char *argv[]) {
 
 	wlf_backend_exe(backend);
 	wlf_linked_list_remove(&render.expose.link);
+	wlf_scene_node_destroy(&tree->base);
+	wlf_render_vector_pass_destroy(render.vector_pass);
+	wlf_render_texture_pass_destroy(render.texture_pass);
 	wlf_render_rect_pass_destroy(render.rect_pass);
 	wlf_backend_destroy(backend);
 
