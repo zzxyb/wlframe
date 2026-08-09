@@ -58,6 +58,21 @@ static const struct wl_surface_listener wl_surface_listener = {
 	.preferred_buffer_transform = surface_handle_preferred_buffer_transform,
 };
 
+static void wayland_throttle_callback(void *data,
+		struct wl_callback *callback, uint32_t time) {
+	WLF_UNUSED(time);
+
+	struct wlf_wl_surface *surface = data;
+
+	surface->throttle_callback = NULL;
+	wlf_signal_emit_mutable(&surface->events.throttle_done, surface);
+	wl_callback_destroy(callback);
+}
+
+static const struct wl_callback_listener throttle_listener = {
+	.done = wayland_throttle_callback,
+};
+
 struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *compositor) {
 	assert(compositor != NULL);
 
@@ -85,6 +100,7 @@ struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *composito
 	wlf_signal_init(&surface->events.leave);
 	wlf_signal_init(&surface->events.preferred_buffer_scale);
 	wlf_signal_init(&surface->events.preferred_buffer_transform);
+	wlf_signal_init(&surface->events.throttle_done);
 
 	wl_surface_add_listener(surface->wl_surface, &wl_surface_listener, surface);
 
@@ -103,8 +119,14 @@ void wlf_wl_surface_destroy(struct wlf_wl_surface *surface) {
 	assert(wlf_linked_list_empty(&surface->events.leave.listener_list));
 	assert(wlf_linked_list_empty(&surface->events.preferred_buffer_scale.listener_list));
 	assert(wlf_linked_list_empty(&surface->events.preferred_buffer_transform.listener_list));
+	assert(wlf_linked_list_empty(&surface->events.throttle_done.listener_list));
 
 	if (surface->wl_surface != NULL) {
+		if (surface->throttle_callback != NULL) {
+			wl_callback_destroy(surface->throttle_callback);
+			surface->throttle_callback = NULL;
+		}
+
 		wl_surface_destroy(surface->wl_surface);
 	}
 
@@ -228,4 +250,16 @@ void wlf_wl_surface_commit(struct wlf_wl_surface *surface) {
 	assert(surface != NULL);
 
 	wl_surface_commit(surface->wl_surface);
+
+	if (surface->throttle_callback == NULL) {
+		struct wl_display *display =
+			wl_proxy_get_display((struct wl_proxy *)surface->wl_surface);
+		surface->throttle_callback = wl_display_sync(display);
+		if (surface->throttle_callback == NULL) {
+			return;
+		}
+
+		wl_callback_add_listener(surface->throttle_callback,
+			&throttle_listener, surface);
+	}
 }
