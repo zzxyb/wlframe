@@ -169,14 +169,30 @@ static void destroy_passes(struct wlf_scene *scene) {
 	wlf_render_rect_pass_destroy(scene->rect_pass);
 }
 
+static struct wlf_render_target_info *configure_render_target(
+		struct wlf_scene *scene, struct wlf_render_target_info *target) {
+	if (target == NULL) {
+		return NULL;
+	}
+
+	target->logical_width = scene->window->state.geometry.width;
+	target->logical_height = scene->window->state.geometry.height;
+	target->buffer_width = scene->window->state.swapchain->width;
+	target->buffer_height = scene->window->state.swapchain->height;
+	target->scale = scene->window->state.scale;
+	return target;
+}
+
 static struct wlf_render_target_info *begin_render(
 		struct wlf_scene *scene, const pixman_region32_t *damage) {
 	struct wlf_window *window = scene->window;
 	struct wlf_buffer_pass_options options = {
 		.damage = damage,
 	};
-	return wlf_renderer_begin_buffer_pass(window->state.renderer,
+	struct wlf_render_target_info *target = wlf_renderer_begin_buffer_pass(
+		window->state.renderer,
 		wlf_swapchain_get_back_buffer(window->state.swapchain), &options);
+	return configure_render_target(scene, target);
 }
 
 static void clear_node_visibility(struct wlf_scene_node *node) {
