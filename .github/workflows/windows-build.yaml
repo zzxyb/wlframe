@@ -9,6 +9,8 @@ env:
   BUILD_TYPE: debug
   WLF_VCPKG_ROOT: ${{ github.workspace }}\vcpkg
   VCPKG_TRIPLET: x64-windows
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}\.vcpkg-binary-cache
+  VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}\.vcpkg-binary-cache,readwrite
 
 jobs:
   build-windows:
@@ -36,6 +38,22 @@ jobs:
           git clone https://github.com/microsoft/vcpkg.git "$env:WLF_VCPKG_ROOT"
         }
         & "$env:WLF_VCPKG_ROOT\bootstrap-vcpkg.bat" -disableMetrics
+
+    - name: Capture vcpkg revision
+      id: vcpkg_revision
+      run: |
+        $revision = (& git -C "$env:WLF_VCPKG_ROOT" rev-parse HEAD).Trim()
+        "revision=$revision" >> $env:GITHUB_OUTPUT
+
+    - name: Cache vcpkg binary packages
+      uses: actions/cache@v4
+      with:
+        path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+        # The dependency list is kept in this workflow because vcpkg classic mode is used.
+        key: ${{ runner.os }}-vcpkg-${{ env.VCPKG_TRIPLET }}-${{ steps.vcpkg_revision.outputs.revision }}-${{ hashFiles('.github/workflows/windows-build.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-${{ env.VCPKG_TRIPLET }}-${{ steps.vcpkg_revision.outputs.revision }}-
+          ${{ runner.os }}-vcpkg-${{ env.VCPKG_TRIPLET }}-
 
     - name: Install dependencies
       run: |
