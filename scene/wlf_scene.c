@@ -334,7 +334,7 @@ static void handle_window_expose(struct wlf_listener *listener, void *data) {
 	}
 
 	struct timespec now;
-	clock_gettime(CLOCK_MONOTONIC, &now);
+	wlf_get_monotonic_time(&now);
 	wlf_scene_send_frame_done(scene, &now);
 }
 
