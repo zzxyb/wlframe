@@ -55,8 +55,13 @@ jobs:
           ${{ runner.os }}-vcpkg-${{ env.VCPKG_TRIPLET }}-${{ steps.vcpkg_revision.outputs.revision }}-
           ${{ runner.os }}-vcpkg-${{ env.VCPKG_TRIPLET }}-
 
+    - name: Prepare vcpkg binary cache
+      run: |
+        New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE | Out-Null
+
     - name: Install dependencies
       run: |
+        Remove-Item Env:VCPKG_ROOT -ErrorAction SilentlyContinue
         & "$env:WLF_VCPKG_ROOT\vcpkg.exe" install `
           libpng `
           libjpeg-turbo `
