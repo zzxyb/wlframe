@@ -2,6 +2,7 @@ wlf_files += files(
 	'wlf_backend.c',
 	'wlf_theme.c',
 	'wlf_fontconfig.c',
+	'wlf_text.c',
 )
 
 if is_linux

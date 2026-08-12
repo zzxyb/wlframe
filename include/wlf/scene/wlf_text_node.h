@@ -15,31 +15,15 @@
 #define SCENE_WLF_TEXT_NODE_H
 
 #include "wlf/pass/wlf_texture_pass.h"
+#include "wlf/platform/wlf_text.h"
 #include "wlf/scene/wlf_scene_node.h"
 #include "wlf/texture/wlf_texture.h"
 #include "wlf/types/wlf_color.h"
 
 /**
- * @brief Font slant used when rasterizing a text node.
- */
-enum wlf_text_font_slant {
-	WLF_TEXT_FONT_SLANT_NORMAL, /**< Upright glyphs. */
-	WLF_TEXT_FONT_SLANT_ITALIC, /**< Designed italic glyphs. */
-	WLF_TEXT_FONT_SLANT_OBLIQUE, /**< Obliquely slanted glyphs. */
-};
-
-/**
- * @brief Font weight used when rasterizing a text node.
- */
-enum wlf_text_font_weight {
-	WLF_TEXT_FONT_WEIGHT_NORMAL, /**< Normal weight. */
-	WLF_TEXT_FONT_WEIGHT_BOLD, /**< Bold weight. */
-};
-
-/**
  * @brief A scene node containing rasterized UTF-8 text.
  *
- * Text is shaped with Pango/HarfBuzz and rasterized with Cairo into a
+ * Text is shaped and rasterized through the platform text implementation into a
  * renderer texture owned by the node.
  */
 struct wlf_text_node {
@@ -54,6 +38,7 @@ struct wlf_text_node {
 	double raster_scale;
 	enum wlf_text_font_slant font_slant;
 	enum wlf_text_font_weight font_weight;
+	struct wlf_text *text_context;
 	struct wlf_renderer *renderer;
 	struct wlf_texture *texture;
 	struct wlf_listener renderer_destroy;
