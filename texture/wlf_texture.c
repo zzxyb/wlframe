@@ -135,6 +135,10 @@ struct wlf_texture *wlf_texture_from_image(struct wlf_renderer *renderer,
 		return NULL;
 	}
 	size_t rgba_stride = width * 4;
+	if (rgba_stride > UINT32_MAX) {
+		wlf_log(WLF_ERROR, "image row stride is too large");
+		return NULL;
+	}
 	if (image->height > SIZE_MAX / rgba_stride) {
 		wlf_log(WLF_ERROR, "image dimensions are too large");
 		return NULL;
@@ -213,7 +217,8 @@ struct wlf_texture *wlf_texture_from_image(struct wlf_renderer *renderer,
 	}
 
 	struct wlf_texture *texture = wlf_texture_from_pixels(renderer,
-		WLF_FORMAT_ABGR8888, rgba_stride, image->width, image->height, rgba);
+		WLF_FORMAT_ABGR8888, (uint32_t)rgba_stride,
+		image->width, image->height, rgba);
 	free(rgba);
 	return texture;
 }

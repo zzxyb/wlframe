@@ -39,9 +39,12 @@ void wlf_shape_add_triangle_coverage(struct wlf_shape_vertices *vertices,
 		double ax, double ay, float ac, double bx, double by, float bc,
 		double cx, double cy, float cc) {
 	if (!reserve(vertices, 3)) return;
-	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ ax, ay, ac };
-	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ bx, by, bc };
-	vertices->data[vertices->len++] = (struct wlf_vector_vertex){ cx, cy, cc };
+	vertices->data[vertices->len++] =
+		(struct wlf_vector_vertex){ (float)ax, (float)ay, ac };
+	vertices->data[vertices->len++] =
+		(struct wlf_vector_vertex){ (float)bx, (float)by, bc };
+	vertices->data[vertices->len++] =
+		(struct wlf_vector_vertex){ (float)cx, (float)cy, cc };
 }
 
 void wlf_shape_add_quad(struct wlf_shape_vertices *vertices,
@@ -236,8 +239,10 @@ int wlf_shape_rounded_rect_points(const struct wlf_rect_shape *rect,
 		for (int i = 0; i <= corner_segments; i++) {
 			double angle = starts[corner] +
 				(double)i / corner_segments * WLF_PI / 2;
-			points[count * 2] = centers[corner][0] + cos(angle) * rx;
-			points[count * 2 + 1] = centers[corner][1] + sin(angle) * ry;
+			points[count * 2] =
+				(float)(centers[corner][0] + cos(angle) * rx);
+			points[count * 2 + 1] =
+				(float)(centers[corner][1] + sin(angle) * ry);
 			count++;
 		}
 	}

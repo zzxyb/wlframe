@@ -155,27 +155,33 @@ static struct wlf_scene_node *create_geometry_node(
 	struct wlf_scene_node *node = NULL;
 	if (wlf_shape_is_rect(geometry)) {
 		struct wlf_rect_shape_node *rect = wlf_rect_shape_node_create(
-			&svg_node->base, x, y, wlf_rect_shape_from_shape(geometry));
+			&svg_node->base, (int)x, (int)y,
+			wlf_rect_shape_from_shape(geometry));
 		node = rect != NULL ? &rect->base : NULL;
 	} else if (wlf_shape_is_circle(geometry)) {
 		struct wlf_circle_node *circle = wlf_circle_node_create(
-			&svg_node->base, x, y, wlf_circle_shape_from_shape(geometry));
+			&svg_node->base, (int)x, (int)y,
+			wlf_circle_shape_from_shape(geometry));
 		node = circle != NULL ? &circle->base : NULL;
 	} else if (wlf_shape_is_ellipse(geometry)) {
 		struct wlf_ellipse_node *ellipse = wlf_ellipse_node_create(
-			&svg_node->base, x, y, wlf_ellipse_shape_from_shape(geometry));
+			&svg_node->base, (int)x, (int)y,
+			wlf_ellipse_shape_from_shape(geometry));
 		node = ellipse != NULL ? &ellipse->base : NULL;
 	} else if (wlf_shape_is_line(geometry)) {
 		struct wlf_line_node *line = wlf_line_node_create(
-			&svg_node->base, x, y, wlf_line_shape_from_shape(geometry));
+			&svg_node->base, (int)x, (int)y,
+			wlf_line_shape_from_shape(geometry));
 		node = line != NULL ? &line->base : NULL;
 	} else if (wlf_shape_is_poly(geometry)) {
 		struct wlf_poly_node *poly = wlf_poly_node_create(
-			&svg_node->base, x, y, wlf_poly_shape_from_shape(geometry));
+			&svg_node->base, (int)x, (int)y,
+			wlf_poly_shape_from_shape(geometry));
 		node = poly != NULL ? &poly->base : NULL;
 	} else if (wlf_shape_is_path(geometry)) {
 		struct wlf_path_node *path = wlf_path_node_create(
-			&svg_node->base, x, y, wlf_path_shape_from_shape(geometry));
+			&svg_node->base, (int)x, (int)y,
+			wlf_path_shape_from_shape(geometry));
 		node = path != NULL ? &path->base : NULL;
 	}
 
@@ -199,7 +205,7 @@ static struct wlf_scene_node *create_text_node(struct wlf_svg_node *svg_node,
 	}
 
 	struct wlf_text_node *text = wlf_text_node_create(&svg_node->base,
-		shape->x, shape->y, shape->text, shape->font_family,
+		(int)shape->x, (int)shape->y, shape->text, shape->font_family,
 		shape->font_size, &color);
 	if (text == NULL) {
 		return NULL;
@@ -211,7 +217,8 @@ static struct wlf_scene_node *create_text_node(struct wlf_svg_node *svg_node,
 	} else if (shape->text_anchor == WLF_TEXT_ANCHOR_END) {
 		x -= text->natural_width;
 	}
-	wlf_scene_node_set_position(&text->base, x, shape->y - text->baseline);
+	wlf_scene_node_set_position(&text->base, (int)x,
+		(int)(shape->y - text->baseline));
 	return &text->base;
 }
 
