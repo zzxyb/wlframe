@@ -1,5 +1,6 @@
 #include "wlf/scene/wlf_text_node.h"
 
+#include "wlf/platform/wlf_text.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
@@ -7,39 +8,13 @@
 
 #include <assert.h>
 #include <math.h>
-#include <pango/pangocairo.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-struct text_metrics {
-	double left;
-	double top;
-	double width;
-	double height;
-	double baseline;
-};
-
 static void scene_node_render(struct wlf_render_list_entry *entry,
 	const struct wlf_render_data *data);
 static bool text_node_rasterize(struct wlf_text_node *node);
-
-static PangoStyle to_pango_style(enum wlf_text_font_slant slant) {
-	switch (slant) {
-	case WLF_TEXT_FONT_SLANT_ITALIC:
-		return PANGO_STYLE_ITALIC;
-	case WLF_TEXT_FONT_SLANT_OBLIQUE:
-		return PANGO_STYLE_OBLIQUE;
-	case WLF_TEXT_FONT_SLANT_NORMAL:
-	default:
-		return PANGO_STYLE_NORMAL;
-	}
-}
-
-static PangoWeight to_pango_weight(enum wlf_text_font_weight weight) {
-	return weight == WLF_TEXT_FONT_WEIGHT_BOLD ?
-		PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL;
-}
 
 static bool text_node_invisible(struct wlf_scene_node *base) {
 	struct wlf_text_node *node = wlf_text_node_from_node(base);
@@ -144,88 +119,34 @@ static void handle_window_scale(struct wlf_listener *listener, void *data) {
 	}
 }
 
-static PangoLayout *create_layout(cairo_t *cr,
-		const struct wlf_text_node *node) {
-	PangoLayout *layout = pango_cairo_create_layout(cr);
-	if (layout == NULL) {
-		return NULL;
-	}
-
-	PangoFontDescription *font = pango_font_description_new();
-	if (font == NULL) {
-		g_object_unref(layout);
-		return NULL;
-	}
-	pango_font_description_set_family(font, node->font_family);
-	pango_font_description_set_absolute_size(font,
-		node->font_size * node->raster_scale * PANGO_SCALE);
-	pango_font_description_set_style(font, to_pango_style(node->font_slant));
-	pango_font_description_set_weight(font,
-		to_pango_weight(node->font_weight));
-	pango_layout_set_font_description(layout, font);
-	pango_font_description_free(font);
-
-	pango_layout_set_text(layout, node->text, -1);
-	pango_layout_set_auto_dir(layout, true);
-	return layout;
-}
-
-static void measure_layout(PangoLayout *layout, struct text_metrics *metrics) {
-	PangoRectangle ink;
-	PangoRectangle logical;
-	pango_layout_get_pixel_extents(layout, &ink, &logical);
-
-	int left = MIN(0, MIN(ink.x, logical.x));
-	int top = MIN(0, MIN(ink.y, logical.y));
-	int right = MAX(ink.x + ink.width, logical.x + logical.width);
-	int bottom = MAX(ink.y + ink.height, logical.y + logical.height);
-	*metrics = (struct text_metrics){
-		.left = left,
-		.top = top,
-		.width = right - left,
-		.height = bottom - top,
-		.baseline = pango_layout_get_baseline(layout) /
-			(double)PANGO_SCALE - top,
-	};
-}
-
 static bool text_node_rasterize(struct wlf_text_node *node) {
 	struct wlf_renderer *renderer = node->renderer;
-	if (renderer == NULL || renderer->impl->texture_from_buffer == NULL) {
+	if (renderer == NULL || renderer->impl->texture_from_buffer == NULL ||
+			node->text_context == NULL) {
 		return false;
 	}
 
-	cairo_surface_t *measure_surface = cairo_image_surface_create(
-		CAIRO_FORMAT_ARGB32, 1, 1);
-	cairo_t *measure = cairo_create(measure_surface);
-	PangoLayout *layout = create_layout(measure, node);
-	struct text_metrics metrics = {0};
-	if (layout != NULL) {
-		measure_layout(layout, &metrics);
-	}
-	bool measured = layout != NULL &&
-		cairo_status(measure) == CAIRO_STATUS_SUCCESS;
-	cairo_destroy(measure);
-	cairo_surface_destroy(measure_surface);
-	if (!measured || metrics.width > INT32_MAX || metrics.height > INT32_MAX) {
+	struct wlf_text_raster raster = {0};
+	if (!wlf_text_rasterize(node->text_context,
+			&(struct wlf_text_options){
+				.text = node->text,
+				.font_family = node->font_family,
+				.font_size = node->font_size,
+				.raster_scale = node->raster_scale,
+				.color = node->color,
+				.max_width = node->max_width,
+				.slant = node->font_slant,
+				.weight = node->font_weight,
+			}, &raster)) {
 		wlf_log(WLF_ERROR, "failed to measure text node");
-		if (layout != NULL) {
-			g_object_unref(layout);
-		}
 		return false;
 	}
 
-	node->natural_width = metrics.width / node->raster_scale;
-	node->baseline = metrics.baseline / node->raster_scale;
-	int width = (int)metrics.width;
-	int height = (int)metrics.height;
-	int max_pixel_width = node->max_width >= 0 ?
-		(int)ceil(node->max_width * node->raster_scale) : -1;
-	if (max_pixel_width >= 0 && width > max_pixel_width) {
-		width = max_pixel_width;
-	}
-	if (node->text[0] == '\0' || width <= 0 || height <= 0) {
-		g_object_unref(layout);
+	node->natural_width = raster.metrics.width / node->raster_scale;
+	node->baseline = raster.metrics.baseline / node->raster_scale;
+	if (node->text[0] == '\0' || raster.width == 0 ||
+			raster.height == 0 || raster.data == NULL || raster.stride == 0) {
+		wlf_text_raster_destroy(node->text_context, &raster);
 		text_node_set_texture(node, NULL);
 		node->base.state.width = 0;
 		node->base.state.height = 0;
@@ -233,48 +154,22 @@ static bool text_node_rasterize(struct wlf_text_node *node) {
 		return true;
 	}
 
-	cairo_surface_t *surface = cairo_image_surface_create(
-		CAIRO_FORMAT_ARGB32, width, height);
-	if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
-		wlf_log(WLF_ERROR, "failed to create Cairo text surface: %s",
-			cairo_status_to_string(cairo_surface_status(surface)));
-		g_object_unref(layout);
-		cairo_surface_destroy(surface);
-		return false;
-	}
-
-	cairo_t *cr = cairo_create(surface);
-	cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
-	cairo_paint(cr);
-	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-	struct wlf_color color = wlf_color_clamp(&node->color);
-	cairo_set_source_rgba(cr, color.r, color.g, color.b, color.a);
-	cairo_move_to(cr, -metrics.left, -metrics.top);
-	pango_cairo_update_layout(cr, layout);
-	pango_cairo_show_layout(cr, layout);
-	bool drawn = cairo_status(cr) == CAIRO_STATUS_SUCCESS;
-	g_object_unref(layout);
-	cairo_destroy(cr);
-	if (!drawn) {
-		wlf_log(WLF_ERROR, "failed to rasterize text node");
-		cairo_surface_destroy(surface);
-		return false;
-	}
-	cairo_surface_flush(surface);
-
+	uint32_t raster_width = raster.width;
+	uint32_t raster_height = raster.height;
 	struct wlf_texture *texture = wlf_texture_from_pixels(renderer,
-		WLF_FORMAT_ARGB8888, cairo_image_surface_get_stride(surface),
-		(uint32_t)width, (uint32_t)height,
-		cairo_image_surface_get_data(surface));
-	cairo_surface_destroy(surface);
+		WLF_FORMAT_ARGB8888, raster.stride, raster.width, raster.height,
+		raster.data);
+	wlf_text_raster_destroy(node->text_context, &raster);
 	if (texture == NULL) {
 		wlf_log(WLF_ERROR, "failed to create renderer texture for text node");
 		return false;
 	}
 
 	text_node_set_texture(node, texture);
-	node->base.state.width = (uint32_t)ceil(width / node->raster_scale);
-	node->base.state.height = (uint32_t)ceil(height / node->raster_scale);
+	node->base.state.width =
+		(uint32_t)ceil(raster_width / node->raster_scale);
+	node->base.state.height =
+		(uint32_t)ceil(raster_height / node->raster_scale);
 	wlf_scene_node_update(&node->base, NULL);
 	return true;
 }
@@ -284,6 +179,7 @@ static void text_node_destroy(struct wlf_scene_node *base) {
 	wlf_linked_list_remove(&node->renderer_destroy.link);
 	wlf_linked_list_remove(&node->window_scale.link);
 	text_node_set_texture(node, NULL);
+	wlf_text_destroy(node->text_context);
 	free(node->font_family);
 	free(node->text);
 	free(node);
@@ -309,7 +205,7 @@ struct wlf_text_node *wlf_text_node_create(struct wlf_scene_node *parent,
 	const char *text_value = text != NULL ? text : "";
 	if (parent == NULL || parent->window == NULL ||
 			parent->window->state.renderer == NULL || font_size <= 0 ||
-			!g_utf8_validate(text_value, -1, NULL)) {
+			!wlf_text_is_valid_utf8(text_value)) {
 		return NULL;
 	}
 
@@ -322,6 +218,14 @@ struct wlf_text_node *wlf_text_node_create(struct wlf_scene_node *parent,
 	node->font_family = strdup(font_family != NULL ?
 		font_family : "sans-serif");
 	if (node->text == NULL || node->font_family == NULL) {
+		free(node->font_family);
+		free(node->text);
+		free(node);
+		return NULL;
+	}
+	node->text_context = wlf_text_autocreate();
+	if (node->text_context == NULL) {
+		wlf_log(WLF_ERROR, "no text implementation is available for this platform");
 		free(node->font_family);
 		free(node->text);
 		free(node);
@@ -352,7 +256,7 @@ void wlf_text_node_set_text(struct wlf_text_node *node, const char *text) {
 		return;
 	}
 	const char *value = text != NULL ? text : "";
-	if (!g_utf8_validate(value, -1, NULL)) {
+	if (!wlf_text_is_valid_utf8(value)) {
 		wlf_log(WLF_ERROR, "text node requires valid UTF-8 text");
 		return;
 	}
