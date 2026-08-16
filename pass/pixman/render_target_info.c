@@ -71,7 +71,7 @@ bool begin_pixman_data_ptr_access(struct wlf_buffer *buffer, pixman_image_t **im
 		assert(format != 0);
 
 		pixman_image_t *new_image = pixman_image_create_bits_no_clear(format,
-			buffer->width, buffer->height, data, stride);
+			(int)buffer->width, (int)buffer->height, data, (int)stride);
 		if (new_image == NULL) {
 			wlf_buffer_end_data_ptr_access(buffer);
 			return false;

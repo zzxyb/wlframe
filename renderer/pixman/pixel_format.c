@@ -3,7 +3,9 @@
 #include "wlf/utils/wlf_log.h"
 
 #include <inttypes.h>
+#if WLF_HAS_LINUX_PLATFORM
 #include <drm_fourcc.h>
+#endif
 
 static const struct wlf_pixman_pixel_format formats[] = {
 	{
@@ -108,10 +110,12 @@ static const struct wlf_pixman_pixel_format formats[] = {
 		.drm_format = WLF_FORMAT_XBGR2101010,
 		.pixman_format = PIXMAN_x2b10g10r10,
 	},
+	#if WLF_HAS_LINUX_PLATFORM
 	{
 		.drm_format = DRM_FORMAT_ABGR16161616,
 		.pixman_format = PIXMAN_a16b16g16r16,
 	},
+	#endif
 #endif
 };
 

@@ -14,6 +14,9 @@ wlf_files += files(
 
 if is_linux
 	subdir('gles')
-	subdir('pixman')
 	subdir('vulkan')
+endif
+
+if is_linux or is_windows
+	subdir('pixman')
 endif

@@ -15,6 +15,8 @@
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/gles/renderer.h"
+#endif
+#if WLF_HAS_LINUX_PLATFORM || WLF_HAS_WINDOWS_PLATFORM
 #include "wlf/renderer/pixman/renderer.h"
 #endif
 #include "wlf/scene/wlf_scene_tree.h"
@@ -123,6 +125,8 @@ static struct wlf_vector_pass *create_vector_pass(
 	if (wlf_renderer_is_gles(renderer)) {
 		return wlf_gles_vector_pass_create();
 	}
+#endif
+#if WLF_HAS_LINUX_PLATFORM || WLF_HAS_WINDOWS_PLATFORM
 	if (wlf_renderer_is_pixman(renderer)) {
 		return wlf_pixman_vector_pass_create();
 	}
@@ -136,7 +140,10 @@ static bool create_passes(struct wlf_scene *scene) {
 	if (wlf_renderer_is_gles(renderer)) {
 		scene->rect_pass = wlf_gles_rect_pass_create();
 		scene->texture_pass = wlf_gles_texture_pass_create();
-	} else if (wlf_renderer_is_pixman(renderer)) {
+	} else
+#endif
+#if WLF_HAS_LINUX_PLATFORM || WLF_HAS_WINDOWS_PLATFORM
+	if (wlf_renderer_is_pixman(renderer)) {
 		scene->rect_pass = wlf_pixman_rect_pass_create();
 		scene->texture_pass = wlf_pixman_texture_pass_create();
 	} else {

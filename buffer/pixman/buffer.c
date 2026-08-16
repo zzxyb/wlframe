@@ -47,8 +47,8 @@ struct wlf_pixman_buffer *wlf_pixman_buffer_create(
 		goto failed;
 	}
 
-	buffer->image = pixman_image_create_bits(format, wlf_buffer->width,
-		wlf_buffer->height, data, stride);
+	buffer->image = pixman_image_create_bits(format, (int)wlf_buffer->width,
+		(int)wlf_buffer->height, data, (int)stride);
 	if (!buffer->image) {
 		wlf_log(WLF_ERROR, "Failed to allocate pixman image");
 		goto failed;

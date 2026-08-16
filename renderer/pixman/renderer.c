@@ -61,7 +61,7 @@ static struct wlf_texture *pixman_renderer_texture_from_buffer(struct wlf_render
 	}
 
 	texture->image = pixman_image_create_bits_no_clear(texture->format,
-		wlf_buffer->width, wlf_buffer->height, copy, stride);
+		(int)wlf_buffer->width, (int)wlf_buffer->height, copy, (int)stride);
 	if (!texture->image) {
 		wlf_log(WLF_ERROR, "Failed to create pixman image");
 		wlf_linked_list_remove(&texture->link);

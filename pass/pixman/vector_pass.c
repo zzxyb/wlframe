@@ -14,7 +14,7 @@ static uint16_t channel(double value) {
 	if (value >= 1) {
 		return UINT16_MAX;
 	}
-	return value * UINT16_MAX + 0.5;
+	return (uint16_t)(value * UINT16_MAX + 0.5);
 }
 
 static void vector_pass_destroy(struct wlf_vector_pass *pass) {
