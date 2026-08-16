@@ -14,7 +14,6 @@
 #include "wlf/scene/wlf_path_node.h"
 #include "wlf/image/wlf_image.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/window/wayland/xdg_toplevel_window.h"
 #include "wlf/window/wlf_window.h"
 
 #include <math.h>
@@ -172,7 +171,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	struct wlf_window *window =
-		wlf_xdg_toplevel_window_create_from_backend(backend, 760, 500);
+		wlf_window_create_toplevel(backend, 760, 500);
 	if (window == NULL) {
 		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
@@ -241,9 +240,9 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	render.image = wlf_texture_node_create(&tree->base, texture,
-		40.0 + (270.0 - image_width) / 2.0,
-		270.0 + (190.0 - image_height) / 2.0,
-		image_width, image_height);
+		(int)lround(40.0 + (270.0 - image_width) / 2.0),
+		(int)lround(270.0 + (190.0 - image_height) / 2.0),
+		(uint32_t)lround(image_width), (uint32_t)lround(image_height));
 	if (render.image == NULL) {
 		wlf_texture_destroy(texture);
 		wlf_window_destroy(window);

@@ -6,7 +6,6 @@
 #include "wlf/svg/wlf_svg.h"
 #include "wlf/utils/wlf_cmd_parser.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/window/wayland/xdg_toplevel_window.h"
 #include "wlf/window/wlf_window.h"
 
 #include <stdbool.h>
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	struct wlf_renderer *renderer = wlf_renderer_autocreate(backend);
-	struct wlf_window *window = wlf_xdg_toplevel_window_create_from_backend(
+	struct wlf_window *window = wlf_window_create_toplevel(
 		backend, 720, 480);
 	if (renderer == NULL || window == NULL) {
 		free(input_path);

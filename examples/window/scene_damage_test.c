@@ -4,7 +4,6 @@
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/window/wayland/xdg_toplevel_window.h"
 #include "wlf/window/wlf_window.h"
 
 #include <stdlib.h>
@@ -46,7 +45,7 @@ int main(void) {
 	}
 
 	struct wlf_renderer *renderer = wlf_renderer_autocreate(backend);
-	struct wlf_window *window = wlf_xdg_toplevel_window_create_from_backend(
+	struct wlf_window *window = wlf_window_create_toplevel(
 		backend, 640, 360);
 	if (renderer == NULL || window == NULL) {
 		wlf_renderer_destroy(renderer);

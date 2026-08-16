@@ -22,7 +22,7 @@ if is_linux or is_windows
 	)
 endif
 
-if is_linux
+if is_linux or is_windows
 	foreach example, info : window_examples
 		executable(
 			example,
