@@ -118,6 +118,16 @@ static uint32_t message_time(void) {
 	return (uint32_t)GetMessageTime();
 }
 
+static int logical_from_physical(const struct wlf_win32_window *window,
+		int value) {
+	return (int)lround(value / window->base.state.scale);
+}
+
+static int physical_from_logical(const struct wlf_win32_window *window,
+		int value) {
+	return (int)lround(value * window->base.state.scale);
+}
+
 static void pointer_add_button(struct wlf_pointer *pointer, uint32_t button) {
 	for (size_t i = 0; i < pointer->button_count; ++i) {
 		if (pointer->buttons[i] == button) {
@@ -143,8 +153,8 @@ static void pointer_remove_button(struct wlf_pointer *pointer,
 
 static void handle_pointer_motion(struct wlf_win32_window *window,
 		LPARAM lparam) {
-	double x = (short)LOWORD(lparam);
-	double y = (short)HIWORD(lparam);
+	double x = logical_from_physical(window, (short)LOWORD(lparam));
+	double y = logical_from_physical(window, (short)HIWORD(lparam));
 	if (!window->pointer_inside) {
 		TRACKMOUSEEVENT tracking = {
 			.cbSize = sizeof(tracking),
@@ -329,7 +339,8 @@ static DWORD window_ex_style(uint32_t flags) {
 
 static RECT client_geometry_to_window(struct wlf_win32_window *window,
 		const struct wlf_rect *geometry) {
-	RECT rect = {0, 0, geometry->width, geometry->height};
+	RECT rect = {0, 0, physical_from_logical(window, geometry->width),
+		physical_from_logical(window, geometry->height)};
 	DWORD style = (DWORD)GetWindowLongPtrW(window->hwnd, GWL_STYLE);
 	DWORD ex_style = (DWORD)GetWindowLongPtrW(window->hwnd, GWL_EXSTYLE);
 	AdjustWindowRectEx(&rect, style, FALSE, ex_style);
@@ -508,8 +519,10 @@ static void emit_geometry_changes(struct wlf_win32_window *window,
 	}
 	window->base.state.geometry.x = origin.x;
 	window->base.state.geometry.y = origin.y;
-	window->base.state.geometry.width = client.right;
-	window->base.state.geometry.height = client.bottom;
+	window->base.state.geometry.width = logical_from_physical(window,
+		client.right);
+	window->base.state.geometry.height = logical_from_physical(window,
+		client.bottom);
 	if (moved) {
 		wlf_signal_emit_mutable(&window->base.events.move, &window->base);
 	}
@@ -561,6 +574,16 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 		}
 		emit_geometry_changes(window, false, true);
 		return 0;
+	case WM_DPICHANGED: {
+		UINT dpi = HIWORD(wparam);
+		RECT *suggested = (RECT *)lparam;
+		wlf_window_set_scale(&window->base, (double)dpi / 96.0);
+		SetWindowPos(hwnd, NULL, suggested->left, suggested->top,
+			suggested->right - suggested->left,
+			suggested->bottom - suggested->top,
+			SWP_NOACTIVATE | SWP_NOZORDER);
+		return 0;
+	}
 	case WM_SETFOCUS:
 		window->base.state.focused = true;
 		window->base.state.state |= WLF_WINDOW_ACTIVE;
@@ -614,16 +637,20 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 	case WM_GETMINMAXINFO: {
 		MINMAXINFO *info = (MINMAXINFO *)lparam;
 		if (window->base.state.min_size.width > 0) {
-			info->ptMinTrackSize.x = window->base.state.min_size.width;
+			info->ptMinTrackSize.x = physical_from_logical(window,
+				window->base.state.min_size.width);
 		}
 		if (window->base.state.min_size.height > 0) {
-			info->ptMinTrackSize.y = window->base.state.min_size.height;
+			info->ptMinTrackSize.y = physical_from_logical(window,
+				window->base.state.min_size.height);
 		}
 		if (window->base.state.max_size.width > 0) {
-			info->ptMaxTrackSize.x = window->base.state.max_size.width;
+			info->ptMaxTrackSize.x = physical_from_logical(window,
+				window->base.state.max_size.width);
 		}
 		if (window->base.state.max_size.height > 0) {
-			info->ptMaxTrackSize.y = window->base.state.max_size.height;
+			info->ptMaxTrackSize.y = physical_from_logical(window,
+				window->base.state.max_size.height);
 		}
 		return 0;
 	}
@@ -697,7 +724,10 @@ struct wlf_window *wlf_win32_window_create_from_backend(
 	wlf_cursor_init(&window->cursor, &win32_cursor_impl);
 	window->pointer.cursor = &window->cursor;
 	window->cursor_handle = LoadCursorW(NULL, MAKEINTRESOURCEW(32512));
-	RECT rect = {0, 0, (LONG)width, (LONG)height};
+	UINT initial_dpi = GetDpiForSystem();
+	RECT rect = {0, 0,
+		MulDiv((int)width, (int)initial_dpi, 96),
+		MulDiv((int)height, (int)initial_dpi, 96)};
 	DWORD style = window_style(window->base.state.flags);
 	DWORD ex_style = window_ex_style(window->base.state.flags);
 	AdjustWindowRectEx(&rect, style, FALSE, ex_style);
@@ -714,6 +744,10 @@ struct wlf_window *wlf_win32_window_create_from_backend(
 	}
 	window->counted = true;
 	windows->window_count++;
+	window->base.state.geometry.width = (int)width;
+	window->base.state.geometry.height = (int)height;
+	wlf_window_set_scale(&window->base,
+		(double)GetDpiForWindow(window->hwnd) / 96.0);
 	return &window->base;
 }
 

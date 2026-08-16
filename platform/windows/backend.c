@@ -44,6 +44,13 @@ static const struct wlf_backend_impl windows_backend_impl = {
 };
 
 struct wlf_backend *windows_backend_create(void) {
+	if (!SetProcessDpiAwarenessContext(
+			DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) &&
+			GetLastError() != ERROR_ACCESS_DENIED) {
+		wlf_log(WLF_INFO, "Failed to enable per-monitor DPI awareness: %lu",
+			(unsigned long)GetLastError());
+	}
+
 	struct wlf_windows_backend *backend = calloc(1, sizeof(*backend));
 	if (backend == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_windows_backend");
