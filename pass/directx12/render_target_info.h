@@ -11,6 +11,9 @@ struct wlf_dx12_render_target_info {
 	ID3D12CommandAllocator *allocator;
 	ID3D12GraphicsCommandList *commands;
 	D3D12_CPU_DESCRIPTOR_HANDLE rtv;
+	ID3D12Resource **temporary_resources;
+	size_t temporary_resource_count;
+	size_t temporary_resource_capacity;
 };
 
 struct wlf_render_target_info *wlf_dx12_begin_render_pass(
@@ -19,5 +22,7 @@ bool wlf_render_target_info_is_dx12(
 	const struct wlf_render_target_info *target);
 struct wlf_dx12_render_target_info *wlf_dx12_render_target_from_info(
 	struct wlf_render_target_info *target);
+bool wlf_dx12_render_target_retain_resource(
+	struct wlf_dx12_render_target_info *target, ID3D12Resource *resource);
 
 #endif

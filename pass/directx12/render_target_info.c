@@ -33,6 +33,10 @@ static void target_destroy(struct wlf_render_target_info *base) {
 			target->renderer->command_queue, 1, lists);
 		(void)wlf_dx12_renderer_wait_idle(target->renderer);
 	}
+	for (size_t i = 0; i < target->temporary_resource_count; ++i) {
+		ID3D12Resource_Release(target->temporary_resources[i]);
+	}
+	free(target->temporary_resources);
 	ID3D12GraphicsCommandList_Release(target->commands);
 	ID3D12CommandAllocator_Release(target->allocator);
 	free(target);
@@ -89,4 +93,21 @@ struct wlf_dx12_render_target_info *wlf_dx12_render_target_from_info(
 	assert(wlf_render_target_info_is_dx12(base));
 	struct wlf_dx12_render_target_info *target = NULL;
 	return wlf_container_of(base, target, base);
+}
+
+bool wlf_dx12_render_target_retain_resource(
+		struct wlf_dx12_render_target_info *target,
+		ID3D12Resource *resource) {
+	if (target->temporary_resource_count ==
+			target->temporary_resource_capacity) {
+		size_t capacity = target->temporary_resource_capacity == 0 ? 8 :
+			target->temporary_resource_capacity * 2;
+		void *resources = realloc(target->temporary_resources,
+			capacity * sizeof(*target->temporary_resources));
+		if (resources == NULL) return false;
+		target->temporary_resources = resources;
+		target->temporary_resource_capacity = capacity;
+	}
+	target->temporary_resources[target->temporary_resource_count++] = resource;
+	return true;
 }
