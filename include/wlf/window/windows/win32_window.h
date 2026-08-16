@@ -31,6 +31,7 @@ struct wlf_win32_window {
 	uint32_t modifiers_depressed;
 	uint32_t modifiers_locked;
 	wchar_t pending_high_surrogate;
+	bool frame_pending;
 	bool fullscreen;
 	bool counted;
 	bool pointer_inside;
