@@ -5,6 +5,7 @@
 #include "wlf/utils/wlf_compat.h"
 #include "wlf/utils/wlf_utils.h"
 #include "pass/directx12/render_target_info.h"
+#include "texture/directx12/texture.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -396,10 +397,8 @@ static void dx12_renderer_destroy(struct wlf_renderer *wlf_renderer) {
 
 static struct wlf_texture *dx12_renderer_texture_from_buffer(
 		struct wlf_renderer *renderer, struct wlf_buffer *buffer) {
-	WLF_UNUSED(renderer);
-	WLF_UNUSED(buffer);
-	wlf_log(WLF_ERROR, "DirectX 12 texture import is not implemented yet");
-	return NULL;
+	return wlf_dx12_texture_from_buffer(
+		wlf_dx12_renderer_from_renderer(renderer), buffer);
 }
 
 static struct wlf_render_target_info *dx12_renderer_begin_buffer_pass(

@@ -9,3 +9,7 @@ endif
 if is_linux
 	subdir('pixman')
 endif
+
+if is_windows
+	subdir('directx12')
+endif
