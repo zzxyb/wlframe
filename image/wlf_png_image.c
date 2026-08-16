@@ -5,12 +5,36 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <png.h>
 #include <time.h>
 
 #define PNG_BYTES_TO_CHECK 4
+
+static void png_file_read(png_structp png_ptr, png_bytep data,
+		png_size_t length) {
+	FILE *file = png_get_io_ptr(png_ptr);
+	if (file == NULL || fread(data, 1, length, file) != length) {
+		png_error(png_ptr, "Failed to read PNG data");
+	}
+}
+
+static void png_file_write(png_structp png_ptr, png_bytep data,
+		png_size_t length) {
+	FILE *file = png_get_io_ptr(png_ptr);
+	if (file == NULL || fwrite(data, 1, length, file) != length) {
+		png_error(png_ptr, "Failed to write PNG data");
+	}
+}
+
+static void png_file_flush(png_structp png_ptr) {
+	FILE *file = png_get_io_ptr(png_ptr);
+	if (file == NULL || fflush(file) != 0) {
+		png_error(png_ptr, "Failed to flush PNG data");
+	}
+}
 
 static bool png_image_save(struct wlf_image *image, const char *filename) {
 	FILE *fp = fopen(filename, "wb");
@@ -41,7 +65,9 @@ static bool png_image_save(struct wlf_image *image, const char *filename) {
 		return false;
 	}
 
-	png_init_io(png_ptr, fp);
+	/* Keep stdio operations in wlframe's CRT. On MSVC, a dependency built with
+	 * a different runtime must not dereference our FILE pointer. */
+	png_set_write_fn(png_ptr, fp, png_file_write, png_file_flush);
 	struct wlf_png_image *png_image = wlf_png_image_from_image(image);
 	assert(png_image != NULL);
 	int color_type = wlf_color_type_to_png(image);
@@ -104,7 +130,9 @@ static bool png_image_load(struct wlf_image *image, const char *filename, bool e
 		return false;
 	}
 
-	png_init_io(png_ptr, fp);
+	/* See png_image_save: the custom callback avoids passing FILE internals
+	 * across MSVC runtime-library boundaries. */
+	png_set_read_fn(png_ptr, fp, png_file_read);
 	png_set_sig_bytes(png_ptr, sig_read);
 	png_read_info(png_ptr, info_ptr);
 	png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type,
