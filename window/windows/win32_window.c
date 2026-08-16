@@ -1,6 +1,7 @@
 #include "wlf/window/windows/win32_window.h"
 
 #include "wlf/platform/windows/backend.h"
+#include "wlf/scene/wlf_scene.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 
@@ -996,6 +997,19 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 		PAINTSTRUCT paint;
 		BeginPaint(hwnd, &paint);
 		EndPaint(hwnd, &paint);
+		if (window->base.scene != NULL &&
+				!IsRectEmpty(&paint.rcPaint)) {
+			double scale = window->base.state.scale;
+			int x1 = (int)floor(paint.rcPaint.left / scale);
+			int y1 = (int)floor(paint.rcPaint.top / scale);
+			int x2 = (int)ceil(paint.rcPaint.right / scale);
+			int y2 = (int)ceil(paint.rcPaint.bottom / scale);
+			pixman_region32_t damage;
+			pixman_region32_init_rect(&damage, x1, y1,
+				x2 - x1, y2 - y1);
+			wlf_scene_damage(window->base.scene, &damage);
+			pixman_region32_fini(&damage);
+		}
 		wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
 		return 0;
 	}
