@@ -276,6 +276,51 @@ static void emit_keyboard_repeat_info(struct wlf_win32_window *window) {
 	wlf_window_keyboard_repeat_info(&window->base, &event);
 }
 
+static bool virtual_key_down(int key) {
+	return (GetKeyState(key) & 0x8000) != 0;
+}
+
+static void emit_keyboard_modifiers(struct wlf_win32_window *window,
+		bool force) {
+	uint32_t depressed = 0;
+	uint32_t locked = 0;
+	if (virtual_key_down(VK_SHIFT)) {
+		depressed |= WLF_KEYBOARD_MODIFIER_SHIFT;
+	}
+	if (virtual_key_down(VK_CONTROL)) {
+		depressed |= WLF_KEYBOARD_MODIFIER_CONTROL;
+	}
+	if (virtual_key_down(VK_MENU)) {
+		depressed |= WLF_KEYBOARD_MODIFIER_ALT;
+	}
+	if (virtual_key_down(VK_LWIN) || virtual_key_down(VK_RWIN)) {
+		depressed |= WLF_KEYBOARD_MODIFIER_LOGO;
+	}
+	if ((GetKeyState(VK_CAPITAL) & 1) != 0) {
+		locked |= WLF_KEYBOARD_MODIFIER_CAPS_LOCK;
+	}
+	if ((GetKeyState(VK_NUMLOCK) & 1) != 0) {
+		locked |= WLF_KEYBOARD_MODIFIER_NUM_LOCK;
+	}
+	if ((GetKeyState(VK_SCROLL) & 1) != 0) {
+		locked |= WLF_KEYBOARD_MODIFIER_SCROLL_LOCK;
+	}
+	if (!force && depressed == window->modifiers_depressed &&
+			locked == window->modifiers_locked) {
+		return;
+	}
+	window->modifiers_depressed = depressed;
+	window->modifiers_locked = locked;
+	struct wlf_keyboard_modifiers_event event = {
+		.keyboard = &window->keyboard,
+		.serial = next_input_serial(window),
+		.mods_depressed = depressed,
+		.mods_locked = locked,
+		.group = LOWORD((UINT_PTR)GetKeyboardLayout(0)),
+	};
+	wlf_window_keyboard_modifiers(&window->base, &event);
+}
+
 static void handle_keyboard_focus(struct wlf_win32_window *window,
 		bool focused) {
 	if (focused) {
@@ -286,6 +331,7 @@ static void handle_keyboard_focus(struct wlf_win32_window *window,
 		};
 		wlf_window_keyboard_enter(&window->base, &event);
 		emit_keyboard_repeat_info(window);
+		emit_keyboard_modifiers(window, true);
 	} else {
 		struct wlf_keyboard_leave_event event = {
 			.keyboard = &window->keyboard,
@@ -311,6 +357,7 @@ static void handle_keyboard_key(struct wlf_win32_window *window,
 			WLF_KEYBOARD_KEY_STATE_RELEASED,
 	};
 	wlf_window_keyboard_key(&window->base, &event);
+	emit_keyboard_modifiers(window, false);
 }
 
 static char *wide_range_to_utf8(const wchar_t *wide, int length,

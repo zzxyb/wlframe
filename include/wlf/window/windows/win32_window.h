@@ -28,6 +28,8 @@ struct wlf_win32_window {
 	WINDOWPLACEMENT restore_placement;
 	DWORD restore_style;
 	uint32_t input_serial;
+	uint32_t modifiers_depressed;
+	uint32_t modifiers_locked;
 	wchar_t pending_high_surrogate;
 	bool fullscreen;
 	bool counted;

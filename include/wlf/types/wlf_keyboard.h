@@ -39,6 +39,17 @@ enum wlf_keyboard_key_state {
 	WLF_KEYBOARD_KEY_STATE_PRESSED = 1,  /**< Key is pressed. */
 };
 
+/** Portable bits used by wlf_keyboard_modifiers_event on native backends. */
+enum wlf_keyboard_modifier_mask {
+	WLF_KEYBOARD_MODIFIER_SHIFT = 1 << 0,
+	WLF_KEYBOARD_MODIFIER_CONTROL = 1 << 1,
+	WLF_KEYBOARD_MODIFIER_ALT = 1 << 2,
+	WLF_KEYBOARD_MODIFIER_LOGO = 1 << 3,
+	WLF_KEYBOARD_MODIFIER_CAPS_LOCK = 1 << 4,
+	WLF_KEYBOARD_MODIFIER_NUM_LOCK = 1 << 5,
+	WLF_KEYBOARD_MODIFIER_SCROLL_LOCK = 1 << 6,
+};
+
 /**
  * @brief Virtual methods for keyboard operations.
  */
