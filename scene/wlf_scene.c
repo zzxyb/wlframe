@@ -6,20 +6,21 @@
 #include "wlf/pass/wlf_path_pass.h"
 #include "wlf/pass/wlf_poly_pass.h"
 #include "wlf/pass/wlf_rect_shape_pass.h"
+#include "wlf/config.h"
+#if WLF_HAS_LINUX_PLATFORM
 #include "wlf/pass/gles/rect_pass.h"
 #include "wlf/pass/gles/texture_pass.h"
 #include "wlf/pass/gles/vector_pass.h"
 #include "wlf/pass/pixman/rect_pass.h"
 #include "wlf/pass/pixman/texture_pass.h"
 #include "wlf/pass/pixman/vector_pass.h"
-#include "wlf/config.h"
-#if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/gles/renderer.h"
-#endif
-#if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/pixman/renderer.h"
 #endif
 #if WLF_HAS_WINDOWS_PLATFORM
+#include "pass/directx12/rect_pass.h"
+#include "pass/directx12/texture_pass.h"
+#include "pass/directx12/vector_pass.h"
 #include "wlf/renderer/directx12/renderer.h"
 #endif
 #include "wlf/scene/wlf_scene_tree.h"
@@ -134,6 +135,11 @@ static struct wlf_vector_pass *create_vector_pass(
 		return wlf_pixman_vector_pass_create();
 	}
 #endif
+#if WLF_HAS_WINDOWS_PLATFORM
+	if (wlf_renderer_is_dx12(renderer)) {
+		return wlf_dx12_vector_pass_create(renderer);
+	}
+#endif
 	return NULL;
 }
 
@@ -149,17 +155,18 @@ static bool create_passes(struct wlf_scene *scene) {
 	if (wlf_renderer_is_pixman(renderer)) {
 		scene->rect_pass = wlf_pixman_rect_pass_create();
 		scene->texture_pass = wlf_pixman_texture_pass_create();
-	} else {
-		wlf_log(WLF_ERROR, "Scene rendering is unsupported by this renderer");
-		return false;
 	}
 #endif
 #if WLF_HAS_WINDOWS_PLATFORM
 	if (wlf_renderer_is_dx12(renderer)) {
-		wlf_log(WLF_ERROR, "DirectX 12 scene passes are not complete");
-		return false;
+		scene->rect_pass = wlf_dx12_rect_pass_create(renderer);
+		scene->texture_pass = wlf_dx12_texture_pass_create(renderer);
 	}
 #endif
+	if (scene->rect_pass == NULL || scene->texture_pass == NULL) {
+		wlf_log(WLF_ERROR, "Scene rendering is unsupported by this renderer");
+		return false;
+	}
 	scene->rect_shape_pass = wlf_rect_shape_pass_create(
 		create_vector_pass(renderer));
 	scene->circle_pass = wlf_circle_pass_create(create_vector_pass(renderer));
