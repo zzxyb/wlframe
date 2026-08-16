@@ -1,4 +1,5 @@
 #include "wlf/window/wlf_window.h"
+#include "wlf/config.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/scene/wlf_event_node.h"
 #include "wlf/scene/wlf_scene_tree.h"
@@ -7,6 +8,11 @@
 #include "wlf/swapchain/wlf_swapchain.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
+#if WLF_HAS_LINUX_PLATFORM
+#include "wlf/window/wayland/xdg_toplevel_window.h"
+#elif WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/window/windows/win32_window.h"
+#endif
 
 #include <assert.h>
 #include <limits.h>
@@ -149,6 +155,21 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 	for (size_t i = 0; i < sizeof(input_signals) / sizeof(input_signals[0]); ++i) {
 		wlf_signal_init(input_signals[i]);
 	}
+}
+
+struct wlf_window *wlf_window_create_toplevel(struct wlf_backend *backend,
+		uint32_t width, uint32_t height) {
+	if (backend == NULL || width == 0 || height == 0) {
+		return NULL;
+	}
+#if WLF_HAS_LINUX_PLATFORM
+	return wlf_xdg_toplevel_window_create_from_backend(backend, width, height);
+#elif WLF_HAS_WINDOWS_PLATFORM
+	return wlf_win32_window_create_from_backend(backend, width, height);
+#else
+	wlf_log(WLF_ERROR, "Native toplevel windows are not implemented on this platform");
+	return NULL;
+#endif
 }
 
 void wlf_window_destroy(struct wlf_window *window) {

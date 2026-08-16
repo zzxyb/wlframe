@@ -227,6 +227,13 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 	uint32_t width, uint32_t height);
 
 /**
+ * Creates a native toplevel using the backend's host window system.
+ * The requested width and height are logical (DPI-independent) units.
+ */
+struct wlf_window *wlf_window_create_toplevel(struct wlf_backend *backend,
+	uint32_t width, uint32_t height);
+
+/**
  * @brief Destroy a window and free all associated resources.
  * @param window Pointer to the window to destroy.
  */
