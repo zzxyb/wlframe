@@ -3,6 +3,7 @@
 #include "wlf/scene/wlf_rect_node.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/scene/wlf_scene_tree.h"
+#include "wlf/scene/wlf_text_node.h"
 #include "wlf/types/wlf_color.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_signal.h"
@@ -39,8 +40,12 @@ int main(void) {
 	wlf_window_set_background_color(window, &background);
 	struct wlf_scene *scene = wlf_scene_create(window);
 	struct wlf_color foreground = wlf_color_from_rgb8(55, 145, 245);
+	struct wlf_color text_color = WLF_COLOR_WHITE;
 	if (scene == NULL || wlf_rect_node_create(&scene->tree->base,
-			80, 70, 480, 260, &foreground) == NULL) {
+			80, 70, 480, 260, &foreground) == NULL ||
+			wlf_text_node_create(&scene->tree->base, 120, 160,
+				"wlframe Windows / \xE4\xB8\xAD\xE6\x96\x87", "sans-serif", 28,
+				&text_color) == NULL) {
 		wlf_window_destroy(window);
 		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);

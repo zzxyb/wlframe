@@ -117,9 +117,8 @@ void wlf_text_init(struct wlf_text *text, const struct wlf_text_impl *impl);
 /**
  * @brief Create the text implementation for the current platform.
  *
- * Linux currently uses the Cairo/Pango/HarfBuzz implementation. The native
- * Core Text and DirectWrite implementations are reserved for later work, so
- * this function returns NULL on macOS and Windows for now.
+ * Linux uses Cairo/Pango/HarfBuzz and Windows uses the native GDI text stack.
+ * This function currently returns NULL on macOS.
  *
  * @return A newly allocated text object, or NULL when no implementation is available.
  */

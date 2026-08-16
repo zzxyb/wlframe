@@ -4,6 +4,8 @@
 
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/linux/text.h"
+#elif WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/platform/windows/text.h"
 #endif
 
 #include <assert.h>
@@ -31,10 +33,11 @@ struct wlf_text *wlf_text_autocreate(void) {
 	}
 
 	return &text->base;
+#elif WLF_HAS_WINDOWS_PLATFORM
+	struct wlf_windows_text *text = wlf_windows_text_create();
+	return text != NULL ? &text->base : NULL;
 #else
-	/* Core Text and DirectWrite implementations will be selected here once they are
-	 * implemented. Keeping the selection in this module leaves scene code
-	 * independent of platform text libraries. */
+	/* A Core Text implementation will be selected here once implemented. */
 	return NULL;
 #endif
 }
