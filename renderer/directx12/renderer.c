@@ -541,3 +541,27 @@ struct wlf_dx12_renderer *wlf_dx12_renderer_from_renderer(
 		wlf_container_of(renderer, dx12_renderer, base);
 	return dx12_renderer;
 }
+
+bool wlf_dx12_renderer_wait_idle(struct wlf_dx12_renderer *renderer) {
+	if (renderer == NULL || renderer->command_queue == NULL ||
+			renderer->fence == NULL || renderer->fence_event == NULL) {
+		return false;
+	}
+	UINT64 value = renderer->fence_value++;
+	HRESULT hr = ID3D12CommandQueue_Signal(renderer->command_queue,
+		renderer->fence, value);
+	if (FAILED(hr)) {
+		dx12_log_error("ID3D12CommandQueue_Signal", hr);
+		return false;
+	}
+	if (ID3D12Fence_GetCompletedValue(renderer->fence) >= value) {
+		return true;
+	}
+	hr = ID3D12Fence_SetEventOnCompletion(renderer->fence, value,
+		renderer->fence_event);
+	if (FAILED(hr)) {
+		dx12_log_error("ID3D12Fence_SetEventOnCompletion", hr);
+		return false;
+	}
+	return WaitForSingleObject(renderer->fence_event, INFINITE) == WAIT_OBJECT_0;
+}

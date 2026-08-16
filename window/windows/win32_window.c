@@ -2,6 +2,7 @@
 
 #include "wlf/platform/windows/backend.h"
 #include "wlf/scene/wlf_scene.h"
+#include "swapchain/directx12/swapchain.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 
@@ -847,10 +848,19 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 	switch (message) {
 	case WLF_WM_FRAME: {
 		window->frame_pending = false;
-		HRESULT result = DwmFlush();
-		if (FAILED(result)) {
-			wlf_log(WLF_ERROR, "DwmFlush failed: 0x%08lx",
-				(unsigned long)result);
+		HANDLE frame_event = wlf_dx12_swapchain_get_frame_latency_event(
+			window->base.state.swapchain);
+		if (frame_event != NULL) {
+			if (WaitForSingleObjectEx(frame_event, INFINITE, FALSE) !=
+					WAIT_OBJECT_0) {
+				wlf_log(WLF_ERROR, "Failed to wait for DXGI frame latency");
+			}
+		} else {
+			HRESULT result = DwmFlush();
+			if (FAILED(result)) {
+				wlf_log(WLF_ERROR, "DwmFlush failed: 0x%08lx",
+					(unsigned long)result);
+			}
 		}
 		wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
 		return 0;

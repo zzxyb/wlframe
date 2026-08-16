@@ -86,4 +86,7 @@ bool wlf_renderer_is_dx12(const struct wlf_renderer *renderer);
 struct wlf_dx12_renderer *wlf_dx12_renderer_from_renderer(
 	struct wlf_renderer *renderer);
 
+/** Waits until all commands submitted to the DirectX queue have completed. */
+bool wlf_dx12_renderer_wait_idle(struct wlf_dx12_renderer *renderer);
+
 #endif // DIRECTX12_RENDERER_H
