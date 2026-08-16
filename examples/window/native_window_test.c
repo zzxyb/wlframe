@@ -1,4 +1,5 @@
 #include "wlf/platform/wlf_backend.h"
+#include "wlf/config.h"
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/scene/wlf_rect_node.h"
 #include "wlf/scene/wlf_scene.h"
@@ -10,12 +11,33 @@
 #include "wlf/window/wlf_window.h"
 
 #include <stdlib.h>
+#include <string.h>
 
+#if WLF_HAS_WINDOWS_PLATFORM
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
+
+#if !WLF_HAS_WINDOWS_PLATFORM
 static void close_after_first_frame(struct wlf_listener *listener,
 		void *data) {
 	(void)listener;
 	wlf_window_close(data);
 }
+#endif
+
+#if WLF_HAS_WINDOWS_PLATFORM
+static void close_after_text_input(struct wlf_listener *listener,
+		void *data) {
+	(void)listener;
+	const struct wlf_text_input_commit_event *event = data;
+	if (strcmp(event->text, "A") == 0) {
+		wlf_window_close(event->window);
+	}
+}
+#endif
 
 int main(void) {
 	wlf_log_init(WLF_DEBUG, NULL);
@@ -51,13 +73,23 @@ int main(void) {
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;
 	}
-	struct wlf_listener first_frame = {
-		.notify = close_after_first_frame,
-	};
+#if WLF_HAS_WINDOWS_PLATFORM
+	struct wlf_listener text_input = {.notify = close_after_text_input};
+	wlf_signal_add(&window->events.text_input_commit, &text_input);
+#else
+	struct wlf_listener first_frame = {.notify = close_after_first_frame};
 	wlf_signal_add(&window->events.expose, &first_frame);
+#endif
 	wlf_window_show(window);
+#if WLF_HAS_WINDOWS_PLATFORM
+	PostMessageW(wlf_window_native_handle(window), WM_CHAR, L'A', 0);
+#endif
 	wlf_backend_exe(backend);
+#if WLF_HAS_WINDOWS_PLATFORM
+	wlf_linked_list_remove(&text_input.link);
+#else
 	wlf_linked_list_remove(&first_frame.link);
+#endif
 	wlf_window_destroy(window);
 	wlf_renderer_destroy(renderer);
 	wlf_backend_destroy(backend);

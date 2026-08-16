@@ -207,6 +207,7 @@ elif is_windows
 	dxgi = cc.find_library('dxgi', required: true)
 	dxguid = cc.find_library('dxguid', required: true)
 	gdi32 = cc.find_library('gdi32', required: true)
+	imm32 = cc.find_library('imm32', required: true)
 	shcore = cc.find_library('shcore', required: true)
 	user32 = cc.find_library('user32', required: true)
 	libpng = dependency('libpng', required: true)
@@ -272,6 +273,7 @@ elif is_windows
 		dxgi,
 		dxguid,
 		gdi32,
+		imm32,
 		shcore,
 		user32,
 	]

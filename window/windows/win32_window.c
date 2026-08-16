@@ -5,6 +5,7 @@
 #include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
+#include <imm.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -310,6 +311,135 @@ static void handle_keyboard_key(struct wlf_win32_window *window,
 			WLF_KEYBOARD_KEY_STATE_RELEASED,
 	};
 	wlf_window_keyboard_key(&window->base, &event);
+}
+
+static char *wide_range_to_utf8(const wchar_t *wide, int length,
+		size_t *byte_length) {
+	if (length < 0) {
+		return NULL;
+	}
+	int bytes = WideCharToMultiByte(CP_UTF8, 0, wide, length, NULL, 0,
+		NULL, NULL);
+	if (bytes == 0 && length > 0) {
+		return NULL;
+	}
+	char *utf8 = calloc((size_t)bytes + 1, 1);
+	if (utf8 == NULL || (bytes > 0 && WideCharToMultiByte(CP_UTF8, 0,
+			wide, length, utf8, bytes, NULL, NULL) == 0)) {
+		free(utf8);
+		return NULL;
+	}
+	if (byte_length != NULL) {
+		*byte_length = (size_t)bytes;
+	}
+	return utf8;
+}
+
+static void emit_committed_wide_text(struct wlf_win32_window *window,
+		const wchar_t *wide, int length) {
+	char *utf8 = wide_range_to_utf8(wide, length, NULL);
+	if (utf8 == NULL) {
+		return;
+	}
+	struct wlf_text_input_commit_event event = {
+		.window = &window->base,
+		.text = utf8,
+	};
+	wlf_window_text_input_commit(&window->base, &event);
+	free(utf8);
+}
+
+static void handle_character(struct wlf_win32_window *window,
+		wchar_t character) {
+	if (character >= 0xd800 && character <= 0xdbff) {
+		window->pending_high_surrogate = character;
+		return;
+	}
+	wchar_t text[2];
+	int length = 1;
+	if (character >= 0xdc00 && character <= 0xdfff &&
+			window->pending_high_surrogate != 0) {
+		text[0] = window->pending_high_surrogate;
+		text[1] = character;
+		length = 2;
+	} else {
+		text[0] = character == L'\r' ? L'\n' : character;
+	}
+	window->pending_high_surrogate = 0;
+	if (text[0] >= L' ' || text[0] == L'\n' || text[0] == L'\t') {
+		emit_committed_wide_text(window, text, length);
+	}
+}
+
+static wchar_t *get_ime_string(HIMC context, DWORD index, int *length) {
+	LONG bytes = ImmGetCompositionStringW(context, index, NULL, 0);
+	if (bytes < 0 || bytes % (LONG)sizeof(wchar_t) != 0) {
+		return NULL;
+	}
+	*length = bytes / (LONG)sizeof(wchar_t);
+	wchar_t *wide = calloc((size_t)*length + 1, sizeof(*wide));
+	if (wide == NULL) {
+		return NULL;
+	}
+	if (bytes > 0 && ImmGetCompositionStringW(context, index, wide,
+			(DWORD)bytes) != bytes) {
+		free(wide);
+		return NULL;
+	}
+	return wide;
+}
+
+static void emit_empty_preedit(struct wlf_win32_window *window) {
+	struct wlf_text_input_preedit_event event = {
+		.window = &window->base,
+		.text = "",
+	};
+	wlf_window_text_input_preedit(&window->base, &event);
+}
+
+static void handle_ime_composition(struct wlf_win32_window *window,
+		LPARAM lparam) {
+	HIMC context = ImmGetContext(window->hwnd);
+	if (context == NULL) {
+		return;
+	}
+	if ((lparam & GCS_RESULTSTR) != 0) {
+		int length = 0;
+		wchar_t *wide = get_ime_string(context, GCS_RESULTSTR, &length);
+		if (wide != NULL) {
+			emit_committed_wide_text(window, wide, length);
+			free(wide);
+		}
+		emit_empty_preedit(window);
+	}
+	if ((lparam & GCS_COMPSTR) != 0) {
+		int length = 0;
+		wchar_t *wide = get_ime_string(context, GCS_COMPSTR, &length);
+		if (wide != NULL) {
+			LONG cursor = ImmGetCompositionStringW(context, GCS_CURSORPOS,
+				NULL, 0);
+			if (cursor < 0 || cursor > length) {
+				cursor = length;
+			}
+			size_t cursor_bytes = 0;
+			char *utf8 = wide_range_to_utf8(wide, length, NULL);
+			char *prefix = wide_range_to_utf8(wide, (int)cursor,
+				&cursor_bytes);
+			if (utf8 != NULL && prefix != NULL) {
+				struct wlf_text_input_preedit_event event = {
+					.window = &window->base,
+					.text = utf8,
+					.cursor_begin = cursor_bytes,
+					.cursor_end = cursor_bytes,
+				};
+				wlf_window_text_input_preedit(&window->base, &event);
+			}
+			free(prefix);
+			free(utf8);
+			free(wide);
+		}
+	}
+	ImmReleaseContext(window->hwnd, context);
 }
 
 static bool get_touch_info(struct wlf_win32_window *window, WPARAM wparam,
@@ -748,6 +878,29 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 	case WM_SYSKEYUP:
 		handle_keyboard_key(window, lparam, false);
 		return DefWindowProcW(hwnd, message, wparam, lparam);
+	case WM_CHAR:
+		handle_character(window, (wchar_t)wparam);
+		return 0;
+	case WM_UNICHAR:
+		if (wparam == UNICODE_NOCHAR) {
+			return TRUE;
+		}
+		if (wparam <= 0xffff) {
+			handle_character(window, (wchar_t)wparam);
+		} else if (wparam <= 0x10ffff) {
+			wchar_t pair[2] = {
+				(wchar_t)(0xd800 + ((wparam - 0x10000) >> 10)),
+				(wchar_t)(0xdc00 + ((wparam - 0x10000) & 0x3ff)),
+			};
+			emit_committed_wide_text(window, pair, 2);
+		}
+		return 0;
+	case WM_IME_COMPOSITION:
+		handle_ime_composition(window, lparam);
+		return 0;
+	case WM_IME_ENDCOMPOSITION:
+		emit_empty_preedit(window);
+		return 0;
 	case WM_SETCURSOR:
 		if (LOWORD(lparam) == HTCLIENT && window->cursor_handle != NULL) {
 			SetCursor(window->cursor_handle);
