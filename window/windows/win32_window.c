@@ -6,14 +6,14 @@
 #include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
+#include <dwmapi.h>
 #include <imm.h>
 #include <math.h>
 #include <stdlib.h>
 
 static const wchar_t win32_window_class_name[] = L"wlframe.window";
 
-#define WLF_FRAME_TIMER_ID 1
-#define WLF_FRAME_INTERVAL_MS 16
+#define WLF_WM_FRAME (WM_APP + 1)
 
 static struct wlf_win32_window *win32_from_hwnd(HWND hwnd) {
 	return (struct wlf_win32_window *)GetWindowLongPtrW(hwnd, GWLP_USERDATA);
@@ -783,8 +783,7 @@ static void win32_window_schedule_frame(struct wlf_window *base) {
 		return;
 	}
 	window->frame_pending = true;
-	if (SetTimer(window->hwnd, WLF_FRAME_TIMER_ID,
-			WLF_FRAME_INTERVAL_MS, NULL) == 0) {
+	if (!PostMessageW(window->hwnd, WLF_WM_FRAME, 0, 0)) {
 		window->frame_pending = false;
 		wlf_log(WLF_ERROR, "Failed to schedule Win32 frame: %lu",
 			(unsigned long)GetLastError());
@@ -846,22 +845,21 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 	}
 
 	switch (message) {
-	case WM_TIMER:
-		if (wparam != WLF_FRAME_TIMER_ID) {
-			return DefWindowProcW(hwnd, message, wparam, lparam);
-		}
-		KillTimer(hwnd, WLF_FRAME_TIMER_ID);
+	case WLF_WM_FRAME: {
 		window->frame_pending = false;
+		HRESULT result = DwmFlush();
+		if (FAILED(result)) {
+			wlf_log(WLF_ERROR, "DwmFlush failed: 0x%08lx",
+				(unsigned long)result);
+		}
 		wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
 		return 0;
+	}
 	case WM_CLOSE:
 		wlf_window_close(&window->base);
 		return 0;
 	case WM_DESTROY: {
-		if (window->frame_pending) {
-			KillTimer(hwnd, WLF_FRAME_TIMER_ID);
-			window->frame_pending = false;
-		}
+		window->frame_pending = false;
 		struct wlf_windows_backend *backend = wlf_windows_backend_from_backend(
 			window->base.state.backend);
 		window->hwnd = NULL;

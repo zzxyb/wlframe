@@ -204,6 +204,7 @@ elif is_windows
 	message('Building for Windows')
 	advapi32 = cc.find_library('advapi32', required: true)
 	d3d12 = cc.find_library('d3d12', required: true)
+	dwmapi = cc.find_library('dwmapi', required: true)
 	dxgi = cc.find_library('dxgi', required: true)
 	dxguid = cc.find_library('dxguid', required: true)
 	gdi32 = cc.find_library('gdi32', required: true)
@@ -270,6 +271,7 @@ elif is_windows
 	wlf_deps += [
 		advapi32,
 		d3d12,
+		dwmapi,
 		dxgi,
 		dxguid,
 		gdi32,
