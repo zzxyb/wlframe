@@ -10,5 +10,4 @@ elif is_macos
 	subdir('metal')
 elif is_windows
 	subdir('directx12')
-	subdir('pixman')
 endif

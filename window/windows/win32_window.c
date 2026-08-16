@@ -7,7 +7,6 @@
 #include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
-#include <dwmapi.h>
 #include <imm.h>
 #include <math.h>
 #include <stdlib.h>
@@ -856,11 +855,7 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 				wlf_log(WLF_ERROR, "Failed to wait for DXGI frame latency");
 			}
 		} else {
-			HRESULT result = DwmFlush();
-			if (FAILED(result)) {
-				wlf_log(WLF_ERROR, "DwmFlush failed: 0x%08lx",
-					(unsigned long)result);
-			}
+			wlf_log(WLF_ERROR, "DXGI frame latency event is unavailable");
 		}
 		wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
 		return 0;

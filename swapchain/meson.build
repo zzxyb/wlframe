@@ -8,5 +8,4 @@ if is_linux
 	subdir('vulkan')
 elif is_windows
 	subdir('directx12')
-	subdir('windows')
 endif

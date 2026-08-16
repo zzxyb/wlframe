@@ -17,7 +17,7 @@ if is_linux
 	subdir('vulkan')
 endif
 
-if is_linux or is_windows
+if is_linux
 	subdir('pixman')
 endif
 

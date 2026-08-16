@@ -16,8 +16,11 @@
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/gles/renderer.h"
 #endif
-#if WLF_HAS_LINUX_PLATFORM || WLF_HAS_WINDOWS_PLATFORM
+#if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/pixman/renderer.h"
+#endif
+#if WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/renderer/directx12/renderer.h"
 #endif
 #include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/utils/wlf_log.h"
@@ -126,7 +129,7 @@ static struct wlf_vector_pass *create_vector_pass(
 		return wlf_gles_vector_pass_create();
 	}
 #endif
-#if WLF_HAS_LINUX_PLATFORM || WLF_HAS_WINDOWS_PLATFORM
+#if WLF_HAS_LINUX_PLATFORM
 	if (wlf_renderer_is_pixman(renderer)) {
 		return wlf_pixman_vector_pass_create();
 	}
@@ -142,12 +145,18 @@ static bool create_passes(struct wlf_scene *scene) {
 		scene->texture_pass = wlf_gles_texture_pass_create();
 	} else
 #endif
-#if WLF_HAS_LINUX_PLATFORM || WLF_HAS_WINDOWS_PLATFORM
+#if WLF_HAS_LINUX_PLATFORM
 	if (wlf_renderer_is_pixman(renderer)) {
 		scene->rect_pass = wlf_pixman_rect_pass_create();
 		scene->texture_pass = wlf_pixman_texture_pass_create();
 	} else {
 		wlf_log(WLF_ERROR, "Scene rendering is unsupported by this renderer");
+		return false;
+	}
+#endif
+#if WLF_HAS_WINDOWS_PLATFORM
+	if (wlf_renderer_is_dx12(renderer)) {
+		wlf_log(WLF_ERROR, "DirectX 12 scene passes are not complete");
 		return false;
 	}
 #endif
