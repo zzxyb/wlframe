@@ -25,6 +25,7 @@ struct wlf_win32_window {
 	struct wlf_cursor cursor;
 	HWND hwnd;
 	HCURSOR cursor_handle;
+	HANDLE frame_wait;
 	WINDOWPLACEMENT restore_placement;
 	DWORD restore_style;
 	uint32_t input_serial;

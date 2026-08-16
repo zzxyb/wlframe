@@ -641,8 +641,24 @@ static RECT client_geometry_to_window(struct wlf_win32_window *window,
 	return rect;
 }
 
+static void cancel_frame_wait(struct wlf_win32_window *window) {
+	HANDLE wait = window->frame_wait;
+	window->frame_wait = NULL;
+	if (wait == NULL) {
+		return;
+	}
+	if (!UnregisterWaitEx(wait, INVALID_HANDLE_VALUE)) {
+		DWORD error = GetLastError();
+		if (error != ERROR_IO_PENDING && error != ERROR_INVALID_HANDLE) {
+			wlf_log(WLF_ERROR, "Failed to unregister DXGI frame wait: %lu",
+				(unsigned long)error);
+		}
+	}
+}
+
 static void win32_window_destroy(struct wlf_window *base) {
 	struct wlf_win32_window *window = win32_from_window(base);
+	cancel_frame_wait(window);
 	if (window->hwnd != NULL) {
 		DestroyWindow(window->hwnd);
 	}
@@ -777,12 +793,33 @@ static void *win32_window_native_handle(struct wlf_window *base) {
 	return win32_from_window(base)->hwnd;
 }
 
+static VOID CALLBACK frame_latency_ready(void *context, BOOLEAN timed_out) {
+	struct wlf_win32_window *window = context;
+	if (!timed_out && window->hwnd != NULL) {
+		(void)PostMessageW(window->hwnd, WLF_WM_FRAME, 0, 0);
+	}
+}
+
 static void win32_window_schedule_frame(struct wlf_window *base) {
 	struct wlf_win32_window *window = win32_from_window(base);
 	if (window->frame_pending) {
 		return;
 	}
 	window->frame_pending = true;
+	HANDLE frame_event = wlf_dx12_swapchain_get_frame_latency_event(
+		base->state.swapchain);
+	if (frame_event != NULL && RegisterWaitForSingleObject(&window->frame_wait,
+			frame_event, frame_latency_ready, window, INFINITE,
+			WT_EXECUTEONLYONCE)) {
+		return;
+	}
+	window->frame_wait = NULL;
+	if (frame_event == NULL) {
+		wlf_log(WLF_ERROR, "DXGI frame latency event is unavailable");
+	} else {
+		wlf_log(WLF_ERROR, "Failed to register DXGI frame wait: %lu",
+			(unsigned long)GetLastError());
+	}
 	if (!PostMessageW(window->hwnd, WLF_WM_FRAME, 0, 0)) {
 		window->frame_pending = false;
 		wlf_log(WLF_ERROR, "Failed to schedule Win32 frame: %lu",
@@ -846,17 +883,11 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 
 	switch (message) {
 	case WLF_WM_FRAME: {
-		window->frame_pending = false;
-		HANDLE frame_event = wlf_dx12_swapchain_get_frame_latency_event(
-			window->base.state.swapchain);
-		if (frame_event != NULL) {
-			if (WaitForSingleObjectEx(frame_event, INFINITE, FALSE) !=
-					WAIT_OBJECT_0) {
-				wlf_log(WLF_ERROR, "Failed to wait for DXGI frame latency");
-			}
-		} else {
-			wlf_log(WLF_ERROR, "DXGI frame latency event is unavailable");
+		if (!window->frame_pending) {
+			return 0;
 		}
+		cancel_frame_wait(window);
+		window->frame_pending = false;
 		wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
 		return 0;
 	}
@@ -864,6 +895,7 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 		wlf_window_close(&window->base);
 		return 0;
 	case WM_DESTROY: {
+		cancel_frame_wait(window);
 		window->frame_pending = false;
 		struct wlf_windows_backend *backend = wlf_windows_backend_from_backend(
 			window->base.state.backend);
@@ -1030,6 +1062,12 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 				x2 - x1, y2 - y1);
 			wlf_scene_damage(window->base.scene, &damage);
 			pixman_region32_fini(&damage);
+			/* A fully occluded flip-model swapchain can leave its latency
+			 * handle unsignaled. Exposure is the compositor's resume signal. */
+			if (window->frame_pending) {
+				cancel_frame_wait(window);
+				(void)PostMessageW(hwnd, WLF_WM_FRAME, 0, 0);
+			}
 		} else {
 			wlf_signal_emit_mutable(&window->base.events.expose,
 				&window->base);
