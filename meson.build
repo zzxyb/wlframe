@@ -206,6 +206,8 @@ elif is_windows
 	d3d12 = cc.find_library('d3d12', required: true)
 	dxgi = cc.find_library('dxgi', required: true)
 	dxguid = cc.find_library('dxguid', required: true)
+	gdi32 = cc.find_library('gdi32', required: true)
+	shcore = cc.find_library('shcore', required: true)
 	user32 = cc.find_library('user32', required: true)
 	libpng = dependency('libpng', required: true)
 	libturbojpeg = dependency('libjpeg', required: true)
@@ -269,6 +271,8 @@ elif is_windows
 		d3d12,
 		dxgi,
 		dxguid,
+		gdi32,
+		shcore,
 		user32,
 	]
 else

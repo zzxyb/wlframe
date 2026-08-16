@@ -1,13 +1,34 @@
 #include "wlf/platform/windows/backend.h"
+#include "wlf/platform/windows/output.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_compat.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <stdlib.h>
 
 static void windows_backend_destroy(struct wlf_backend *backend) {
 	struct wlf_windows_backend *windows = wlf_windows_backend_from_backend(backend);
+	struct wlf_output *output, *temporary;
+	wlf_linked_list_for_each_safe(output, temporary, &backend->outputs, link) {
+		wlf_signal_emit_mutable(&backend->events.output_removed, output);
+		wlf_output_destroy(output);
+	}
 	free(windows);
+}
+
+static BOOL CALLBACK add_monitor(HMONITOR monitor, HDC dc, LPRECT rect,
+		LPARAM data) {
+	WLF_UNUSED(dc);
+	WLF_UNUSED(rect);
+	struct wlf_windows_backend *backend = (struct wlf_windows_backend *)data;
+	struct wlf_output *output = wlf_windows_output_create(monitor);
+	if (output == NULL) {
+		return TRUE;
+	}
+	wlf_linked_list_insert(backend->base.outputs.prev, &output->link);
+	wlf_signal_emit_mutable(&backend->base.events.output_added, output);
+	return TRUE;
 }
 
 static void windows_backend_exe(struct wlf_backend *backend) {
@@ -61,6 +82,7 @@ struct wlf_backend *windows_backend_create(void) {
 	backend->base.features.server_side_decorations = true;
 	backend->instance = GetModuleHandleW(NULL);
 	backend->thread_id = GetCurrentThreadId();
+	EnumDisplayMonitors(NULL, NULL, add_monitor, (LPARAM)backend);
 
 	wlf_log(WLF_DEBUG, "Created %s backend", backend->base.impl->name);
 
