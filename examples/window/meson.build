@@ -14,15 +14,6 @@ window_examples = {
 }
 
 if is_linux or is_windows
-	executable(
-		'native_window_test',
-		'native_window_test.c',
-		dependencies: [wlframe],
-		install: false,
-	)
-endif
-
-if is_linux or is_windows
 	foreach example, info : window_examples
 		executable(
 			example,
