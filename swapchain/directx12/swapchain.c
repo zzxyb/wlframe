@@ -212,7 +212,7 @@ struct wlf_swapchain *wlf_dx12_swapchain_create(struct wlf_window *window,
 		.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT,
 		.BufferCount = WLF_DX12_BUFFER_COUNT,
 		.Scaling = DXGI_SCALING_STRETCH,
-		.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD,
+		.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL,
 		.AlphaMode = DXGI_ALPHA_MODE_IGNORE,
 		.Flags = DXGI_SWAP_CHAIN_FLAG_FRAME_LATENCY_WAITABLE_OBJECT,
 	};
