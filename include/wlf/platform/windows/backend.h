@@ -42,6 +42,7 @@ struct wlf_windows_backend {
 	struct wlf_backend base;  /**< Base backend structure. */
 	HINSTANCE instance;       /**< Current process module instance handle. */
 	DWORD thread_id;          /**< ID of the thread that created the backend. */
+	DWORD display_change_time; /**< Last WM_DISPLAYCHANGE timestamp handled. */
 	size_t window_count;       /**< Number of live native windows. */
 };
 
@@ -74,5 +75,8 @@ bool wlf_backend_is_windows(const struct wlf_backend *backend);
  */
 struct wlf_windows_backend *wlf_windows_backend_from_backend(
 	struct wlf_backend *backend);
+
+/** Re-enumerates monitors and emits output removal/addition signals. */
+void wlf_windows_backend_refresh_outputs(struct wlf_windows_backend *backend);
 
 #endif // WINDOWS_BACKEND_H

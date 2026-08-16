@@ -694,6 +694,16 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 			SWP_NOACTIVATE | SWP_NOZORDER);
 		return 0;
 	}
+	case WM_DISPLAYCHANGE: {
+		struct wlf_windows_backend *backend = wlf_windows_backend_from_backend(
+			window->base.state.backend);
+		DWORD time = (DWORD)GetMessageTime();
+		if (backend->display_change_time != time) {
+			backend->display_change_time = time;
+			wlf_windows_backend_refresh_outputs(backend);
+		}
+		return 0;
+	}
 	case WM_SETFOCUS:
 		window->base.state.focused = true;
 		window->base.state.state |= WLF_WINDOW_ACTIVE;

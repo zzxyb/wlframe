@@ -31,6 +31,18 @@ static BOOL CALLBACK add_monitor(HMONITOR monitor, HDC dc, LPRECT rect,
 	return TRUE;
 }
 
+void wlf_windows_backend_refresh_outputs(
+		struct wlf_windows_backend *backend) {
+	assert(backend != NULL);
+	struct wlf_output *output, *temporary;
+	wlf_linked_list_for_each_safe(output, temporary,
+			&backend->base.outputs, link) {
+		wlf_signal_emit_mutable(&backend->base.events.output_removed, output);
+		wlf_output_destroy(output);
+	}
+	EnumDisplayMonitors(NULL, NULL, add_monitor, (LPARAM)backend);
+}
+
 static void windows_backend_exe(struct wlf_backend *backend) {
 	backend->running = true;
 
@@ -82,7 +94,7 @@ struct wlf_backend *windows_backend_create(void) {
 	backend->base.features.server_side_decorations = true;
 	backend->instance = GetModuleHandleW(NULL);
 	backend->thread_id = GetCurrentThreadId();
-	EnumDisplayMonitors(NULL, NULL, add_monitor, (LPARAM)backend);
+	wlf_windows_backend_refresh_outputs(backend);
 
 	wlf_log(WLF_DEBUG, "Created %s backend", backend->base.impl->name);
 
