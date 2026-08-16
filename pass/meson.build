@@ -20,3 +20,7 @@ endif
 if is_linux or is_windows
 	subdir('pixman')
 endif
+
+if is_windows
+	subdir('directx12')
+endif

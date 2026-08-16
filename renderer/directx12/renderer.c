@@ -4,6 +4,7 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_compat.h"
 #include "wlf/utils/wlf_utils.h"
+#include "pass/directx12/render_target_info.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -401,8 +402,17 @@ static struct wlf_texture *dx12_renderer_texture_from_buffer(
 	return NULL;
 }
 
+static struct wlf_render_target_info *dx12_renderer_begin_buffer_pass(
+		struct wlf_renderer *base, struct wlf_buffer *buffer,
+		const struct wlf_buffer_pass_options *options) {
+	WLF_UNUSED(options);
+	return wlf_dx12_begin_render_pass(
+		wlf_dx12_renderer_from_renderer(base), buffer);
+}
+
 static const struct wlf_renderer_impl dx12_renderer_impl = {
 	.destroy = dx12_renderer_destroy,
+	.begin_buffer_pass = dx12_renderer_begin_buffer_pass,
 	.texture_from_buffer = dx12_renderer_texture_from_buffer,
 };
 

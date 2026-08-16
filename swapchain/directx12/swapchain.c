@@ -51,6 +51,15 @@ struct wlf_dx12_buffer *wlf_dx12_buffer_from_buffer(
 	return wlf_container_of(base, buffer, base);
 }
 
+ID3D12Resource *wlf_dx12_buffer_get_resource(struct wlf_dx12_buffer *buffer) {
+	return buffer != NULL ? buffer->resource : NULL;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE wlf_dx12_buffer_get_rtv(
+		struct wlf_dx12_buffer *buffer) {
+	return buffer != NULL ? buffer->rtv : (D3D12_CPU_DESCRIPTOR_HANDLE){0};
+}
+
 static void release_buffers(struct wlf_dx12_swapchain *swapchain) {
 	for (size_t i = 0; i < WLF_DX12_BUFFER_COUNT; ++i) {
 		if (swapchain->buffers[i] != NULL) {
