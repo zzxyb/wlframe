@@ -5,4 +5,6 @@ wlf_files += files(
 
 if is_linux
 	subdir('wayland')
+elif is_windows
+	subdir('windows')
 endif

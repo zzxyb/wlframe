@@ -42,6 +42,7 @@ struct wlf_windows_backend {
 	struct wlf_backend base;  /**< Base backend structure. */
 	HINSTANCE instance;       /**< Current process module instance handle. */
 	DWORD thread_id;          /**< ID of the thread that created the backend. */
+	size_t window_count;       /**< Number of live native windows. */
 };
 
 /**
