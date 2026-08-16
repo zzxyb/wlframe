@@ -1,6 +1,6 @@
 /**
  * @file text.h
- * @brief Native Windows text rasterizer.
+ * @brief DirectWrite Windows text rasterizer.
  */
 
 #ifndef WLF_PLATFORM_WINDOWS_TEXT_H

@@ -71,6 +71,11 @@ is_windows = host_machine.system() == 'windows'
 if is_macos
 	add_languages('objc', native: false)
 endif
+if is_windows
+	add_languages('cpp', native: false)
+	add_project_arguments(['/D_CRT_SECURE_NO_WARNINGS'],
+		language: 'cpp')
+endif
 if is_linux
 	add_project_arguments(['-D_POSIX_C_SOURCE=200809L'], language: 'c')
 	add_project_arguments(common_c_args + linux_c_args, language: 'c')
@@ -207,7 +212,7 @@ elif is_windows
 	d3dcompiler = cc.find_library('d3dcompiler', required: true)
 	dxgi = cc.find_library('dxgi', required: true)
 	dxguid = cc.find_library('dxguid', required: true)
-	gdi32 = cc.find_library('gdi32', required: true)
+	dwrite = cc.find_library('dwrite', required: true)
 	imm32 = cc.find_library('imm32', required: true)
 	shcore = cc.find_library('shcore', required: true)
 	user32 = cc.find_library('user32', required: true)
@@ -274,7 +279,7 @@ elif is_windows
 		d3dcompiler,
 		dxgi,
 		dxguid,
-		gdi32,
+		dwrite,
 		imm32,
 		shcore,
 		user32,

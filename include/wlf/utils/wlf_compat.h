@@ -46,7 +46,7 @@ typedef SSIZE_T ssize_t;
 #endif
 
 static inline char *wlf_strndup(const char *src, size_t len) {
-	char *dst = malloc(len + 1);
+	char *dst = (char *)malloc(len + 1);
 	if (dst == NULL) {
 		return NULL;
 	}

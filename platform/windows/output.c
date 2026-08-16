@@ -97,12 +97,6 @@ struct wlf_output *wlf_windows_output_create(HMONITOR monitor) {
 		}
 	}
 
-	HDC dc = CreateDCW(L"DISPLAY", info.szDevice, NULL, NULL);
-	if (dc != NULL) {
-		output->base.physical_size.width = GetDeviceCaps(dc, HORZSIZE);
-		output->base.physical_size.height = GetDeviceCaps(dc, VERTSIZE);
-		DeleteDC(dc);
-	}
 	return &output->base;
 }
 

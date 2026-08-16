@@ -1011,16 +1011,9 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 		}
 		return 0;
 	}
-	case WM_ERASEBKGND: {
-		const struct wlf_color *color = &window->base.state.background_color;
-		HBRUSH brush = CreateSolidBrush(RGB((BYTE)(color->r * 255.0),
-			(BYTE)(color->g * 255.0), (BYTE)(color->b * 255.0)));
-		RECT rect;
-		GetClientRect(hwnd, &rect);
-		FillRect((HDC)wparam, &rect, brush);
-		DeleteObject(brush);
+	case WM_ERASEBKGND:
+		/* The DXGI swapchain owns all client-area pixels. */
 		return 1;
-	}
 	case WM_PAINT: {
 		PAINTSTRUCT paint;
 		BeginPaint(hwnd, &paint);
