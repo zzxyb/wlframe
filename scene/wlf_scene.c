@@ -343,12 +343,24 @@ static void scene_render_background(struct wlf_scene *scene,
 	pixman_region32_fini(&background);
 }
 
+static bool scene_should_commit(const struct wlf_scene *scene) {
+	if (wlf_scene_needs_frame(scene)) return true;
+#if WLF_HAS_WINDOWS_PLATFORM
+	/* A no-damage DXGI Present advances the frame-latency signal just as a
+	 * no-damage wl_surface commit advances a Wayland frame callback. */
+	return scene != NULL &&
+		wlf_renderer_is_dx12(scene->window->state.renderer);
+#else
+	return false;
+#endif
+}
+
 static void handle_window_expose(struct wlf_listener *listener, void *data) {
 	(void)data;
 	struct wlf_scene *scene =
 		wlf_container_of(listener, scene, window_expose);
 	scene->frame_scheduled = false;
-	if (wlf_scene_needs_frame(scene) && !wlf_scene_commit(scene)) {
+	if (scene_should_commit(scene) && !wlf_scene_commit(scene)) {
 		if (!scene->frame_scheduled) {
 			scene->frame_scheduled = true;
 			wlf_window_schedule_frame(scene->window);
@@ -599,6 +611,10 @@ static bool scene_build_state(struct wlf_scene *scene,
 		pixman_region32_fini(&render_damage);
 		return false;
 	}
+	if (pixman_region32_empty(&render_damage)) {
+		pixman_region32_fini(&render_damage);
+		return true;
+	}
 	struct wlf_render_target_info *target = begin_render(scene, &render_damage);
 	if (target == NULL) {
 		pixman_region32_fini(&render_damage);
@@ -632,9 +648,10 @@ static bool scene_build_state(struct wlf_scene *scene,
 }
 
 bool wlf_scene_commit(struct wlf_scene *scene) {
-	if (scene == NULL || !wlf_scene_needs_frame(scene)) {
-		return scene != NULL;
+	if (scene == NULL) {
+		return false;
 	}
+	if (!scene_should_commit(scene)) return true;
 
 	struct scene_state state;
 	pixman_region32_init(&state.damage);
