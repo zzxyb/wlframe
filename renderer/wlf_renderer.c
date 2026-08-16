@@ -10,6 +10,7 @@
 #include "wlf/renderer/pixman/renderer.h"
 #elif WLF_HAS_WINDOWS_PLATFORM
 #include "wlf/renderer/directx12/renderer.h"
+#include "wlf/renderer/pixman/renderer.h"
 #endif
 #if WLF_HAS_MACOS_PLATFORM
 #include "wlf/renderer/metal/renderer.h"
@@ -60,9 +61,16 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		return NULL;
 	}
 #elif WLF_HAS_WINDOWS_PLATFORM
-	render = wlf_dx12_renderer_create_from_backend(backend);
+	const char *render_options[] = {"auto", "pixman", "directx12", NULL};
+	const char *render_name = render_options[wlf_env_parse_switch(
+		"WLF_RENDERER", render_options)];
+	if (strcmp(render_name, "directx12") == 0) {
+		render = wlf_dx12_renderer_create_from_backend(backend);
+	} else {
+		render = wlf_pixman_renderer_create_from_backend(backend);
+	}
 	if (render == NULL) {
-		wlf_log(WLF_ERROR, "Failed to create DirectX 12 renderer");
+		wlf_log(WLF_ERROR, "Failed to create Windows renderer");
 		return NULL;
 	}
 #endif

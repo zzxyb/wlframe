@@ -8,6 +8,9 @@
 #include "wlf/renderer/pixman/renderer.h"
 #include "wlf/swapchain/egl/swapchain.h"
 #include "wlf/swapchain/vulkan/swapchain.h"
+#elif WLF_HAS_WINDOWS_PLATFORM
+#include "wlf/renderer/pixman/renderer.h"
+#include "wlf/swapchain/windows/swapchain.h"
 #endif
 
 #include <assert.h>
@@ -42,6 +45,10 @@ struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window, int w
 		swapchain = wlf_egl_swapchain_create(window, width, height, format);
 	} else if (wlf_renderer_is_vk(window->state.renderer)) {
 		swapchain = wlf_vk_swapchain_create(window, width, height, format);
+	}
+#elif WLF_HAS_WINDOWS_PLATFORM
+	if (wlf_renderer_is_pixman(window->state.renderer)) {
+		swapchain = wlf_windows_swapchain_create(window, width, height, format);
 	}
 #endif
 

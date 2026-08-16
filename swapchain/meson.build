@@ -6,4 +6,6 @@ if is_linux
 	subdir('shm')
 	subdir('egl')
 	subdir('vulkan')
+elif is_windows
+	subdir('windows')
 endif
