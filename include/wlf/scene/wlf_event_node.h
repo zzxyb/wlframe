@@ -46,6 +46,8 @@ struct wlf_event_node {
 		struct wlf_signal keyboard_key;
 		struct wlf_signal keyboard_modifiers;
 		struct wlf_signal keyboard_repeat_info;
+		struct wlf_signal text_input_commit;
+		struct wlf_signal text_input_preedit;
 		/** Generic tablet payload; protocol-specific event pointer is preserved. */
 		struct wlf_signal tablet;
 		struct wlf_signal touch_down;

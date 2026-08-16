@@ -45,6 +45,10 @@ static void event_node_destroy(struct wlf_scene_node *base) {
 		&node->events.keyboard_modifiers.listener_list));
 	assert(wlf_linked_list_empty(
 		&node->events.keyboard_repeat_info.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.text_input_commit.listener_list));
+	assert(wlf_linked_list_empty(
+		&node->events.text_input_preedit.listener_list));
 	assert(wlf_linked_list_empty(&node->events.tablet.listener_list));
 	assert(wlf_linked_list_empty(&node->events.touch_down.listener_list));
 	assert(wlf_linked_list_empty(&node->events.touch_up.listener_list));
@@ -163,6 +167,8 @@ struct wlf_event_node *wlf_event_node_create(struct wlf_scene_node *parent,
 	wlf_signal_init(&node->events.keyboard_key);
 	wlf_signal_init(&node->events.keyboard_modifiers);
 	wlf_signal_init(&node->events.keyboard_repeat_info);
+	wlf_signal_init(&node->events.text_input_commit);
+	wlf_signal_init(&node->events.text_input_preedit);
 	wlf_signal_init(&node->events.tablet);
 	wlf_signal_init(&node->events.touch_down);
 	wlf_signal_init(&node->events.touch_up);

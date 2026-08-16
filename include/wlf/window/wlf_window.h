@@ -33,6 +33,7 @@
 #include "wlf/types/wlf_pointer.h"
 #include "wlf/types/wlf_keyboard.h"
 #include "wlf/types/wlf_touch.h"
+#include "wlf/types/wlf_text_input.h"
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -202,6 +203,8 @@ struct wlf_window {
 		struct wlf_signal keyboard_key;
 		struct wlf_signal keyboard_modifiers;
 		struct wlf_signal keyboard_repeat_info;
+		struct wlf_signal text_input_commit;
+		struct wlf_signal text_input_preedit;
 		struct wlf_signal tablet;
 		struct wlf_signal touch_down;
 		struct wlf_signal touch_up;
@@ -515,6 +518,14 @@ void wlf_window_keyboard_modifiers(struct wlf_window *window,
  */
 void wlf_window_keyboard_repeat_info(struct wlf_window *window,
 	const struct wlf_keyboard_repeat_info_event *event);
+
+/** Forwards committed UTF-8 text to the window and focused event node. */
+void wlf_window_text_input_commit(struct wlf_window *window,
+	const struct wlf_text_input_commit_event *event);
+
+/** Forwards an in-progress UTF-8 composition to the focused event node. */
+void wlf_window_text_input_preedit(struct wlf_window *window,
+	const struct wlf_text_input_preedit_event *event);
 
 /**
  * @brief Forwards a touch-down event to the window event tree.

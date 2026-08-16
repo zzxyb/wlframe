@@ -147,6 +147,7 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 		&window->events.keyboard_keymap, &window->events.keyboard_key,
 		&window->events.keyboard_modifiers,
 		&window->events.keyboard_repeat_info, &window->events.tablet,
+		&window->events.text_input_commit, &window->events.text_input_preedit,
 		&window->events.touch_down, &window->events.touch_up,
 		&window->events.touch_motion, &window->events.touch_cancel,
 		&window->events.touch_frame, &window->events.touch_shape,
@@ -637,6 +638,26 @@ void wlf_window_keyboard_repeat_info(struct wlf_window *window,
 	if (window->keyboard_event_node != NULL) {
 		wlf_signal_emit_mutable(
 			&window->keyboard_event_node->events.keyboard_repeat_info,
+			(void *)event);
+	}
+}
+
+void wlf_window_text_input_commit(struct wlf_window *window,
+		const struct wlf_text_input_commit_event *event) {
+	wlf_signal_emit_mutable(&window->events.text_input_commit, (void *)event);
+	if (window->keyboard_event_node != NULL) {
+		wlf_signal_emit_mutable(
+			&window->keyboard_event_node->events.text_input_commit,
+			(void *)event);
+	}
+}
+
+void wlf_window_text_input_preedit(struct wlf_window *window,
+		const struct wlf_text_input_preedit_event *event) {
+	wlf_signal_emit_mutable(&window->events.text_input_preedit, (void *)event);
+	if (window->keyboard_event_node != NULL) {
+		wlf_signal_emit_mutable(
+			&window->keyboard_event_node->events.text_input_preedit,
 			(void *)event);
 	}
 }
