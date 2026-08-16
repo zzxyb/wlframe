@@ -21,6 +21,7 @@ struct wlf_win32_window {
 	struct wlf_window base;
 	struct wlf_pointer pointer;
 	struct wlf_keyboard keyboard;
+	struct wlf_touch touch;
 	struct wlf_cursor cursor;
 	HWND hwnd;
 	HCURSOR cursor_handle;

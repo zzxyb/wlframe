@@ -24,6 +24,10 @@ static void embedded_keyboard_destroy(struct wlf_keyboard *keyboard) {
 	WLF_UNUSED(keyboard);
 }
 
+static void embedded_touch_destroy(struct wlf_touch *touch) {
+	WLF_UNUSED(touch);
+}
+
 static void embedded_cursor_destroy(struct wlf_cursor *cursor) {
 	WLF_UNUSED(cursor);
 }
@@ -99,6 +103,11 @@ static const struct wlf_pointer_impl win32_pointer_impl = {
 static const struct wlf_keyboard_impl win32_keyboard_impl = {
 	.name = "Win32 keyboard",
 	.destroy = embedded_keyboard_destroy,
+};
+
+static const struct wlf_touch_impl win32_touch_impl = {
+	.name = "Win32 touch",
+	.destroy = embedded_touch_destroy,
 };
 
 static const struct wlf_cursor_impl win32_cursor_impl = {
@@ -303,6 +312,106 @@ static void handle_keyboard_key(struct wlf_win32_window *window,
 	wlf_window_keyboard_key(&window->base, &event);
 }
 
+static bool get_touch_info(struct wlf_win32_window *window, WPARAM wparam,
+		POINTER_TOUCH_INFO *touch, double *x, double *y) {
+	UINT32 pointer_id = GET_POINTERID_WPARAM(wparam);
+	if (!GetPointerTouchInfo(pointer_id, touch)) {
+		return false;
+	}
+	POINT point = touch->pointerInfo.ptPixelLocation;
+	if (!ScreenToClient(window->hwnd, &point)) {
+		return false;
+	}
+	*x = logical_from_physical(window, point.x);
+	*y = logical_from_physical(window, point.y);
+	return true;
+}
+
+static void emit_touch_shape(struct wlf_win32_window *window,
+		const POINTER_TOUCH_INFO *touch) {
+	if ((touch->touchMask & TOUCH_MASK_CONTACTAREA) == 0) {
+		return;
+	}
+	double width = logical_from_physical(window,
+		touch->rcContact.right - touch->rcContact.left);
+	double height = logical_from_physical(window,
+		touch->rcContact.bottom - touch->rcContact.top);
+	struct wlf_touch_shape_event event = {
+		.touch = &window->touch,
+		.touch_id = (int32_t)touch->pointerInfo.pointerId,
+		.major = width > height ? width : height,
+		.minor = width > height ? height : width,
+	};
+	wlf_window_touch_shape(&window->base, &event);
+}
+
+static void emit_touch_orientation(struct wlf_win32_window *window,
+		const POINTER_TOUCH_INFO *touch) {
+	if ((touch->touchMask & TOUCH_MASK_ORIENTATION) == 0) {
+		return;
+	}
+	struct wlf_touch_orientation_event event = {
+		.touch = &window->touch,
+		.touch_id = (int32_t)touch->pointerInfo.pointerId,
+		.orientation = touch->orientation,
+	};
+	wlf_window_touch_orientation(&window->base, &event);
+}
+
+static void handle_touch_pointer(struct wlf_win32_window *window,
+		UINT message, WPARAM wparam) {
+	POINTER_TOUCH_INFO touch = {0};
+	double x = 0;
+	double y = 0;
+	if (!get_touch_info(window, wparam, &touch, &x, &y) ||
+			touch.pointerInfo.pointerType != PT_TOUCH) {
+		return;
+	}
+	int32_t touch_id = (int32_t)touch.pointerInfo.pointerId;
+	uint32_t time = touch.pointerInfo.dwTime;
+	if (message == WM_POINTERDOWN) {
+		struct wlf_touch_down_event event = {
+			.touch = &window->touch,
+			.surface = window->hwnd,
+			.time_msec = time,
+			.touch_id = touch_id,
+			.x = x,
+			.y = y,
+		};
+		wlf_window_touch_down(&window->base, &event);
+	} else if (message == WM_POINTERUPDATE) {
+		struct wlf_touch_motion_event event = {
+			.touch = &window->touch,
+			.time_msec = time,
+			.touch_id = touch_id,
+			.x = x,
+			.y = y,
+		};
+		wlf_window_touch_motion(&window->base, &event);
+	} else {
+		struct wlf_touch_up_event event = {
+			.touch = &window->touch,
+			.time_msec = time,
+			.touch_id = touch_id,
+		};
+		wlf_window_touch_up(&window->base, &event);
+	}
+	emit_touch_shape(window, &touch);
+	emit_touch_orientation(window, &touch);
+	wlf_window_touch_frame(&window->base, &window->touch);
+}
+
+static void handle_touch_cancel(struct wlf_win32_window *window,
+		WPARAM wparam) {
+	struct wlf_touch_cancel_event event = {
+		.touch = &window->touch,
+		.time_msec = message_time(),
+		.touch_id = (int32_t)GET_POINTERID_WPARAM(wparam),
+	};
+	wlf_window_touch_cancel(&window->base, &event);
+	wlf_window_touch_frame(&window->base, &window->touch);
+}
+
 static wchar_t *utf8_to_wide(const char *text) {
 	int count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text, -1,
 		NULL, 0);
@@ -358,6 +467,7 @@ static void win32_window_destroy(struct wlf_window *base) {
 	}
 	wlf_pointer_destroy(&window->pointer);
 	wlf_keyboard_destroy(&window->keyboard);
+	wlf_touch_destroy(&window->touch);
 	wlf_cursor_destroy(&window->cursor);
 	free(window);
 }
@@ -634,6 +744,14 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 			return TRUE;
 		}
 		return DefWindowProcW(hwnd, message, wparam, lparam);
+	case WM_POINTERDOWN:
+	case WM_POINTERUPDATE:
+	case WM_POINTERUP:
+		handle_touch_pointer(window, message, wparam);
+		return 0;
+	case WM_POINTERCAPTURECHANGED:
+		handle_touch_cancel(window, wparam);
+		return 0;
 	case WM_GETMINMAXINFO: {
 		MINMAXINFO *info = (MINMAXINFO *)lparam;
 		if (window->base.state.min_size.width > 0) {
@@ -721,6 +839,7 @@ struct wlf_window *wlf_win32_window_create_from_backend(
 		&win32_window_impl, backend, width, height);
 	wlf_pointer_init(&window->pointer, &win32_pointer_impl);
 	wlf_keyboard_init(&window->keyboard, &win32_keyboard_impl);
+	wlf_touch_init(&window->touch, &win32_touch_impl);
 	wlf_cursor_init(&window->cursor, &win32_cursor_impl);
 	window->pointer.cursor = &window->cursor;
 	window->cursor_handle = LoadCursorW(NULL, MAKEINTRESOURCEW(32512));
