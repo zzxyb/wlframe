@@ -7,6 +7,7 @@
 #define WLF_WINDOW_WINDOWS_WIN32_WINDOW_H
 
 #include "wlf/window/wlf_window.h"
+#include "wlf/types/wlf_cursor.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -18,11 +19,17 @@
 
 struct wlf_win32_window {
 	struct wlf_window base;
+	struct wlf_pointer pointer;
+	struct wlf_keyboard keyboard;
+	struct wlf_cursor cursor;
 	HWND hwnd;
+	HCURSOR cursor_handle;
 	WINDOWPLACEMENT restore_placement;
 	DWORD restore_style;
+	uint32_t input_serial;
 	bool fullscreen;
 	bool counted;
+	bool pointer_inside;
 };
 
 /** Creates a native Windows toplevel with the requested client size. */

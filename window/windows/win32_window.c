@@ -16,6 +16,283 @@ static struct wlf_win32_window *win32_from_hwnd(HWND hwnd) {
 
 static struct wlf_win32_window *win32_from_window(struct wlf_window *base);
 
+static void embedded_pointer_destroy(struct wlf_pointer *pointer) {
+	WLF_UNUSED(pointer);
+}
+
+static void embedded_keyboard_destroy(struct wlf_keyboard *keyboard) {
+	WLF_UNUSED(keyboard);
+}
+
+static void embedded_cursor_destroy(struct wlf_cursor *cursor) {
+	WLF_UNUSED(cursor);
+}
+
+static LPCWSTR cursor_resource(enum wlf_cursor_shape shape) {
+	switch (shape) {
+	case WLF_CURSOR_SHAPE_HELP:
+		return MAKEINTRESOURCEW(32651);
+	case WLF_CURSOR_SHAPE_PROGRESS:
+		return MAKEINTRESOURCEW(32650);
+	case WLF_CURSOR_SHAPE_WAIT:
+		return MAKEINTRESOURCEW(32514);
+	case WLF_CURSOR_SHAPE_CROSSHAIR:
+	case WLF_CURSOR_SHAPE_CELL:
+		return MAKEINTRESOURCEW(32515);
+	case WLF_CURSOR_SHAPE_TEXT:
+	case WLF_CURSOR_SHAPE_VERTICAL_TEXT:
+		return MAKEINTRESOURCEW(32513);
+	case WLF_CURSOR_SHAPE_POINTER:
+		return MAKEINTRESOURCEW(32649);
+	case WLF_CURSOR_SHAPE_NOT_ALLOWED:
+	case WLF_CURSOR_SHAPE_NO_DROP:
+		return MAKEINTRESOURCEW(32648);
+	case WLF_CURSOR_SHAPE_E_RESIZE:
+	case WLF_CURSOR_SHAPE_W_RESIZE:
+	case WLF_CURSOR_SHAPE_EW_RESIZE:
+	case WLF_CURSOR_SHAPE_COL_RESIZE:
+		return MAKEINTRESOURCEW(32644);
+	case WLF_CURSOR_SHAPE_N_RESIZE:
+	case WLF_CURSOR_SHAPE_S_RESIZE:
+	case WLF_CURSOR_SHAPE_NS_RESIZE:
+	case WLF_CURSOR_SHAPE_ROW_RESIZE:
+		return MAKEINTRESOURCEW(32645);
+	case WLF_CURSOR_SHAPE_NE_RESIZE:
+	case WLF_CURSOR_SHAPE_SW_RESIZE:
+	case WLF_CURSOR_SHAPE_NESW_RESIZE:
+		return MAKEINTRESOURCEW(32643);
+	case WLF_CURSOR_SHAPE_NW_RESIZE:
+	case WLF_CURSOR_SHAPE_SE_RESIZE:
+	case WLF_CURSOR_SHAPE_NWSE_RESIZE:
+		return MAKEINTRESOURCEW(32642);
+	case WLF_CURSOR_SHAPE_MOVE:
+	case WLF_CURSOR_SHAPE_GRAB:
+	case WLF_CURSOR_SHAPE_GRABBING:
+	case WLF_CURSOR_SHAPE_ALL_SCROLL:
+	case WLF_CURSOR_SHAPE_ALL_RESIZE:
+		return MAKEINTRESOURCEW(32646);
+	default:
+		return MAKEINTRESOURCEW(32512);
+	}
+}
+
+static bool win32_cursor_set_shape(struct wlf_cursor *cursor,
+		uint32_t serial, enum wlf_cursor_shape shape) {
+	WLF_UNUSED(serial);
+	struct wlf_win32_window *window = wlf_container_of(cursor, window, cursor);
+	HCURSOR handle = LoadCursorW(NULL, cursor_resource(shape));
+	if (handle == NULL) {
+		return false;
+	}
+	window->cursor_handle = handle;
+	if (window->pointer_inside) {
+		SetCursor(handle);
+	}
+	return true;
+}
+
+static const struct wlf_pointer_impl win32_pointer_impl = {
+	.name = "Win32 pointer",
+	.destroy = embedded_pointer_destroy,
+};
+
+static const struct wlf_keyboard_impl win32_keyboard_impl = {
+	.name = "Win32 keyboard",
+	.destroy = embedded_keyboard_destroy,
+};
+
+static const struct wlf_cursor_impl win32_cursor_impl = {
+	.destroy = embedded_cursor_destroy,
+	.set_shape = win32_cursor_set_shape,
+};
+
+static uint32_t next_input_serial(struct wlf_win32_window *window) {
+	window->input_serial++;
+	if (window->input_serial == 0) {
+		window->input_serial = 1;
+	}
+	return window->input_serial;
+}
+
+static uint32_t message_time(void) {
+	return (uint32_t)GetMessageTime();
+}
+
+static void pointer_add_button(struct wlf_pointer *pointer, uint32_t button) {
+	for (size_t i = 0; i < pointer->button_count; ++i) {
+		if (pointer->buttons[i] == button) {
+			return;
+		}
+	}
+	if (pointer->button_count < WLF_POINTER_BUTTONS_CAP) {
+		pointer->buttons[pointer->button_count++] = button;
+	}
+}
+
+static void pointer_remove_button(struct wlf_pointer *pointer,
+		uint32_t button) {
+	for (size_t i = 0; i < pointer->button_count; ++i) {
+		if (pointer->buttons[i] != button) {
+			continue;
+		}
+		pointer->buttons[i] = pointer->buttons[pointer->button_count - 1];
+		pointer->button_count--;
+		return;
+	}
+}
+
+static void handle_pointer_motion(struct wlf_win32_window *window,
+		LPARAM lparam) {
+	double x = (short)LOWORD(lparam);
+	double y = (short)HIWORD(lparam);
+	if (!window->pointer_inside) {
+		TRACKMOUSEEVENT tracking = {
+			.cbSize = sizeof(tracking),
+			.dwFlags = TME_LEAVE,
+			.hwndTrack = window->hwnd,
+		};
+		TrackMouseEvent(&tracking);
+		window->pointer_inside = true;
+		window->pointer.cursor_serial = next_input_serial(window);
+		struct wlf_pointer_enter_event enter = {
+			.pointer = &window->pointer,
+			.serial = window->pointer.cursor_serial,
+			.surface = window->hwnd,
+			.x = x,
+			.y = y,
+		};
+		wlf_window_pointer_enter(&window->base, &enter);
+	}
+	struct wlf_pointer_motion_absolute_event motion = {
+		.pointer = &window->pointer,
+		.surface = window->hwnd,
+		.time_msec = message_time(),
+		.x = x,
+		.y = y,
+	};
+	wlf_window_pointer_motion(&window->base, &motion);
+	wlf_window_pointer_frame(&window->base, &window->pointer);
+}
+
+static void handle_pointer_leave(struct wlf_win32_window *window) {
+	if (!window->pointer_inside) {
+		return;
+	}
+	window->pointer_inside = false;
+	struct wlf_pointer_leave_event leave = {
+		.pointer = &window->pointer,
+		.serial = next_input_serial(window),
+		.surface = window->hwnd,
+	};
+	wlf_window_pointer_leave(&window->base, &leave);
+}
+
+static uint32_t pointer_button_from_message(UINT message) {
+	switch (message) {
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONUP:
+		return WLF_POINTER_BUTTON_LEFT;
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONUP:
+		return WLF_POINTER_BUTTON_RIGHT;
+	default:
+		return WLF_POINTER_BUTTON_MIDDLE;
+	}
+}
+
+static void handle_pointer_button(struct wlf_win32_window *window,
+		UINT message, bool pressed) {
+	uint32_t button = pointer_button_from_message(message);
+	if (pressed) {
+		pointer_add_button(&window->pointer, button);
+		SetCapture(window->hwnd);
+	} else {
+		pointer_remove_button(&window->pointer, button);
+		if (window->pointer.button_count == 0 &&
+				GetCapture() == window->hwnd) {
+			ReleaseCapture();
+		}
+	}
+	struct wlf_pointer_button_event event = {
+		.pointer = &window->pointer,
+		.serial = next_input_serial(window),
+		.time_msec = message_time(),
+		.button = button,
+		.state = pressed ? WLF_POINTER_BUTTON_STATE_PRESSED :
+			WLF_POINTER_BUTTON_STATE_RELEASED,
+	};
+	wlf_window_pointer_button(&window->base, &event);
+	wlf_window_pointer_frame(&window->base, &window->pointer);
+}
+
+static void handle_pointer_axis(struct wlf_win32_window *window,
+		UINT message, WPARAM wparam) {
+	int delta = GET_WHEEL_DELTA_WPARAM(wparam);
+	struct wlf_pointer_axis_event event = {
+		.pointer = &window->pointer,
+		.time_msec = message_time(),
+		.source = WLF_POINTER_AXIS_SOURCE_WHEEL,
+		.orientation = message == WM_MOUSEWHEEL ?
+			WLF_POINTER_AXIS_VERTICAL_SCROLL :
+			WLF_POINTER_AXIS_HORIZONTAL_SCROLL,
+		.relative_direction = WLF_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL,
+		.delta = -(double)delta / WHEEL_DELTA,
+		.delta_discrete = -delta,
+	};
+	wlf_window_pointer_axis(&window->base, &event);
+	wlf_window_pointer_frame(&window->base, &window->pointer);
+}
+
+static void emit_keyboard_repeat_info(struct wlf_win32_window *window) {
+	UINT speed = 31;
+	UINT delay = 1;
+	SystemParametersInfoW(SPI_GETKEYBOARDSPEED, 0, &speed, 0);
+	SystemParametersInfoW(SPI_GETKEYBOARDDELAY, 0, &delay, 0);
+	struct wlf_keyboard_repeat_info_event event = {
+		.keyboard = &window->keyboard,
+		.rate = (int32_t)lround(2.5 + 27.5 * speed / 31.0),
+		.delay = (int32_t)((delay + 1) * 250),
+	};
+	wlf_window_keyboard_repeat_info(&window->base, &event);
+}
+
+static void handle_keyboard_focus(struct wlf_win32_window *window,
+		bool focused) {
+	if (focused) {
+		struct wlf_keyboard_enter_event event = {
+			.keyboard = &window->keyboard,
+			.serial = next_input_serial(window),
+			.window = &window->base,
+		};
+		wlf_window_keyboard_enter(&window->base, &event);
+		emit_keyboard_repeat_info(window);
+	} else {
+		struct wlf_keyboard_leave_event event = {
+			.keyboard = &window->keyboard,
+			.serial = next_input_serial(window),
+			.window = &window->base,
+		};
+		wlf_window_keyboard_leave(&window->base, &event);
+	}
+}
+
+static void handle_keyboard_key(struct wlf_win32_window *window,
+		LPARAM lparam, bool pressed) {
+	uint32_t scan_code = ((uint32_t)lparam >> 16) & 0xff;
+	if (((uint32_t)lparam & (1u << 24)) != 0) {
+		scan_code |= 0x100;
+	}
+	struct wlf_keyboard_key_event event = {
+		.keyboard = &window->keyboard,
+		.serial = next_input_serial(window),
+		.time_msec = message_time(),
+		.key = scan_code,
+		.state = pressed ? WLF_KEYBOARD_KEY_STATE_PRESSED :
+			WLF_KEYBOARD_KEY_STATE_RELEASED,
+	};
+	wlf_window_keyboard_key(&window->base, &event);
+}
+
 static wchar_t *utf8_to_wide(const char *text) {
 	int count = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, text, -1,
 		NULL, 0);
@@ -68,6 +345,9 @@ static void win32_window_destroy(struct wlf_window *base) {
 	if (window->hwnd != NULL) {
 		DestroyWindow(window->hwnd);
 	}
+	wlf_pointer_destroy(&window->pointer);
+	wlf_keyboard_destroy(&window->keyboard);
+	wlf_cursor_destroy(&window->cursor);
 	free(window);
 }
 
@@ -285,12 +565,52 @@ static LRESULT CALLBACK win32_window_proc(HWND hwnd, UINT message,
 		window->base.state.focused = true;
 		window->base.state.state |= WLF_WINDOW_ACTIVE;
 		wlf_signal_emit_mutable(&window->base.events.focus_in, &window->base);
+		handle_keyboard_focus(window, true);
 		return 0;
 	case WM_KILLFOCUS:
 		window->base.state.focused = false;
 		window->base.state.state &= ~WLF_WINDOW_ACTIVE;
 		wlf_signal_emit_mutable(&window->base.events.focus_out, &window->base);
+		handle_keyboard_focus(window, false);
 		return 0;
+	case WM_MOUSEMOVE:
+		handle_pointer_motion(window, lparam);
+		return 0;
+	case WM_MOUSELEAVE:
+		handle_pointer_leave(window);
+		return 0;
+	case WM_LBUTTONDOWN:
+	case WM_RBUTTONDOWN:
+	case WM_MBUTTONDOWN:
+		handle_pointer_button(window, message, true);
+		return 0;
+	case WM_LBUTTONUP:
+	case WM_RBUTTONUP:
+	case WM_MBUTTONUP:
+		handle_pointer_button(window, message, false);
+		return 0;
+	case WM_MOUSEWHEEL:
+	case WM_MOUSEHWHEEL:
+		handle_pointer_axis(window, message, wparam);
+		return 0;
+	case WM_KEYDOWN:
+		handle_keyboard_key(window, lparam, true);
+		return 0;
+	case WM_SYSKEYDOWN:
+		handle_keyboard_key(window, lparam, true);
+		return DefWindowProcW(hwnd, message, wparam, lparam);
+	case WM_KEYUP:
+		handle_keyboard_key(window, lparam, false);
+		return 0;
+	case WM_SYSKEYUP:
+		handle_keyboard_key(window, lparam, false);
+		return DefWindowProcW(hwnd, message, wparam, lparam);
+	case WM_SETCURSOR:
+		if (LOWORD(lparam) == HTCLIENT && window->cursor_handle != NULL) {
+			SetCursor(window->cursor_handle);
+			return TRUE;
+		}
+		return DefWindowProcW(hwnd, message, wparam, lparam);
 	case WM_GETMINMAXINFO: {
 		MINMAXINFO *info = (MINMAXINFO *)lparam;
 		if (window->base.state.min_size.width > 0) {
@@ -372,6 +692,11 @@ struct wlf_window *wlf_win32_window_create_from_backend(
 	}
 	wlf_window_init(&window->base, WLF_WINDOW_TYPE_TOPLEVEL,
 		&win32_window_impl, backend, width, height);
+	wlf_pointer_init(&window->pointer, &win32_pointer_impl);
+	wlf_keyboard_init(&window->keyboard, &win32_keyboard_impl);
+	wlf_cursor_init(&window->cursor, &win32_cursor_impl);
+	window->pointer.cursor = &window->cursor;
+	window->cursor_handle = LoadCursorW(NULL, MAKEINTRESOURCEW(32512));
 	RECT rect = {0, 0, (LONG)width, (LONG)height};
 	DWORD style = window_style(window->base.state.flags);
 	DWORD ex_style = window_ex_style(window->base.state.flags);
