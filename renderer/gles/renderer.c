@@ -4,10 +4,9 @@
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/buffer/egl/buffer.h"
 #include "wlf/texture/gles/texture.h"
 #include "wlf/pass/gles/render_target_info.h"
-#include "wlf/swapchain/egl/swapchain.h"
-#include "wlf/window/wlf_window.h"
 #include "wlf/config.h"
 
 #include <stdlib.h>
@@ -39,15 +38,17 @@ static struct wlf_render_target_info *renderer_begin_buffer_pass(
 		return NULL;
 	}
 
-	struct wlf_egl_swapchain *swapchain =
-		wlf_egl_swapchain_from_buffer(buffer);
-	if (swapchain == NULL || swapchain->base.window == NULL ||
-			swapchain->base.window->state.renderer != renderer) {
+	struct wlf_egl_buffer *egl_buffer =
+		wlf_egl_buffer_from_buffer(buffer);
+	struct wlf_gles_renderer *gles_renderer =
+		wlf_gles_renderer_from_renderer(renderer);
+	if (egl_buffer == NULL ||
+			wlf_egl_buffer_get_egl(egl_buffer) != gles_renderer->egl) {
 		return NULL;
 	}
 
 	struct wlf_gles_render_target_info *target =
-		wlf_gles_begin_egl_render_pass(swapchain);
+		wlf_gles_begin_egl_render_pass(egl_buffer, gles_renderer);
 	return target != NULL ? &target->base : NULL;
 }
 

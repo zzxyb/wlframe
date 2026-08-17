@@ -15,7 +15,7 @@
 #define PASS_GLES_RENDER_TARGET_INFO_H
 
 #include "wlf/pass/wlf_render_target_info.h"
-#include "wlf/swapchain/egl/swapchain.h"
+#include "wlf/buffer/egl/buffer.h"
 
 struct wlf_gles_renderer;
 
@@ -24,15 +24,15 @@ struct wlf_gles_renderer;
  */
 struct wlf_gles_render_target_info {
 	struct wlf_render_target_info base;
-	struct wlf_egl_swapchain *swapchain;
+	struct wlf_egl_buffer *buffer;
 	struct wlf_gles_renderer *renderer;
 };
 
 /**
- * @brief Begins rendering to an EGL swapchain surface.
+ * @brief Begins rendering to an EGL-backed buffer.
  */
 struct wlf_gles_render_target_info *wlf_gles_begin_egl_render_pass(
-	struct wlf_egl_swapchain *swapchain);
+	struct wlf_egl_buffer *buffer, struct wlf_gles_renderer *renderer);
 
 /**
  * @brief Checks whether a render target is GLES-backed.
