@@ -257,7 +257,7 @@ void wlf_shape_submit(struct wlf_vector_pass *pass,
 	if (vertices->failed || vertices->len == 0) return;
 	color.a *= alpha;
 	wlf_render_pass_add_triangles(pass, target,
-		&(struct wlf_render_vector_options){
+		&(struct wlf_vector_options){
 			.vertices = vertices->data,
 			.vertex_count = vertices->len,
 			.color = color,

@@ -13,7 +13,7 @@ struct wlf_circle_pass *wlf_circle_pass_create(struct wlf_vector_pass *vector_pa
 	if (vector_pass == NULL) return NULL;
 	struct wlf_circle_pass *pass = malloc(sizeof(*pass));
 	if (pass == NULL) {
-		wlf_render_vector_pass_destroy(vector_pass);
+		wlf_vector_pass_destroy(vector_pass);
 		return NULL;
 	}
 	pass->vector = vector_pass;
@@ -22,7 +22,7 @@ struct wlf_circle_pass *wlf_circle_pass_create(struct wlf_vector_pass *vector_pa
 
 void wlf_render_circle_pass_destroy(struct wlf_circle_pass *pass) {
 	if (pass == NULL) return;
-	wlf_render_vector_pass_destroy(pass->vector);
+	wlf_vector_pass_destroy(pass->vector);
 	free(pass);
 }
 

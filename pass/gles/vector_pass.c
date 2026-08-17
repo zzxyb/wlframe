@@ -89,7 +89,7 @@ static void vector_pass_destroy(struct wlf_vector_pass *base) {
 
 static void vector_pass_render(struct wlf_vector_pass *base,
 		struct wlf_render_target_info *render_target_info,
-		const struct wlf_render_vector_options *options) {
+		const struct wlf_vector_options *options) {
 	struct wlf_gles_vector_pass *pass = wlf_container_of(base, pass, base);
 	if (!wlf_render_target_info_is_gles(render_target_info)) {
 		wlf_log(WLF_ERROR, "GLES vector pass requires a GLES target");
@@ -168,6 +168,6 @@ struct wlf_vector_pass *wlf_gles_vector_pass_create(void) {
 		free(pass);
 		return NULL;
 	}
-	wlf_render_vector_pass_init(&pass->base, &vector_pass_impl);
+	wlf_vector_pass_init(&pass->base, &vector_pass_impl);
 	return &pass->base;
 }

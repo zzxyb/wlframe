@@ -81,6 +81,17 @@ struct wlf_texture_pass {
 };
 
 /**
+ * @brief Automatically creates a texture rendering pass.
+ *
+ * Selects the pass implementation that matches the renderer backend.
+ *
+ * @param renderer Renderer used to select the pass backend.
+ * @return A newly created texture pass, or NULL if the backend is unsupported
+ *         or pass creation fails.
+ */
+struct wlf_texture_pass *wlf_texture_pass_auto_create(struct wlf_renderer *renderer);
+
+/**
  * @brief Initializes a texture pass with backend virtual methods.
  * @param pass Texture pass to initialize.
  * @param impl Backend virtual-method table.

@@ -68,12 +68,23 @@ struct wlf_rect_pass {
 };
 
 /**
+ * @brief Automatically creates a rectangle rendering pass.
+ *
+ * Selects the pass implementation that matches the renderer backend.
+ *
+ * @param renderer Renderer used to select the pass backend.
+ * @return A newly created rectangle pass, or NULL if the backend is unsupported
+ *         or pass creation fails.
+ */
+struct wlf_rect_pass *wlf_rect_pass_auto_create(struct wlf_renderer *renderer);
+
+/**
  * @brief Initializes a rectangle rendering pass object.
  *
  * @param pass Rectangle pass object to initialize.
  * @param impl Implementation vtable.
  */
-void wlf_render_rect_pass_init(struct wlf_rect_pass *pass,
+void wlf_rect_pass_init(struct wlf_rect_pass *pass,
 	const struct wlf_rect_pass_impl *impl);
 
 /**
@@ -83,7 +94,7 @@ void wlf_render_rect_pass_init(struct wlf_rect_pass *pass,
  *
  * @param pass Rectangle pass object to destroy.
  */
-void wlf_render_rect_pass_destroy(struct wlf_rect_pass *pass);
+void wlf_rect_pass_destroy(struct wlf_rect_pass *pass);
 
 /**
  * @brief Eexecutes a rectangle draw operation within the pass.

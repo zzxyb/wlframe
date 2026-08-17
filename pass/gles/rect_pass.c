@@ -219,6 +219,6 @@ struct wlf_rect_pass *wlf_gles_rect_pass_create(void) {
 		return NULL;
 	}
 
-	wlf_render_rect_pass_init(&pass->base, &gles_rect_pass_impl);
+	wlf_rect_pass_init(&pass->base, &gles_rect_pass_impl);
 	return &pass->base;
 }
