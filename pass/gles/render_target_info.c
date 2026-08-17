@@ -3,7 +3,6 @@
 #include "wlf/renderer/gles/egl.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/window/wlf_window.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -27,36 +26,35 @@ static const struct wlf_render_target_info_impl render_target_info_impl = {
 };
 
 struct wlf_gles_render_target_info *wlf_gles_begin_egl_render_pass(
-		struct wlf_egl_swapchain *swapchain) {
+		struct wlf_egl_buffer *buffer, struct wlf_gles_renderer *renderer) {
+	if (buffer == NULL || renderer == NULL ||
+			wlf_egl_buffer_get_egl(buffer) != renderer->egl) {
+		return NULL;
+	}
+
 	struct wlf_gles_render_target_info *target = calloc(1, sizeof(*target));
 	if (target == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_gles_render_target_info");
 		return NULL;
 	}
 
-	struct wlf_gles_renderer *renderer =
-		wlf_gles_renderer_from_renderer(swapchain->base.window->state.renderer);
-	if (!wlf_egl_make_current(renderer->egl, swapchain->surface, swapchain->surface)) {
+	EGLSurface surface = wlf_egl_buffer_get_surface(buffer);
+	if (!wlf_egl_make_current(renderer->egl, surface, surface)) {
 		wlf_log(WLF_ERROR, "failed to make GLES render target current");
 		free(target);
 		return NULL;
 	}
-	if (!swapchain->swap_interval_configured) {
-		if (!eglSwapInterval(renderer->egl->display, 0)) {
-			wlf_log(WLF_ERROR, "failed to disable EGL swap throttling: %s",
-				wlf_egl_error_str(eglGetError()));
-			free(target);
-			return NULL;
-		}
-		swapchain->swap_interval_configured = true;
+	if (!wlf_egl_buffer_configure_swap_interval(buffer)) {
+		free(target);
+		return NULL;
 	}
 
 	wlf_render_target_info_init(&target->base, &render_target_info_impl);
-	target->base.logical_width = swapchain->base.width;
-	target->base.logical_height = swapchain->base.height;
-	target->base.buffer_width = swapchain->base.width;
-	target->base.buffer_height = swapchain->base.height;
-	target->swapchain = swapchain;
+	target->base.logical_width = (int)buffer->base.width;
+	target->base.logical_height = (int)buffer->base.height;
+	target->base.buffer_width = (int)buffer->base.width;
+	target->base.buffer_height = (int)buffer->base.height;
+	target->buffer = buffer;
 	target->renderer = renderer;
 
 	return target;

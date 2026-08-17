@@ -58,19 +58,19 @@ void wlf_swapchain_destroy(struct wlf_swapchain *swapchain) {
 	}
 
 	wlf_signal_emit_mutable(&swapchain->events.destroy, swapchain);
-
-	if (swapchain->allocator != NULL) {
-		wlf_allocator_destroy(swapchain->allocator);
-		swapchain->allocator = NULL;
-	}
-
 	assert(wlf_linked_list_empty(&swapchain->events.destroy.listener_list));
+	struct wlf_allocator *allocator = swapchain->allocator;
+	swapchain->allocator = NULL;
+
 	wlf_render_format_finish(&swapchain->format);
 	if (swapchain->impl && swapchain->impl->destroy) {
 		swapchain->impl->destroy(swapchain);
 	} else {
 		free(swapchain);
 	}
+
+	/* Implementation destroy callbacks release buffers before the allocator. */
+	wlf_allocator_destroy(allocator);
 }
 
 bool wlf_swapchain_resize(struct wlf_swapchain *swapchain, int width, int height) {

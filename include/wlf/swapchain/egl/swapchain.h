@@ -15,32 +15,19 @@
 #define EGL_SWAPCHAIN_H
 
 #include "wlf/swapchain/wlf_swapchain.h"
-#include "wlf/config.h"
 
 #include <stdbool.h>
-
-#if WLF_HAS_LINUX_PLATFORM
-#include <wayland-egl-core.h>
-#endif
-
-#include <EGL/egl.h>
 
 /**
  * @brief Swapchain backed by an EGL window surface.
  *
- * On Linux, @p egl_window wraps the native Wayland surface used to create the
- * EGL surface. The EGL configuration and surface are owned by this object.
+ * The EGL-backed buffer is created by the swapchain's EGL allocator. The
+ * swapchain retains the buffer handle and owns presentation policy, while the
+ * buffer owns the EGL surface resources.
  */
 struct wlf_egl_swapchain {
 	struct wlf_swapchain base; /**< Generic swapchain interface. */
-	struct wlf_buffer buffer;  /**< Generic handle for the EGL surface. */
-
-#if WLF_HAS_LINUX_PLATFORM
-	struct wl_egl_window *egl_window; /**< Native Wayland EGL window. */
-#endif
-	EGLConfig config; /**< EGL configuration selected for the window. */
-	EGLSurface surface; /**< EGL presentation surface. */
-	bool swap_interval_configured; /**< Whether the EGL swap interval was set. */
+	struct wlf_buffer *back; /**< EGL-backed buffer available for rendering. */
 };
 
 /**
@@ -67,16 +54,5 @@ bool wlf_swapchain_is_egl(const struct wlf_swapchain *swapchain);
  * @return Enclosing EGL swapchain, or NULL when the type does not match.
  */
 struct wlf_egl_swapchain *wlf_egl_swapchain_from_swapchain(struct wlf_swapchain *swapchain);
-
-/**
- * @brief Checks whether a generic buffer represents an EGL surface.
- */
-bool wlf_buffer_is_egl(struct wlf_buffer *buffer);
-
-/**
- * @brief Gets the EGL swapchain represented by a generic buffer.
- */
-struct wlf_egl_swapchain *wlf_egl_swapchain_from_buffer(
-	struct wlf_buffer *buffer);
 
 #endif // EGL_SWAPCHAIN_H
