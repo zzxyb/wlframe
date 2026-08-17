@@ -1,9 +1,32 @@
 #include "wlf/pass/wlf_vector_pass.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/config.h"
+#include "wlf/utils/wlf_log.h"
+#if WLF_HAS_LINUX_PLATFORM
+#include "wlf/pass/gles/vector_pass.h"
+#include "wlf/pass/pixman/vector_pass.h"
+#include "wlf/renderer/gles/renderer.h"
+#include "wlf/renderer/pixman/renderer.h"
+#endif
 
 #include <assert.h>
 
-void wlf_render_vector_pass_init(struct wlf_vector_pass *pass,
+struct wlf_vector_pass *wlf_vector_pass_auto_create(struct wlf_renderer *renderer) {
+	struct wlf_vector_pass *pass = NULL;
+#if WLF_HAS_LINUX_PLATFORM
+	if (wlf_renderer_is_gles(renderer)) {
+		return wlf_gles_vector_pass_create();
+	} else if (wlf_renderer_is_pixman(renderer)) {
+		return wlf_pixman_vector_pass_create();
+	} else {
+		wlf_log(WLF_ERROR, "Scene rendering is unsupported by this renderer");
+	}
+#endif
+
+	return pass;
+}
+
+void wlf_vector_pass_init(struct wlf_vector_pass *pass,
 		const struct wlf_vector_pass_impl *impl) {
 	assert(pass != NULL);
 	assert(impl != NULL && impl->destroy != NULL && impl->render != NULL);
@@ -11,7 +34,7 @@ void wlf_render_vector_pass_init(struct wlf_vector_pass *pass,
 	wlf_signal_init(&pass->events.destroy);
 }
 
-void wlf_render_vector_pass_destroy(struct wlf_vector_pass *pass) {
+void wlf_vector_pass_destroy(struct wlf_vector_pass *pass) {
 	if (pass == NULL) {
 		return;
 	}
@@ -22,7 +45,7 @@ void wlf_render_vector_pass_destroy(struct wlf_vector_pass *pass) {
 
 void wlf_render_pass_add_triangles(struct wlf_vector_pass *pass,
 		struct wlf_render_target_info *render_target_info,
-		const struct wlf_render_vector_options *options) {
+		const struct wlf_vector_options *options) {
 	assert(pass != NULL && render_target_info != NULL && options != NULL);
 	assert(options->vertices != NULL && options->vertex_count % 3 == 0);
 	if (options->vertex_count == 0 || options->color.a <= 0) {

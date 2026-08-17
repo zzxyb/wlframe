@@ -12,7 +12,7 @@ struct wlf_rect_shape_pass *wlf_rect_shape_pass_create(
 	if (vector_pass == NULL) return NULL;
 	struct wlf_rect_shape_pass *pass = malloc(sizeof(*pass));
 	if (pass == NULL) {
-		wlf_render_vector_pass_destroy(vector_pass);
+		wlf_vector_pass_destroy(vector_pass);
 		return NULL;
 	}
 	pass->vector = vector_pass;
@@ -21,7 +21,7 @@ struct wlf_rect_shape_pass *wlf_rect_shape_pass_create(
 
 void wlf_render_rect_shape_pass_destroy(struct wlf_rect_shape_pass *pass) {
 	if (pass == NULL) return;
-	wlf_render_vector_pass_destroy(pass->vector);
+	wlf_vector_pass_destroy(pass->vector);
 	free(pass);
 }
 

@@ -23,7 +23,7 @@ static void vector_pass_destroy(struct wlf_vector_pass *pass) {
 
 static void vector_pass_render(struct wlf_vector_pass *pass,
 		struct wlf_render_target_info *render_target_info,
-		const struct wlf_render_vector_options *options) {
+		const struct wlf_vector_options *options) {
 	(void)pass;
 	if (!wlf_render_target_info_is_pixman(render_target_info)) {
 		wlf_log(WLF_ERROR, "pixman vector pass requires a pixman target");
@@ -113,6 +113,6 @@ struct wlf_vector_pass *wlf_pixman_vector_pass_create(void) {
 	if (pass == NULL) {
 		return NULL;
 	}
-	wlf_render_vector_pass_init(pass, &vector_pass_impl);
+	wlf_vector_pass_init(pass, &vector_pass_impl);
 	return pass;
 }

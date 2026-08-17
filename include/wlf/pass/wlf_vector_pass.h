@@ -37,7 +37,7 @@ struct wlf_vector_vertex {
  *
  * Every group of three vertices forms one independent triangle.
  */
-struct wlf_render_vector_options {
+struct wlf_vector_options {
 	const struct wlf_vector_vertex *vertices; /**< Interleaved triangle vertices. */
 	size_t vertex_count; /**< Must be a multiple of three. */
 	struct wlf_color color; /**< Source color before coverage and opacity. */
@@ -72,7 +72,7 @@ struct wlf_vector_pass_impl {
 	 */
 	void (*render)(struct wlf_vector_pass *pass,
 		struct wlf_render_target_info *render_target_info,
-		const struct wlf_render_vector_options *options);
+		const struct wlf_vector_options *options);
 };
 
 /**
@@ -88,18 +88,29 @@ struct wlf_vector_pass {
 };
 
 /**
+ * @brief Automatically creates a vector rendering pass.
+ *
+ * Selects the pass implementation that matches the renderer backend.
+ *
+ * @param renderer Renderer used to select the pass backend.
+ * @return A newly created vector pass, or NULL if the backend is unsupported
+ *         or pass creation fails.
+ */
+struct wlf_vector_pass *wlf_vector_pass_auto_create(struct wlf_renderer *renderer);
+
+/**
  * @brief Initializes a vector pass with backend virtual methods.
  * @param pass Vector pass to initialize.
  * @param impl Backend virtual-method table.
  */
-void wlf_render_vector_pass_init(struct wlf_vector_pass *pass,
+void wlf_vector_pass_init(struct wlf_vector_pass *pass,
 	const struct wlf_vector_pass_impl *impl);
 
 /**
  * @brief Destroys a vector pass and emits its destroy signal.
  * @param pass Vector pass to destroy.
  */
-void wlf_render_vector_pass_destroy(struct wlf_vector_pass *pass);
+void wlf_vector_pass_destroy(struct wlf_vector_pass *pass);
 
 /**
  * @brief Submits a list of independent triangles to the pass.
@@ -109,6 +120,6 @@ void wlf_render_vector_pass_destroy(struct wlf_vector_pass *pass);
  */
 void wlf_render_pass_add_triangles(struct wlf_vector_pass *pass,
 	struct wlf_render_target_info *render_target_info,
-	const struct wlf_render_vector_options *options);
+	const struct wlf_vector_options *options);
 
 #endif // PASS_WLF_VECTOR_PASS_H

@@ -6,17 +6,8 @@
 #include "wlf/pass/wlf_path_pass.h"
 #include "wlf/pass/wlf_poly_pass.h"
 #include "wlf/pass/wlf_rect_shape_pass.h"
-#include "wlf/pass/gles/rect_pass.h"
-#include "wlf/pass/gles/texture_pass.h"
-#include "wlf/pass/gles/vector_pass.h"
-#include "wlf/pass/pixman/rect_pass.h"
-#include "wlf/pass/pixman/texture_pass.h"
-#include "wlf/pass/pixman/vector_pass.h"
-#include "wlf/config.h"
-#if WLF_HAS_LINUX_PLATFORM
-#include "wlf/renderer/gles/renderer.h"
-#include "wlf/renderer/pixman/renderer.h"
-#endif
+#include "wlf/pass/wlf_rect_pass.h"
+#include "wlf/pass/wlf_texture_pass.h"
 #include "wlf/scene/wlf_scene_tree.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_env.h"
@@ -117,40 +108,17 @@ static void render_damage_highlights(struct wlf_scene *scene,
 	}
 }
 
-static struct wlf_vector_pass *create_vector_pass(
-		struct wlf_renderer *renderer) {
-#if WLF_HAS_LINUX_PLATFORM
-	if (wlf_renderer_is_gles(renderer)) {
-		return wlf_gles_vector_pass_create();
-	}
-	if (wlf_renderer_is_pixman(renderer)) {
-		return wlf_pixman_vector_pass_create();
-	}
-#endif
-	return NULL;
-}
-
 static bool create_passes(struct wlf_scene *scene) {
 	struct wlf_renderer *renderer = scene->window->state.renderer;
-#if WLF_HAS_LINUX_PLATFORM
-	if (wlf_renderer_is_gles(renderer)) {
-		scene->rect_pass = wlf_gles_rect_pass_create();
-		scene->texture_pass = wlf_gles_texture_pass_create();
-	} else if (wlf_renderer_is_pixman(renderer)) {
-		scene->rect_pass = wlf_pixman_rect_pass_create();
-		scene->texture_pass = wlf_pixman_texture_pass_create();
-	} else {
-		wlf_log(WLF_ERROR, "Scene rendering is unsupported by this renderer");
-		return false;
-	}
-#endif
+	scene->rect_pass = wlf_rect_pass_auto_create(renderer);
+	scene->texture_pass = wlf_texture_pass_auto_create(renderer);
 	scene->rect_shape_pass = wlf_rect_shape_pass_create(
-		create_vector_pass(renderer));
-	scene->circle_pass = wlf_circle_pass_create(create_vector_pass(renderer));
-	scene->ellipse_pass = wlf_ellipse_pass_create(create_vector_pass(renderer));
-	scene->line_pass = wlf_line_pass_create(create_vector_pass(renderer));
-	scene->poly_pass = wlf_poly_pass_create(create_vector_pass(renderer));
-	scene->path_pass = wlf_path_pass_create(create_vector_pass(renderer));
+		wlf_vector_pass_auto_create(renderer));
+	scene->circle_pass = wlf_circle_pass_create(wlf_vector_pass_auto_create(renderer));
+	scene->ellipse_pass = wlf_ellipse_pass_create(wlf_vector_pass_auto_create(renderer));
+	scene->line_pass = wlf_line_pass_create(wlf_vector_pass_auto_create(renderer));
+	scene->poly_pass = wlf_poly_pass_create(wlf_vector_pass_auto_create(renderer));
+	scene->path_pass = wlf_path_pass_create(wlf_vector_pass_auto_create(renderer));
 
 	return scene->rect_pass != NULL && scene->texture_pass != NULL &&
 		scene->rect_shape_pass != NULL && scene->circle_pass != NULL &&
@@ -166,7 +134,7 @@ static void destroy_passes(struct wlf_scene *scene) {
 	wlf_render_circle_pass_destroy(scene->circle_pass);
 	wlf_render_rect_shape_pass_destroy(scene->rect_shape_pass);
 	wlf_render_texture_pass_destroy(scene->texture_pass);
-	wlf_render_rect_pass_destroy(scene->rect_pass);
+	wlf_rect_pass_destroy(scene->rect_pass);
 }
 
 static struct wlf_render_target_info *configure_render_target(
@@ -562,16 +530,6 @@ static bool scene_build_state(struct wlf_scene *scene,
 	}
 	pixman_region32_union(&render_damage, &state->damage,
 		&scene->previous_damage);
-#if WLF_HAS_LINUX_PLATFORM
-	/* EGL does not expose a stable buffer identity here. Without EGL buffer-age
-	 * tracking, repaint the whole back buffer while still presenting only the
-	 * actual surface damage. */
-	if (wlf_renderer_is_gles(window->state.renderer)) {
-		pixman_region32_clear(&render_damage);
-		pixman_region32_union_rect(&render_damage, &render_damage,
-			0, 0, width, height);
-	}
-#endif
 	if (!scene_build_render_list(scene, width, height)) {
 		pixman_region32_fini(&render_damage);
 		return false;

@@ -110,6 +110,6 @@ struct wlf_rect_pass *wlf_pixman_rect_pass_create(void) {
 		return NULL;
 	}
 
-	wlf_render_rect_pass_init(pass, &pixman_rect_pass_impl);
+	wlf_rect_pass_init(pass, &pixman_rect_pass_impl);
 	return pass;
 }
