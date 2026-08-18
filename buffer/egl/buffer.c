@@ -110,8 +110,7 @@ struct wlf_egl_buffer *wlf_egl_buffer_from_buffer(struct wlf_buffer *buffer) {
 }
 
 bool wlf_egl_buffer_resize(struct wlf_egl_buffer *buffer, uint32_t width, uint32_t height) {
-	if (buffer == NULL || buffer->egl_window == NULL || width <= 0 ||
-			height <= 0) {
+	if (buffer == NULL || buffer->egl_window == NULL) {
 		return false;
 	}
 
