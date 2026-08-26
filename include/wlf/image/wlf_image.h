@@ -28,6 +28,17 @@
 struct wlf_image;
 
 /**
+ * @brief Listener for wlf_image lifecycle events.
+ *
+ * The listener is not owned by the image and must remain valid until the
+ * image has been destroyed. Its destroy callback is invoked before the
+ * image's format-specific destroy implementation runs.
+ */
+struct wlf_image_listener {
+	void (*destroy)(void *data, struct wlf_image *image);
+};
+
+/**
  * @brief Supported image types.
  */
 enum wlf_image_type {
@@ -100,6 +111,11 @@ enum wlf_image_format {
 struct wlf_image {
 	const struct wlf_image_impl *impl; /**< Implementation for format-specific operations */
 
+	struct {
+		const struct wlf_image_listener *listener; /**< Registered destruction listener */
+		void *user_data; /**< User data passed to the destruction listener */
+	} WLF_PRIVATE;
+
 	uint32_t width;        /**< Image width in pixels */
 	uint32_t height;       /**< Image height in pixels */
 	unsigned char *data;   /**< Pointer to pixel data */
@@ -128,6 +144,20 @@ void wlf_image_init(struct wlf_image *image,
  * @param image Pointer to the image structure.
  */
 void wlf_image_finish(struct wlf_image *image);
+
+/**
+ * @brief Add a listener that is notified before an image is destroyed.
+ *
+ * The image does not take ownership of @p listener. Only one listener can be
+ * registered at a time; registering another listener replaces the previous
+ * one.
+ *
+ * @param image Image to monitor.
+ * @param listener Listener owned by the caller.
+ * @param data user data.
+ */
+void wlf_image_add_listener(struct wlf_image *image,
+	const struct wlf_image_listener *listener, void *data);
 
 /**
  * @brief Get image type from string.

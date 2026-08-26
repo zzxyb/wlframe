@@ -27,8 +27,22 @@ void wlf_image_init(struct wlf_image *image,
 	image->is_opaque = false;
 }
 
+void wlf_image_add_listener(struct wlf_image *image,
+		const struct wlf_image_listener *listener, void *data) {
+	image->listener = listener;
+	image->user_data = data;
+}
+
 void wlf_image_finish(struct wlf_image *image) {
-	if (image && image->impl && image->impl->destroy) {
+	if (image == NULL) {
+		return;
+	}
+
+	if (image->listener != NULL && image->listener->destroy != NULL) {
+		image->listener->destroy(image->user_data, image);
+	}
+
+	if (image->impl && image->impl->destroy) {
 		image->impl->destroy(image);
 	}
 }

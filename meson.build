@@ -20,6 +20,7 @@ little_endian = target_machine.endian() == 'little'
 big_endian = target_machine.endian() == 'big'
 
 add_project_arguments([
+	'-DWLF_PRIVATE=',
 	'-DWLF_LITTLE_ENDIAN=@0@'.format(little_endian.to_int()),
 	'-DWLF_BIG_ENDIAN=@0@'.format(big_endian.to_int()),
 ], language: 'c')
