@@ -167,7 +167,7 @@ int main(int argc, char *argv[]) {
 				wlf_log(WLF_ERROR, "✗ Failed to save processed image: %s", output_filename);
 			}
 
-			wlf_image_finish(loaded_image);
+			wlf_image_destroy(loaded_image);
 			free(loaded_image);
 		} else {
 			wlf_log(WLF_ERROR, "✗ Failed to load WebP image: %s", input_path);
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]) {
 			return EXIT_FAILURE;
 		}
 
-		wlf_image_finish((struct wlf_image *)test_image);
+		wlf_image_destroy((struct wlf_image *)test_image);
 		free(test_image);
 	}
 

@@ -16,7 +16,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		wlf_image_save(img, "/tmp/wlf_image_test_save.png");
-		wlf_image_finish(img);
+		wlf_image_destroy(img);
 	}
 
 	return EXIT_SUCCESS;

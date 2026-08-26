@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 			}
 		}
 
-		wlf_image_finish(img);
+		wlf_image_destroy(img);
 	} else {
 		// Create and test a simple JPEG image
 		printf("\nCreating test JPEG images...\n");
@@ -222,7 +222,7 @@ int main(int argc, char *argv[]) {
 				}
 			}
 
-			wlf_image_finish(img);
+			wlf_image_destroy(img);
 		} else {
 			wlf_log(WLF_ERROR, "Failed to load back the test image");
 		}

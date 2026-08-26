@@ -211,7 +211,7 @@ int main(int argc, char *argv[]) {
 			wlf_log(WLF_ERROR, "Failed to save processed GIF: %s", output_filename);
 		}
 
-		wlf_image_finish(loaded_image);
+		wlf_image_destroy(loaded_image);
 		free(loaded_image);
 	} else {
 		printf("\nCreating test GIF image...\n");
@@ -223,7 +223,7 @@ int main(int argc, char *argv[]) {
 			return EXIT_FAILURE;
 		}
 
-		wlf_image_finish((struct wlf_image *)gif_img);
+		wlf_image_destroy((struct wlf_image *)gif_img);
 		free(gif_img);
 	}
 
