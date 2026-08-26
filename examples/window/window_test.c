@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
 	double scale = fmin(270.0 / image->width, 190.0 / image->height);
 	double image_width = image->width * scale;
 	double image_height = image->height * scale;
-	wlf_image_finish(image);
+	wlf_image_destroy(image);
 	free(image);
 	if (texture == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create texture for: %s", image_path);

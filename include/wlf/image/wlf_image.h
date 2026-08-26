@@ -140,10 +140,10 @@ void wlf_image_init(struct wlf_image *image,
 	const struct wlf_image_impl *impl, uint32_t width, uint32_t height, uint32_t format);
 
 /**
- * @brief Release resources held by a wlf_image structure.
+ * @brief Destroys an image object.
  * @param image Pointer to the image structure.
  */
-void wlf_image_finish(struct wlf_image *image);
+void wlf_image_destroy(struct wlf_image *image);
 
 /**
  * @brief Add a listener that is notified before an image is destroyed.

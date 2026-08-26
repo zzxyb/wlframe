@@ -33,7 +33,7 @@ void wlf_image_add_listener(struct wlf_image *image,
 	image->user_data = data;
 }
 
-void wlf_image_finish(struct wlf_image *image) {
+void wlf_image_destroy(struct wlf_image *image) {
 	if (image == NULL) {
 		return;
 	}

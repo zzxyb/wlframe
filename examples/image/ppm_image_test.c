@@ -185,7 +185,7 @@ int main(int argc, char *argv[]) {
 				wlf_log(WLF_ERROR, "✗ Failed to save processed image: %s", output_filename);
 			}
 
-			wlf_image_finish(loaded_image);
+			wlf_image_destroy(loaded_image);
 			free(loaded_image);
 		} else {
 			wlf_log(WLF_ERROR, "✗ Failed to load PPM image: %s", input_path);
@@ -247,7 +247,7 @@ int main(int argc, char *argv[]) {
 				printf("✗ Image not identified as PPM\n");
 			}
 
-			wlf_image_finish(loaded_image);
+			wlf_image_destroy(loaded_image);
 			free(loaded_image);
 		} else {
 			printf("✗ Failed to load PPM image\n");
@@ -272,11 +272,11 @@ int main(int argc, char *argv[]) {
 				ascii_format ? WLF_PPM_FORMAT_P6 : WLF_PPM_FORMAT_P3);
 
 			printf("✓ Alternative format image created successfully\n");
-			wlf_image_finish((struct wlf_image *)alt_image);
+			wlf_image_destroy((struct wlf_image *)alt_image);
 			free(alt_image);
 		}
 
-		wlf_image_finish((struct wlf_image *)test_image);
+		wlf_image_destroy((struct wlf_image *)test_image);
 		free(test_image);
 	}
 

@@ -184,7 +184,7 @@ int main(int argc, char *argv[]) {
 
 		if (!xpm_image->base.impl->load(&xpm_image->base, input_path, false)) {
 			wlf_log(WLF_ERROR, "✗ Failed to load XPM image: %s", input_path);
-			wlf_image_finish(&xpm_image->base);
+			wlf_image_destroy(&xpm_image->base);
 			free(xpm_image);
 			free(input_path);
 			free(output_path);
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
 			wlf_log(WLF_ERROR, "✗ Failed to save processed image: %s", output_filename);
 		}
 
-		wlf_image_finish(&xpm_image->base);
+		wlf_image_destroy(&xpm_image->base);
 		free(xpm_image);
 	} else {
 		printf("\nTest 1: Creating a test XPM image...\n");
@@ -228,7 +228,7 @@ int main(int argc, char *argv[]) {
 			return EXIT_FAILURE;
 		}
 
-		wlf_image_finish(&test_image->base);
+		wlf_image_destroy(&test_image->base);
 		free(test_image);
 
 		char test_filename[PATH_MAX];
@@ -255,7 +255,7 @@ int main(int argc, char *argv[]) {
 			printf("✗ Failed to load XPM image\n");
 		}
 
-		wlf_image_finish(&loaded_image->base);
+		wlf_image_destroy(&loaded_image->base);
 		free(loaded_image);
 	}
 
