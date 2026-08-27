@@ -17,8 +17,6 @@
 #ifndef ANIMATOR_WLF_CURVE_H
 #define ANIMATOR_WLF_CURVE_H
 
-#include "wlf/utils/wlf_signal.h"
-
 struct wlf_curve;
 
 /**
@@ -55,16 +53,27 @@ struct wlf_curve_impl {
 };
 
 /**
+ * @brief Listener for wlf_curve lifecycle events.
+ *
+ * The listener is not owned by the curve and must remain valid until the
+ * curve has been destroyed. Its destroy callback is invoked before the
+ * curve's type-specific destroy implementation runs.
+ */
+struct wlf_curve_listener {
+	void (*destroy)(void *data, struct wlf_curve *curve);
+};
+
+/**
  * @brief Base curve structure
  *
  * All curve types must have this structure as their first member.
  */
 struct wlf_curve {
 	const struct wlf_curve_impl *impl;  /**< Virtual method table */
-
 	struct {
-		struct wlf_signal destroy;  /**< Signal emitted when the curve is destroyed. */
-	} events;
+		const struct wlf_curve_listener *listener; /**< Registered destruction listener */
+		void *user_data; /**< User data passed to the destruction listener */
+	} WLF_PRIVATE;
 };
 
 /**
@@ -89,5 +98,19 @@ float wlf_curve_value_at(const struct wlf_curve *curve, float t);
  * @param curve The curve to destroy
  */
 void wlf_curve_destroy(struct wlf_curve *curve);
+
+/**
+ * @brief Add a listener that is notified before a curve is destroyed.
+ *
+ * The curve does not take ownership of @p listener. Only one listener can be
+ * registered at a time; registering another listener replaces the previous
+ * one. Passing NULL removes the currently registered listener.
+ *
+ * @param curve Curve to monitor.
+ * @param listener Listener owned by the caller, or NULL to remove it.
+ * @param data User data passed to the listener callback.
+ */
+void wlf_curve_add_listener(struct wlf_curve *curve,
+	const struct wlf_curve_listener *listener, void *data);
 
 #endif // ANIMATOR_WLF_CURVE_H
