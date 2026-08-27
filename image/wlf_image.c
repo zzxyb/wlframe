@@ -19,12 +19,14 @@ void wlf_image_init(struct wlf_image *image,
 
 	*image = (struct wlf_image) {
 		.impl = impl,
+		.listener = NULL,
+		.user_data = NULL,
 		.width = width,
 		.height = height,
 		.format = format,
+		.has_alpha_channel = false,
+		.is_opaque = false,
 	};
-	image->has_alpha_channel = false;
-	image->is_opaque = false;
 }
 
 void wlf_image_add_listener(struct wlf_image *image,
