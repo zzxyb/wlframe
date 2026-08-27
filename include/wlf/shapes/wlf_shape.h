@@ -15,7 +15,6 @@
 #ifndef SHAPES_WLF_SHAPE_H
 #define SHAPES_WLF_SHAPE_H
 
-#include "wlf/utils/wlf_signal.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/types/wlf_color.h"
 
