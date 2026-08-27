@@ -51,10 +51,13 @@ void wlf_shape_init(struct wlf_shape *shape,
 	assert(impl);
 	assert(impl->destroy);
 
-	shape->impl = impl;
-	wlf_linked_list_init(&shape->link);
+	*shape = (struct wlf_shape) {
+		.impl = impl,
+		.listener = NULL,
+		.user_data = NULL,
+	};
 
-	wlf_signal_init(&shape->events.destroy);
+	wlf_linked_list_init(&shape->link);
 }
 
 void wlf_shape_destroy(struct wlf_shape *shape) {
@@ -62,15 +65,21 @@ void wlf_shape_destroy(struct wlf_shape *shape) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&shape->events.destroy, shape);
-
-	assert(wlf_linked_list_empty(&shape->events.destroy.listener_list));
+	if (shape->listener != NULL && shape->listener->destroy != NULL) {
+		shape->listener->destroy(shape->user_data, shape);
+	}
 
 	if (shape->impl && shape->impl->destroy) {
 		shape->impl->destroy(shape);
 	} else {
 		free(shape);
 	}
+}
+
+void wlf_shape_add_listener(struct wlf_shape *shape,
+		const struct wlf_shape_listener *listener, void *data) {
+	shape->listener = listener;
+	shape->user_data = data;
 }
 
 struct wlf_shape *wlf_shape_clone(struct wlf_shape *shape) {
