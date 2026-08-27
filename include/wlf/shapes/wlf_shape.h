@@ -51,18 +51,29 @@ struct wlf_shape_impl {
 };
 
 /**
+ * @brief Listener for wlf_shape lifecycle events.
+ *
+ * The listener is not owned by the shape and must remain valid until the
+ * shape has been destroyed. Its destroy callback is invoked before the
+ * shape's type-specific destroy implementation runs.
+ */
+struct wlf_shape_listener {
+	void (*destroy)(void *data, struct wlf_shape *shape);
+};
+
+/**
  * @brief Base object embedded in every shape.
  */
 struct wlf_shape {
-	const struct wlf_shape_impl *impl;
+	const struct wlf_shape_impl *impl; /**< Implementation for the concrete shape type. */
 
 	struct wlf_linked_list link; /**< List link used by shape tree children. */
 	float x, y; /**< Position relative to parent. */
 
 	struct {
-		/** @brief Emitted before the shape object is destroyed. */
-		struct wlf_signal destroy;
-	} events;
+		const struct wlf_shape_listener *listener; /**< Registered listener. */
+		void *user_data; /**< User data passed to the listener. */
+	} WLF_PRIVATE;
 };
 
 /**
@@ -73,6 +84,27 @@ struct wlf_shape {
  */
 void wlf_shape_init(struct wlf_shape *shape,
 	const struct wlf_shape_impl *impl);
+
+/**
+ * @brief Destroy a shape object.
+ *
+ * @param shape Shape object to destroy. NULL is accepted.
+ */
+void wlf_shape_destroy(struct wlf_shape *shape);
+
+/**
+ * @brief Add a listener that is notified before a shape is destroyed.
+ *
+ * The shape does not take ownership of @p listener. Only one listener can be
+ * registered at a time; registering another listener replaces the previous
+ * one. Passing NULL removes the currently registered listener.
+ *
+ * @param shape Shape to monitor.
+ * @param listener Listener owned by the caller, or NULL to remove it.
+ * @param data User data passed to the listener callback.
+ */
+void wlf_shape_add_listener(struct wlf_shape *shape,
+	const struct wlf_shape_listener *listener, void *data);
 
 /**
  * @brief Initialize common fill/stroke style with SVG-like defaults.
@@ -96,13 +128,6 @@ float wlf_shape_state_fill_alpha(const struct wlf_shape_state *paint);
  * @return Effective stroke alpha in [0, 1].
  */
 float wlf_shape_state_stroke_alpha(const struct wlf_shape_state *paint);
-
-/**
- * @brief Destroy a shape object.
- *
- * @param shape Shape object to destroy. NULL is accepted.
- */
-void wlf_shape_destroy(struct wlf_shape *shape);
 
 /**
  * @brief Clone a shape object.
