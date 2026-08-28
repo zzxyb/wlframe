@@ -232,7 +232,7 @@ static const struct wlf_pointer_impl pointer_impl = {
 	.destroy = pointer_destroy,
 };
 
-struct wlf_pointer *wlf_wl_pointer_create(struct wl_seat *seat) {
+struct wlf_wl_pointer *wlf_wl_pointer_create(struct wl_seat *seat) {
 	assert(seat != NULL);
 
 	struct wlf_wl_pointer *pointer = calloc(1, sizeof(*pointer));
@@ -252,7 +252,7 @@ struct wlf_pointer *wlf_wl_pointer_create(struct wl_seat *seat) {
 	wl_pointer_add_listener(pointer->pointer, &wl_pointer_listener, pointer);
 	wlf_pointer_init(&pointer->base, &pointer_impl);
 
-	return &pointer->base;
+	return pointer;
 }
 
 bool wlf_pointer_is_wayland(const struct wlf_pointer *pointer) {

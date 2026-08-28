@@ -244,10 +244,12 @@ static void seat_destroy_touch(struct wlf_wl_seat *seat) {
 }
 
 static bool seat_create_pointer(struct wlf_wl_seat *seat) {
-	seat->pointer = wlf_wl_pointer_create(seat->wl_seat);
-	if (seat->pointer == NULL) {
+	struct wlf_wl_pointer *pointer =
+		wlf_wl_pointer_create(seat->wl_seat);
+	if (pointer == NULL) {
 		return false;
 	}
+	seat->pointer = &pointer->base;
 	wlf_wl_pointer_configure_cursor(
 		wlf_wl_pointer_from_pointer(seat->pointer),
 		seat->cursor_shape_manager, seat->cursor_compositor,

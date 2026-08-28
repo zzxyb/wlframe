@@ -73,7 +73,7 @@ struct wlf_wl_pointer {
  * @param seat The Wayland seat from which to obtain the pointer.
  * @return Pointer to the newly created wlf_pointer, or NULL on failure.
  */
-struct wlf_pointer *wlf_wl_pointer_create(struct wl_seat *seat);
+struct wlf_wl_pointer *wlf_wl_pointer_create(struct wl_seat *seat);
 
 /**
  * @brief Checks whether a wlf_pointer is backed by the Wayland backend.
