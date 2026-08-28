@@ -74,7 +74,7 @@ struct wlf_curve_expo *wlf_curve_in_expo_create(void) {
 	return curve;
 }
 
-struct wlf_curve *wlf_curve_out_expo_create(void) {
+struct wlf_curve_expo *wlf_curve_out_expo_create(void) {
 	struct wlf_curve_expo *curve = malloc(sizeof(*curve));
 	if (curve == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_curve_expo");
@@ -84,7 +84,7 @@ struct wlf_curve *wlf_curve_out_expo_create(void) {
 	wlf_curve_init(&curve->base, &out_expo_impl);
 	curve->type = WLF_CURVE_OUT;
 
-	return &curve->base;
+	return curve;
 }
 
 struct wlf_curve *wlf_curve_in_out_expo_create(void) {
