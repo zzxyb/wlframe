@@ -61,7 +61,7 @@ static const struct wlf_curve_impl out_in_sine_impl = {
 	.destroy = sine_curve_destroy,
 };
 
-struct wlf_curve *wlf_curve_in_sine_create(void) {
+struct wlf_curve_sine *wlf_curve_in_sine_create(void) {
 	struct wlf_curve_sine *curve = malloc(sizeof(*curve));
 	if (curve == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_curve_sine");
@@ -71,7 +71,7 @@ struct wlf_curve *wlf_curve_in_sine_create(void) {
 	wlf_curve_init(&curve->base, &in_sine_impl);
 	curve->type = WLF_CURVE_IN;
 
-	return &curve->base;
+	return curve;
 }
 
 struct wlf_curve *wlf_curve_out_sine_create(void) {
