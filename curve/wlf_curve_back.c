@@ -90,7 +90,7 @@ struct wlf_curve_back *wlf_curve_out_back_create(float overshoot) {
 	return curve;
 }
 
-struct wlf_curve *wlf_curve_in_out_back_create(float overshoot) {
+struct wlf_curve_back *wlf_curve_in_out_back_create(float overshoot) {
 	struct wlf_curve_back *curve = malloc(sizeof(*curve));
 	if (curve == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_curve_back");
@@ -101,7 +101,7 @@ struct wlf_curve *wlf_curve_in_out_back_create(float overshoot) {
 	curve->type = WLF_CURVE_IN_OUT;
 	curve->overshoot = overshoot;
 
-	return &curve->base;
+	return curve;
 }
 
 struct wlf_curve *wlf_curve_out_in_back_create(float overshoot) {
