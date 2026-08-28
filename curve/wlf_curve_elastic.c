@@ -63,7 +63,7 @@ static const struct wlf_curve_impl out_in_elastic_impl = {
 	.destroy = elastic_curve_destroy,
 };
 
-struct wlf_curve *wlf_curve_in_elastic_create(float amplitude, float period) {
+struct wlf_curve_elastic *wlf_curve_in_elastic_create(float amplitude, float period) {
 	struct wlf_curve_elastic *curve = malloc(sizeof(*curve));
 	if (curve == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_curve_elastic");
@@ -75,7 +75,7 @@ struct wlf_curve *wlf_curve_in_elastic_create(float amplitude, float period) {
 	curve->period = period;
 	curve->type = WLF_CURVE_IN;
 
-	return &curve->base;
+	return curve;
 }
 
 struct wlf_curve *wlf_curve_out_elastic_create(float amplitude, float period) {
