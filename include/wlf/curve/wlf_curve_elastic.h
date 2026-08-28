@@ -76,7 +76,7 @@ struct wlf_curve_elastic *wlf_curve_out_elastic_create(float amplitude, float pe
  *               Smaller values create faster oscillations.
  * @return Pointer to the created curve, or NULL on allocation failure.
  */
-struct wlf_curve *wlf_curve_in_out_elastic_create(float amplitude, float period);
+struct wlf_curve_elastic *wlf_curve_in_out_elastic_create(float amplitude, float period);
 
 /**
  * @brief Creates an ease-out-in elastic curve.
