@@ -75,7 +75,7 @@ static const struct wlf_buffer_impl buffer_impl = {
 	.end_data_ptr_access = buffer_end_data_ptr_access,
 };
 
-struct wlf_buffer *wlf_shm_buffer_create(struct wlf_shm_allocator *alloc,
+struct wlf_shm_buffer *wlf_shm_buffer_create(struct wlf_shm_allocator *alloc,
 		int width, int height, uint32_t format) {
 	int stride = get_min_stride(format, width);
 	if (stride < 0) {
@@ -135,7 +135,7 @@ struct wlf_buffer *wlf_shm_buffer_create(struct wlf_shm_allocator *alloc,
 	wlf_log(WLF_DEBUG, "Allocated %dx%d Wayland SHM buffer with format 0x%08X, stride %d",
 		width, height, format, stride);
 
-	return &buffer->base;
+	return buffer;
 }
 
 bool wlf_buffer_is_shm(struct wlf_buffer *buffer) {

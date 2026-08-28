@@ -26,10 +26,10 @@ static struct wlf_buffer *allocator_create_buffer(
 
 	struct wlf_shm_allocator *shm_allocator =
 		wlf_shm_allocator_from_allocator(allocator);
-	struct wlf_buffer *buffer =
+	struct wlf_shm_buffer *buffer =
 		wlf_shm_buffer_create(shm_allocator, width, height, format->format);
 
-	return buffer;
+	return buffer != NULL ? &buffer->base : NULL;
 }
 
 static const struct wlf_allocator_impl allocator_impl = {
