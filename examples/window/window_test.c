@@ -259,8 +259,8 @@ int main(int argc, char *argv[]) {
 	render.rounded_rect =
 		wlf_rect_shape_node_create(&tree->base, 370, 35, rounded);
 
-	struct wlf_circle_shape *circle = wlf_circle_shape_from_shape(
-		wlf_circle_shape_create(45, 45, 42));
+	struct wlf_circle_shape *circle =
+		wlf_circle_shape_create(45, 45, 42);
 	set_shape_style(&circle->state,
 		wlf_color_from_rgb8(245, 92, 105), WLF_COLOR_WHITE, 3);
 	render.circle = wlf_circle_node_create(&tree->base, 555, 25, circle);

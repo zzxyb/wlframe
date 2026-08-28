@@ -32,7 +32,7 @@ struct wlf_circle_shape {
  * @param r Radius.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_circle_shape_create(float cx, float cy, float r);
+struct wlf_circle_shape *wlf_circle_shape_create(float cx, float cy, float r);
 
 /**
  * @brief Check whether a shape is a circle.
