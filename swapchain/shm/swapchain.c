@@ -107,12 +107,13 @@ struct wlf_swapchain *wlf_shm_swapchain_create(struct wlf_window *window,
 	}
 
 	struct wlf_wl_backend *wl_backend = wlf_wl_backend_from_backend(window->state.backend);
-	struct wlf_allocator *allocator = wlf_shm_allocator_create(wl_backend->wl_shm.shm);
-	if (allocator == NULL) {
+	struct wlf_shm_allocator *shm_allocator = wlf_shm_allocator_create(wl_backend->wl_shm.shm);
+	if (shm_allocator == NULL) {
 		free(swapchain);
 		return NULL;
 	}
 
+	struct wlf_allocator *allocator = &shm_allocator->base;
 	wlf_swapchain_init(&swapchain->base, allocator, &swapchain_impl, width, height);
 	if (!wlf_render_format_copy(&swapchain->base.format, format)) {
 		wlf_swapchain_destroy(&swapchain->base);
