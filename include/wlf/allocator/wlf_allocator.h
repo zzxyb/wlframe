@@ -17,8 +17,6 @@
 
 #include "wlf/utils/wlf_signal.h"
 #include "wlf/buffer/wlf_buffer.h"
-#include "wlf/platform/wlf_backend.h"
-#include "wlf/renderer/wlf_renderer.h"
 #include "wlf//types/wlf_format_set.h"
 
 struct wlf_allocator;
@@ -65,16 +63,6 @@ struct wlf_allocator {
  */
 void wlf_allocator_init(struct wlf_allocator *allocator,
 	const struct wlf_allocator_impl *impl);
-
-/**
- * @brief Automatically creates a suitable allocator for backend and renderer.
- *
- * @param backend Backend used by this allocator.
- * @param renderer Renderer used by this allocator.
- * @return Created allocator instance, or NULL when unavailable.
- */
-struct wlf_allocator *wlf_allocator_autocreate(struct wlf_backend *backend,
-	struct wlf_renderer *renderer);
 
 /**
  * @brief Destroys an allocator object.
