@@ -20,7 +20,7 @@ static const struct wlf_texture_impl texture_impl = {
 	.destroy = texture_destroy,
 };
 
-struct wlf_texture *wlf_gles_texture_from_buffer(
+struct wlf_gles_texture *wlf_gles_texture_from_buffer(
 		struct wlf_gles_renderer *renderer, struct wlf_buffer *buffer) {
 	void *data = NULL;
 	uint32_t format = WLF_FORMAT_INVALID;
@@ -78,7 +78,7 @@ struct wlf_texture *wlf_gles_texture_from_buffer(
 	}
 
 	wlf_linked_list_insert(&renderer->textures, &texture->link);
-	return &texture->base;
+	return texture;
 }
 
 bool wlf_texture_is_gles(const struct wlf_texture *texture) {

@@ -26,8 +26,9 @@ static void renderer_destroy(struct wlf_renderer *render) {
 
 static struct wlf_texture *renderer_texture_from_buffer(
 		struct wlf_renderer *renderer, struct wlf_buffer *buffer) {
-	return wlf_gles_texture_from_buffer(
+	struct wlf_gles_texture *texture = wlf_gles_texture_from_buffer(
 		wlf_gles_renderer_from_renderer(renderer), buffer);
+	return texture != NULL ? &texture->base : NULL;
 }
 
 static struct wlf_render_target_info *renderer_begin_buffer_pass(
