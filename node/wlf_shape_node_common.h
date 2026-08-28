@@ -14,7 +14,7 @@
 #ifndef WLF_SHAPE_NODE_COMMON_H
 #define WLF_SHAPE_NODE_COMMON_H
 
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 
 /**
  * @brief Initializes common state from the shape's geometric bounds.

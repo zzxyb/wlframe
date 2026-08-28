@@ -1,4 +1,4 @@
-#include "wlf/scene/wlf_line_node.h"
+#include "wlf/node/wlf_line_node.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf_shape_node_impl.h"
 

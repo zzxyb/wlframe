@@ -16,7 +16,7 @@
 #ifndef SCENE_WLF_SVG_NODE_H
 #define SCENE_WLF_SVG_NODE_H
 
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 #include "wlf/svg/wlf_svg.h"
 
 /**

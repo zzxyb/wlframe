@@ -1,5 +1,4 @@
 #include "wlf/scene/wlf_scene.h"
-
 #include "wlf/pass/wlf_circle_pass.h"
 #include "wlf/pass/wlf_ellipse_pass.h"
 #include "wlf/pass/wlf_line_pass.h"
@@ -8,7 +7,7 @@
 #include "wlf/pass/wlf_rect_shape_pass.h"
 #include "wlf/pass/wlf_rect_pass.h"
 #include "wlf/pass/wlf_texture_pass.h"
-#include "wlf/scene/wlf_scene_tree.h"
+#include "wlf/node/wlf_scene_tree.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_env.h"
 #include "wlf/utils/wlf_time.h"

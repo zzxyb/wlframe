@@ -14,7 +14,7 @@
 #define SCENE_WLF_LINE_NODE_H
 
 #include "wlf/pass/wlf_line_pass.h"
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 
 /**
  * @brief Scene node containing a line shape.

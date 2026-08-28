@@ -15,7 +15,7 @@
 #define SCENE_WLF_TEXTURE_NODE_H
 
 #include "wlf/pass/wlf_texture_pass.h"
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 #include "wlf/texture/wlf_texture.h"
 
 /**

@@ -1,5 +1,4 @@
-#include "wlf/scene/wlf_event_node.h"
-
+#include "wlf/node/wlf_event_node.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wlf_window.h"
 
