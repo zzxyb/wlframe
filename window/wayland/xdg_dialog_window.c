@@ -341,7 +341,7 @@ static const struct wlf_window_impl xdg_dialog_window_impl = {
 	.schedule_frame = xdg_dialog_window_schedule_frame,
 };
 
-struct wlf_window *wlf_xdg_dialog_window_create_from_backend(
+struct wlf_xdg_dialog_window *wlf_xdg_dialog_window_create_from_backend(
 		struct wlf_backend *backend, struct wlf_window *parent,
 		uint32_t width, uint32_t height, bool modal) {
 	if (backend == NULL || !wlf_backend_is_wayland(backend)) {
@@ -402,7 +402,7 @@ struct wlf_window *wlf_xdg_dialog_window_create_from_backend(
 		&window->xdg_toplevel_close);
 	window->has_xdg_toplevel_close_listener = true;
 
-	return &window->base;
+	return window;
 }
 
 bool wlf_window_is_xdg_dialog(const struct wlf_window *window) {
