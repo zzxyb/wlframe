@@ -42,7 +42,7 @@ struct wlf_shm_allocator {
  * @param wl_shm Wayland shared memory global to use for buffer creation.
  * @return Pointer to the created allocator, or NULL on failure.
  */
-struct wlf_allocator *wlf_shm_allocator_create(struct wl_shm *wl_shm);
+struct wlf_shm_allocator *wlf_shm_allocator_create(struct wl_shm *wl_shm);
 
 /**
  * @brief Checks if an allocator is a SHM allocator.

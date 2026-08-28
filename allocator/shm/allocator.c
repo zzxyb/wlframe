@@ -37,7 +37,7 @@ static const struct wlf_allocator_impl allocator_impl = {
 	.create_buffer = allocator_create_buffer,
 };
 
-struct wlf_allocator *wlf_shm_allocator_create(struct wl_shm *wl_shm) {
+struct wlf_shm_allocator *wlf_shm_allocator_create(struct wl_shm *wl_shm) {
 	struct wlf_shm_allocator *allocator = calloc(1, sizeof(*allocator));
 	if (allocator == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_shm_allocator");
@@ -47,7 +47,7 @@ struct wlf_allocator *wlf_shm_allocator_create(struct wl_shm *wl_shm) {
 	allocator->wl_shm = wl_shm;
 	wlf_allocator_init(&allocator->base, &allocator_impl);
 
-	return &allocator->base;
+	return allocator;
 }
 
 bool wlf_allocator_is_shm(const struct wlf_allocator *allocator) {
