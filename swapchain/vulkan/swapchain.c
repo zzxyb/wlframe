@@ -359,7 +359,7 @@ static const struct wlf_swapchain_impl swapchain_impl = {
 	.present = swapchain_present,
 };
 
-struct wlf_swapchain *wlf_vk_swapchain_create(struct wlf_window *window,
+struct wlf_vk_swapchain *wlf_vk_swapchain_create(struct wlf_window *window,
 		int width, int height, const struct wlf_render_format *format) {
 	struct wlf_vk_renderer *renderer =
 		wlf_vk_renderer_from_renderer(window->state.renderer);
@@ -426,7 +426,7 @@ struct wlf_swapchain *wlf_vk_swapchain_create(struct wlf_window *window,
 		return NULL;
 	}
 
-	return &swapchain->base;
+	return swapchain;
 }
 
 bool wlf_swapchain_is_vk(const struct wlf_swapchain *swapchain) {
