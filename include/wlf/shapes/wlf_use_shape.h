@@ -31,7 +31,7 @@ struct wlf_use_shape {
  * @param y Y offset.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_use_shape_create(const char *href, float x, float y);
+struct wlf_use_shape *wlf_use_shape_create(const char *href, float x, float y);
 
 /**
  * @brief Check whether a shape is a use shape.
