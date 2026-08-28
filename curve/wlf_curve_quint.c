@@ -87,7 +87,7 @@ struct wlf_curve_quint *wlf_curve_out_quint_create(void) {
 	return curve;
 }
 
-struct wlf_curve *wlf_curve_in_out_quint_create(void) {
+struct wlf_curve_quint *wlf_curve_in_out_quint_create(void) {
 	struct wlf_curve_quint *curve = malloc(sizeof(*curve));
 	if (curve == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_curve_quint");
@@ -97,7 +97,7 @@ struct wlf_curve *wlf_curve_in_out_quint_create(void) {
 	wlf_curve_init(&curve->base, &in_out_quint_impl);
 	curve->type = WLF_CURVE_IN_OUT;
 
-	return &curve->base;
+	return curve;
 }
 
 struct wlf_curve *wlf_curve_out_in_quint_create(void) {
