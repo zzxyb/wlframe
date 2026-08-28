@@ -101,7 +101,7 @@ bool check_extension(const VkExtensionProperties *avail,
  * @param device Pointer to a Vulkan device wrapper.
  * @return Pointer to the created `wlf_renderer`, or NULL on failure.
  */
-struct wlf_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *device);
+struct wlf_vk_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *device);
 
 /**
  * @brief Returns a human-readable Vulkan error string.
