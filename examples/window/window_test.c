@@ -297,8 +297,8 @@ int main(int argc, char *argv[]) {
 		0, 35, 28, 0, 62, 22, 95, 0, 125, 38, 95, 78, 25, 78,
 	};
 	memcpy(path->pts, path_points, sizeof(path_points));
-	struct wlf_path_shape *path_shape = wlf_path_shape_from_shape(
-		wlf_path_shape_create(path, true));
+	struct wlf_path_shape *path_shape =
+		wlf_path_shape_create(path, true);
 	set_shape_style(&path_shape->state,
 		wlf_color_from_rgb8(30, 175, 190), WLF_COLOR_WHITE, 4);
 	render.path = wlf_path_node_create(&tree->base, 550, 285, path_shape);
