@@ -13,14 +13,14 @@ static void shape_destroy(struct wlf_shape *shape) {
 
 static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 	struct wlf_ellipse_shape *ellipse_shape = wlf_ellipse_shape_from_shape(shape);
-	struct wlf_shape *clone =
+	struct wlf_ellipse_shape *clone =
 		wlf_ellipse_shape_create(ellipse_shape->cx, ellipse_shape->cy,
 			ellipse_shape->rx, ellipse_shape->ry);
 	if (clone != NULL) {
-		wlf_ellipse_shape_from_shape(clone)->state = ellipse_shape->state;
+		clone->state = ellipse_shape->state;
 	}
 
-	return clone;
+	return clone != NULL ? &clone->base : NULL;
 }
 
 static const struct wlf_shape_impl shape_impl = {
@@ -28,7 +28,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_ellipse_shape_create(float cx, float cy, float rx, float ry) {
+struct wlf_ellipse_shape *wlf_ellipse_shape_create(float cx, float cy, float rx, float ry) {
 	struct wlf_ellipse_shape *ellipse = malloc(sizeof(*ellipse));
 	if (ellipse == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_ellipse_shape");
@@ -42,7 +42,7 @@ struct wlf_shape *wlf_ellipse_shape_create(float cx, float cy, float rx, float r
 	ellipse->ry = ry;
 	wlf_shape_state_init(&ellipse->state);
 
-	return &ellipse->base;
+	return ellipse;
 }
 
 bool wlf_shape_is_ellipse(struct wlf_shape *shape) {
