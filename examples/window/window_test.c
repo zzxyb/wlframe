@@ -252,8 +252,8 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	struct wlf_rect_shape *rounded = wlf_rect_shape_from_shape(
-		wlf_rect_shape_create(0, 0, 115, 65, 18, 18));
+	struct wlf_rect_shape *rounded =
+		wlf_rect_shape_create(0, 0, 115, 65, 18, 18);
 	set_shape_style(&rounded->state,
 		wlf_color_from_rgb8(55, 130, 245), WLF_COLOR_CYAN, 3);
 	render.rounded_rect =

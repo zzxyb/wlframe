@@ -38,7 +38,7 @@ struct wlf_rect_shape {
  * @param ry Corner radius y.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_rect_shape_create(float x, float y,
+struct wlf_rect_shape *wlf_rect_shape_create(float x, float y,
 	float width, float height, float rx, float ry);
 
 /**

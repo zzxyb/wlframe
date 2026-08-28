@@ -2595,7 +2595,9 @@ static void wlf_svg_parse_rect(struct wlf_svg_parser *p, const char** attr)
 	if (ry > h/2.0f) ry = h/2.0f;
 
 	if (w != 0.0f && h != 0.0f) {
-		p->shape_geometry = wlf_rect_shape_create(x, y, w, h, rx, ry);
+		struct wlf_rect_shape *rect =
+			wlf_rect_shape_create(x, y, w, h, rx, ry);
+		p->shape_geometry = rect != NULL ? &rect->base : NULL;
 		wlf_svg_reset_path(p);
 
 		if (rx < 0.00001f || ry < 0.0001f) {
@@ -3149,8 +3151,10 @@ static struct wlf_shape *wlf_svg_clone_geometry_translated(
 
 	if (wlf_shape_is_rect(geometry)) {
 		struct wlf_rect_shape *rect = wlf_rect_shape_from_shape(geometry);
-		return wlf_rect_shape_create(rect->x + tx, rect->y + ty,
-			rect->width, rect->height, rect->rx, rect->ry);
+		struct wlf_rect_shape *clone =
+			wlf_rect_shape_create(rect->x + tx, rect->y + ty,
+				rect->width, rect->height, rect->rx, rect->ry);
+		return clone != NULL ? &clone->base : NULL;
 	}
 	if (wlf_shape_is_circle(geometry)) {
 		struct wlf_circle_shape *circle = wlf_circle_shape_from_shape(geometry);
