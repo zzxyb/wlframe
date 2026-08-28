@@ -40,7 +40,7 @@ struct wlf_curve_quad {
  *
  * @return Pointer to the created curve, or NULL on allocation failure.
  */
-struct wlf_curve *wlf_curve_in_quad_create(void);
+struct wlf_curve_quad *wlf_curve_in_quad_create(void);
 
 /**
  * @brief Creates an ease-out quadratic curve.
