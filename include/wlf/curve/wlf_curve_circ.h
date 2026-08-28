@@ -39,7 +39,7 @@ struct wlf_curve_circ {
  *
  * @return Pointer to the created curve, or NULL on allocation failure.
  */
-struct wlf_curve *wlf_curve_in_circ_create(void);
+struct wlf_curve_circ *wlf_curve_in_circ_create(void);
 
 /**
  * @brief Creates an ease-out circular curve.
