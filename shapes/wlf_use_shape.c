@@ -13,9 +13,9 @@ static void shape_destroy(struct wlf_shape *shape) {
 
 static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 	struct wlf_use_shape *src = wlf_use_shape_from_shape(shape);
-	struct wlf_shape *clone = wlf_use_shape_create(src->href, src->x, src->y);
+	struct wlf_use_shape *clone = wlf_use_shape_create(src->href, src->x, src->y);
 
-	return clone;
+	return clone != NULL ? &clone->base : NULL;
 }
 
 static const struct wlf_shape_impl shape_impl = {
@@ -23,7 +23,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_use_shape_create(const char *href, float x, float y) {
+struct wlf_use_shape *wlf_use_shape_create(const char *href, float x, float y) {
 	struct wlf_use_shape *use = malloc(sizeof(*use));
 	if (use == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_use_shape");
@@ -37,7 +37,7 @@ struct wlf_shape *wlf_use_shape_create(const char *href, float x, float y) {
 	strncpy(use->href, href, sizeof(use->href) - 1);
 	use->href[sizeof(use->href) - 1] = '\0';
 
-	return &use->base;
+	return use;
 }
 
 bool wlf_shape_is_use(struct wlf_shape *shape) {
