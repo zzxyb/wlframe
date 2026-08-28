@@ -2773,7 +2773,9 @@ static void wlf_svg_parse_poly(struct wlf_svg_parser *p, const char** attr, int 
 	}
 
 	if (points && points_count > 0) {
-		p->shape_geometry = wlf_poly_shape_create(points, points_count, closeFlag != 0);
+		struct wlf_poly_shape *poly =
+			wlf_poly_shape_create(points, points_count, closeFlag != 0);
+		p->shape_geometry = poly != NULL ? &poly->base : NULL;
 	}
 	free(points);
 
@@ -3179,10 +3181,10 @@ static struct wlf_shape *wlf_svg_clone_geometry_translated(
 			points[i * 2] = poly->points[i * 2] + tx;
 			points[i * 2 + 1] = poly->points[i * 2 + 1] + ty;
 		}
-		struct wlf_shape *out =
+		struct wlf_poly_shape *out =
 			wlf_poly_shape_create(points, poly->count, poly->closed);
 		free(points);
-		return out;
+		return out != NULL ? &out->base : NULL;
 	}
 	if (wlf_shape_is_path(geometry)) {
 		struct wlf_path_shape *path_shape =

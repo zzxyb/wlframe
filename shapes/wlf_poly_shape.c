@@ -14,12 +14,12 @@ static void shape_destroy(struct wlf_shape *shape) {
 
 static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 	struct wlf_poly_shape *poly_shape = wlf_poly_shape_from_shape(shape);
-	struct wlf_shape *clone =
+	struct wlf_poly_shape *clone =
 		wlf_poly_shape_create(poly_shape->points, poly_shape->count, poly_shape->closed);
 	if (clone != NULL) {
-		wlf_poly_shape_from_shape(clone)->state = poly_shape->state;
+		clone->state = poly_shape->state;
 	}
-	return clone;
+	return clone != NULL ? &clone->base : NULL;
 }
 
 static const struct wlf_shape_impl shape_impl = {
@@ -27,7 +27,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_poly_shape_create(const float *points, int count, bool closed) {
+struct wlf_poly_shape *wlf_poly_shape_create(const float *points, int count, bool closed) {
 	struct wlf_poly_shape *poly = NULL;
 
 	if (count <= 0 || points == NULL) {
@@ -53,7 +53,7 @@ struct wlf_shape *wlf_poly_shape_create(const float *points, int count, bool clo
 	poly->closed = closed;
 	wlf_shape_state_init(&poly->state);
 
-	return &poly->base;
+	return poly;
 }
 
 bool wlf_shape_is_poly(struct wlf_shape *shape) {
