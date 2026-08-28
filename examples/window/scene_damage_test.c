@@ -46,8 +46,10 @@ int main(void) {
 	}
 
 	struct wlf_renderer *renderer = wlf_renderer_autocreate(backend);
-	struct wlf_window *window = wlf_xdg_toplevel_window_create_from_backend(
-		backend, 640, 360);
+	struct wlf_xdg_toplevel_window *toplevel =
+		wlf_xdg_toplevel_window_create_from_backend(backend, 640, 360);
+	struct wlf_window *window =
+		toplevel != NULL ? &toplevel->base : NULL;
 	if (renderer == NULL || window == NULL) {
 		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);

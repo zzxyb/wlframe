@@ -59,8 +59,10 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 	struct wlf_renderer *renderer = wlf_renderer_autocreate(backend);
-	struct wlf_window *window = wlf_xdg_toplevel_window_create_from_backend(
-		backend, 720, 480);
+	struct wlf_xdg_toplevel_window *toplevel =
+		wlf_xdg_toplevel_window_create_from_backend(backend, 720, 480);
+	struct wlf_window *window =
+		toplevel != NULL ? &toplevel->base : NULL;
 	if (renderer == NULL || window == NULL) {
 		free(input_path);
 		wlf_renderer_destroy(renderer);
