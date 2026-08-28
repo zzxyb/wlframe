@@ -127,12 +127,14 @@ struct wlf_swapchain *wlf_egl_swapchain_create(struct wlf_window *window,
 		return NULL;
 	}
 
-	struct wlf_allocator *allocator =
+	struct wlf_egl_allocator *egl_allocator =
 		wlf_egl_allocator_create(gles_renderer->egl, surface);
-	if (allocator == NULL) {
+	if (egl_allocator == NULL) {
 		free(swapchain);
 		return NULL;
 	}
+
+	struct wlf_allocator *allocator = &egl_allocator->base;
 #else
 	free(swapchain);
 	return NULL;

@@ -26,7 +26,7 @@ static const struct wlf_allocator_impl allocator_impl = {
 	.create_buffer = allocator_create_buffer,
 };
 
-struct wlf_allocator *wlf_egl_allocator_create(struct wlf_egl *egl,
+struct wlf_egl_allocator *wlf_egl_allocator_create(struct wlf_egl *egl,
 		struct wl_surface *surface) {
 	if (egl == NULL || surface == NULL) {
 		return NULL;
@@ -41,7 +41,8 @@ struct wlf_allocator *wlf_egl_allocator_create(struct wlf_egl *egl,
 	allocator->egl = egl;
 	allocator->surface = surface;
 	wlf_allocator_init(&allocator->base, &allocator_impl);
-	return &allocator->base;
+
+	return allocator;
 }
 
 bool wlf_allocator_is_egl(const struct wlf_allocator *allocator) {
