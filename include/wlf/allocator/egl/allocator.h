@@ -37,9 +37,9 @@ struct wlf_egl_allocator {
  * @brief Creates an EGL window-surface allocator.
  * @param egl EGL context used for surface creation.
  * @param surface Native Wayland surface receiving the EGL window.
- * @return Newly allocated generic allocator, or NULL on failure.
+ * @return Newly allocated egl allocator, or NULL on failure.
  */
-struct wlf_allocator *wlf_egl_allocator_create(struct wlf_egl *egl,
+struct wlf_egl_allocator *wlf_egl_allocator_create(struct wlf_egl *egl,
 	struct wl_surface *surface);
 
 /**
