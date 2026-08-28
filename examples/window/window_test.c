@@ -283,8 +283,8 @@ int main(int argc, char *argv[]) {
 		60, 0, 74, 40, 118, 40, 82, 65, 96, 108,
 		60, 82, 24, 108, 38, 65, 2, 40, 46, 40,
 	};
-	struct wlf_poly_shape *poly = wlf_poly_shape_from_shape(
-		wlf_poly_shape_create(star_points, 10, true));
+	struct wlf_poly_shape *poly =
+		wlf_poly_shape_create(star_points, 10, true);
 	set_shape_style(&poly->state,
 		wlf_color_from_rgb8(150, 85, 220), WLF_COLOR_MAGENTA, 3);
 	render.poly = wlf_poly_node_create(&tree->base, 370, 275, poly);

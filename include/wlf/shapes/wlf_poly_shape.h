@@ -32,7 +32,7 @@ struct wlf_poly_shape {
  * @param closed true for polygon, false for polyline.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_poly_shape_create(const float *points, int count, bool closed);
+struct wlf_poly_shape *wlf_poly_shape_create(const float *points, int count, bool closed);
 
 /**
  * @brief Check whether a shape is a poly shape.
