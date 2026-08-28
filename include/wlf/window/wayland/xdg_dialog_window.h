@@ -64,7 +64,7 @@ struct wlf_xdg_dialog_window {
  * @param modal Whether the dialog should be created as modal.
  * @return Generic wlf_window pointer or NULL on failure.
  */
-struct wlf_window *wlf_xdg_dialog_window_create_from_backend(
+struct wlf_xdg_dialog_window *wlf_xdg_dialog_window_create_from_backend(
 	struct wlf_backend *backend, struct wlf_window *parent,
 	uint32_t width, uint32_t height, bool modal);
 
