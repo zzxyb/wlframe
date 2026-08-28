@@ -52,9 +52,9 @@ struct wlf_mtl_renderer {
  * and allocating necessary GPU resources.
  *
  * @param backend Pointer to the wlframe backend.
- * @return Pointer to the created `wlf_renderer`, or NULL on failure.
+ * @return Pointer to the created Metal renderer, or NULL on failure.
  */
-struct wlf_renderer *wlf_mtl_renderer_create_from_backend(
+struct wlf_mtl_renderer *wlf_mtl_renderer_create_from_backend(
 	struct wlf_backend *backend);
 
 /**

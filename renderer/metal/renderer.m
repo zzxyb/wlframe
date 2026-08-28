@@ -11,7 +11,7 @@
 
 static const struct wlf_renderer_impl renderer_impl;
 
-struct wlf_renderer *wlf_mtl_renderer_create_from_backend(
+struct wlf_mtl_renderer *wlf_mtl_renderer_create_from_backend(
 		struct wlf_backend *backend __attribute__((unused))) {
 	wlf_log(WLF_INFO, "Creating Metal renderer for macOS");
 	
@@ -23,7 +23,7 @@ struct wlf_renderer *wlf_mtl_renderer_create_from_backend(
 
 	struct wlf_mtl_renderer *renderer =
 		wlf_mtl_renderer_create_for_device(device);
-	return renderer != NULL ? &renderer->base : NULL;
+	return renderer;
 }
 
 static void renderer_destroy(struct wlf_renderer *renderer) {
