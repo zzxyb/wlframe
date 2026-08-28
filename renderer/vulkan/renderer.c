@@ -11,7 +11,7 @@
 
 #include <vulkan/vulkan_core.h>
 
-struct wlf_renderer *wlf_vk_renderer_create_from_backend(
+struct wlf_vk_renderer *wlf_vk_renderer_create_from_backend(
 		struct wlf_backend *backend) {
 	wlf_log(WLF_INFO, "Run with VK_INSTANCE_LAYERS=VK_LAYER_KHRONOS_validation "
 		"to enable the validation layer");
@@ -36,7 +36,7 @@ struct wlf_renderer *wlf_vk_renderer_create_from_backend(
 
 	struct wlf_vk_renderer *renderer =
 		wlf_vk_render_create_for_device(device);
-	return renderer != NULL ? &renderer->base : NULL;
+	return renderer;
 
 cleanup:
 	wlf_vk_instance_destroy(ini);

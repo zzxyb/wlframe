@@ -42,7 +42,9 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 	}
 
 	if ((render == NULL && is_auto) || strcmp(render_name, "vulkan") == 0) {
-		render = wlf_vk_renderer_create_from_backend(backend);
+		struct wlf_vk_renderer *vulkan =
+			wlf_vk_renderer_create_from_backend(backend);
+		render = vulkan != NULL ? &vulkan->base : NULL;
 		if (render == NULL && is_auto) {
 			wlf_log(WLF_INFO, "Vulkan renderer unavailable, falling back to Pixman");
 		}
