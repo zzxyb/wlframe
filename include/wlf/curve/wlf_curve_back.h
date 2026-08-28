@@ -55,7 +55,7 @@ struct wlf_curve_back *wlf_curve_in_back_create(float overshoot);
  *                  Typical value: 1.70158 for standard back easing.
  * @return Pointer to the created curve, or NULL on allocation failure.
  */
-struct wlf_curve *wlf_curve_out_back_create(float overshoot);
+struct wlf_curve_back *wlf_curve_out_back_create(float overshoot);
 
 /**
  * @brief Creates an ease-in-out back curve.
