@@ -103,7 +103,7 @@ static const struct wlf_swapchain_impl swapchain_impl = {
 	.present = swapchain_present,
 };
 
-struct wlf_swapchain *wlf_egl_swapchain_create(struct wlf_window *window,
+struct wlf_egl_swapchain *wlf_egl_swapchain_create(struct wlf_window *window,
 		int width, int height, const struct wlf_render_format *format) {
 	struct wlf_egl_swapchain *swapchain = calloc(1, sizeof(*swapchain));
 	if (swapchain == NULL) {
@@ -156,7 +156,7 @@ struct wlf_swapchain *wlf_egl_swapchain_create(struct wlf_window *window,
 	}
 	swapchain->base.back = swapchain->back;
 
-	return &swapchain->base;
+	return swapchain;
 }
 
 bool wlf_swapchain_is_egl(const struct wlf_swapchain *swapchain) {

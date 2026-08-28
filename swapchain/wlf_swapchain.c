@@ -39,7 +39,9 @@ struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window, int w
 	if (wlf_renderer_is_pixman(window->state.renderer)) {
 		swapchain = wlf_shm_swapchain_create(window, width, height, format);
 	} else if (wlf_renderer_is_gles(window->state.renderer)) {
-		swapchain = wlf_egl_swapchain_create(window, width, height, format);
+		struct wlf_egl_swapchain *egl =
+			wlf_egl_swapchain_create(window, width, height, format);
+		swapchain = egl != NULL ? &egl->base : NULL;
 	} else if (wlf_renderer_is_vk(window->state.renderer)) {
 		swapchain = wlf_vk_swapchain_create(window, width, height, format);
 	}
