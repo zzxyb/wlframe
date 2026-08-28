@@ -38,7 +38,7 @@ struct wlf_shm_swapchain {
  * @param format Requested wl_shm render format.
  * @return Newly allocated generic swapchain, or NULL on failure.
  */
-struct wlf_swapchain *wlf_shm_swapchain_create(struct wlf_window *window,
+struct wlf_shm_swapchain *wlf_shm_swapchain_create(struct wlf_window *window,
 	int width, int height, const struct wlf_render_format *format);
 
 /**
