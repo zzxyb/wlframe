@@ -56,7 +56,7 @@ struct wlf_vk_renderer {
  * @param backend Pointer to the wlframe backend.
  * @return Pointer to the created `wlf_renderer`, or NULL on failure.
  */
-struct wlf_renderer *wlf_vk_renderer_create_from_backend(
+struct wlf_vk_renderer *wlf_vk_renderer_create_from_backend(
 	struct wlf_backend *backend);
 
 /**
