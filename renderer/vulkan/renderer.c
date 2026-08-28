@@ -34,7 +34,9 @@ struct wlf_renderer *wlf_vk_renderer_create_from_backend(
 		goto cleanup;
 	}
 
-	return wlf_vk_render_create_for_device(device);
+	struct wlf_vk_renderer *renderer =
+		wlf_vk_render_create_for_device(device);
+	return renderer != NULL ? &renderer->base : NULL;
 
 cleanup:
 	wlf_vk_instance_destroy(ini);
@@ -99,7 +101,7 @@ struct wlf_vk_renderer *wlf_vk_renderer_from_renderer(struct wlf_renderer *rende
 	return vk_renderer;
 }
 
-struct wlf_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *device) {
+struct wlf_vk_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *device) {
 	VkResult res;
 	struct wlf_vk_renderer *render = calloc(1, sizeof(*render));
 	if (render == NULL) {
@@ -148,7 +150,7 @@ struct wlf_renderer *wlf_vk_render_create_for_device(struct wlf_vk_device *devic
 		goto error;
 	}
 
-	return &render->base;
+	return render;
 
 error:
 	vk_renderer_destroy(&render->base);
