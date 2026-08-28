@@ -40,7 +40,7 @@ struct wlf_curve_quint {
  *
  * @return Pointer to the created curve, or NULL on allocation failure.
  */
-struct wlf_curve *wlf_curve_in_quint_create(void);
+struct wlf_curve_quint *wlf_curve_in_quint_create(void);
 
 /**
  * @brief Creates an ease-out quintic curve.
