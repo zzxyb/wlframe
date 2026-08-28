@@ -121,7 +121,7 @@ struct wlf_pixman_renderer *wlf_pixman_renderer_from_renderer(
 	return pixman_renderer;
 }
 
-struct wlf_renderer *wlf_pixman_renderer_create_from_backend(
+struct wlf_pixman_renderer *wlf_pixman_renderer_create_from_backend(
 		struct wlf_backend *backend) {
 	struct wlf_pixman_renderer *renderer = malloc(sizeof(*renderer));
 	if (renderer == NULL) {
@@ -136,5 +136,5 @@ struct wlf_renderer *wlf_pixman_renderer_create_from_backend(
 	renderer->backend = backend;
 	renderer->base.features.damage = true;
 
-	return &renderer->base;
+	return renderer;
 }
