@@ -38,7 +38,7 @@ struct wlf_curve_linear {
  *
  * @return Pointer to the created curve, or NULL on allocation failure.
  */
-struct wlf_curve *wlf_curve_linear_create(void);
+struct wlf_curve_linear *wlf_curve_linear_create(void);
 
 /**
  * @brief Checks if a curve is a linear curve.
