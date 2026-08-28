@@ -56,16 +56,15 @@ struct wlf_shm_buffer {
 /**
  * @brief Creates a SHM buffer with the specified format.
  *
- * This function is called by the SHM allocator to create buffers and
- * returns the created object as a generic base-buffer struct pointer.
+ * This function is called by the SHM allocator to create buffers.
  *
  * @param alloc SHM allocator.
  * @param width Buffer width in pixels.
  * @param height Buffer height in pixels.
  * @param format Pixel format (DRM FourCC code).
- * @return Pointer to struct wlf_buffer on success, or NULL on failure.
+ * @return Pointer to struct wlf_shm_buffer on success, or NULL on failure.
  */
-struct wlf_buffer *wlf_shm_buffer_create(struct wlf_shm_allocator *alloc,
+struct wlf_shm_buffer *wlf_shm_buffer_create(struct wlf_shm_allocator *alloc,
 	int width, int height, uint32_t format);
 
 /**
