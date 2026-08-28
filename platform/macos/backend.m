@@ -150,7 +150,7 @@ static const struct wlf_backend_impl macos_backend_impl = {
 	.native_display = backend_native_display,
 };
 
-struct wlf_backend *macos_backend_create(void) {
+struct wlf_backend_macos *macos_backend_create(void) {
 	struct wlf_backend_macos *backend = calloc(1, sizeof(struct wlf_backend_macos));
 	if (backend == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_backend_macos");
@@ -166,7 +166,7 @@ struct wlf_backend *macos_backend_create(void) {
 		return NULL;
 	}
 
-	return &backend->base;
+	return backend;
 }
 
 bool wlf_backend_macos_register(void) {
