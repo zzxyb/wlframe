@@ -51,9 +51,9 @@ struct wlf_egl_buffer {
  * @param width Initial buffer width in pixels.
  * @param height Initial buffer height in pixels.
  * @param format Requested EGL render format.
- * @return Newly allocated generic buffer, or NULL on failure.
+ * @return Newly allocated EGL buffer, or NULL on failure.
  */
-struct wlf_buffer *wlf_egl_buffer_create(struct wlf_egl *egl,
+struct wlf_egl_buffer *wlf_egl_buffer_create(struct wlf_egl *egl,
 	struct wl_surface *surface, uint32_t width, uint32_t height,
 	const struct wlf_render_format *format);
 

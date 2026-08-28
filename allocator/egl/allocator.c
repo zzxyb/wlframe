@@ -17,8 +17,10 @@ static struct wlf_buffer *allocator_create_buffer(
 		const struct wlf_render_format *format) {
 	struct wlf_egl_allocator *allocator =
 		wlf_egl_allocator_from_allocator(base);
-	return wlf_egl_buffer_create(allocator->egl, allocator->surface,
+	struct wlf_egl_buffer *buffer = wlf_egl_buffer_create(allocator->egl,
+		allocator->surface,
 		width, height, format);
+	return buffer != NULL ? &buffer->base : NULL;
 }
 
 static const struct wlf_allocator_impl allocator_impl = {

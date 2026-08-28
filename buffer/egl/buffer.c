@@ -38,7 +38,7 @@ static const struct wlf_buffer_impl egl_buffer_impl = {
 	.destroy = egl_buffer_destroy,
 };
 
-struct wlf_buffer *wlf_egl_buffer_create(struct wlf_egl *egl,
+struct wlf_egl_buffer *wlf_egl_buffer_create(struct wlf_egl *egl,
 		struct wl_surface *surface, uint32_t width, uint32_t height,
 		const struct wlf_render_format *format) {
 	if (egl == NULL || surface == NULL || format == NULL || width == 0 ||
@@ -88,7 +88,7 @@ struct wlf_buffer *wlf_egl_buffer_create(struct wlf_egl *egl,
 		goto error;
 	}
 
-	return &buffer->base;
+	return buffer;
 
 error:
 	egl_buffer_release_surface(buffer);
