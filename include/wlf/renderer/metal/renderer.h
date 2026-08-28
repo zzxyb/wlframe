@@ -84,6 +84,6 @@ struct wlf_mtl_renderer *wlf_mtl_renderer_from_render(struct wlf_renderer *wlf_r
  * @param device Pointer to the Metal device wrapper.
  * @return Pointer to the created `wlf_renderer`, or NULL on failure.
  */
-struct wlf_renderer *wlf_mtl_renderer_create_for_device(struct wlf_mtl_device *device);
+struct wlf_mtl_renderer *wlf_mtl_renderer_create_for_device(struct wlf_mtl_device *device);
 
 #endif // METAL_MTL_RENDERER_H
