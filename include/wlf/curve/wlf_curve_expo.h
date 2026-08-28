@@ -42,7 +42,7 @@ struct wlf_curve_expo {
  *
  * @return Pointer to the created curve, or NULL on allocation failure.
  */
-struct wlf_curve *wlf_curve_in_expo_create(void);
+struct wlf_curve_expo *wlf_curve_in_expo_create(void);
 
 /**
  * @brief Creates an ease-out exponential curve.
