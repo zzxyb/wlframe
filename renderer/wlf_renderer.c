@@ -49,7 +49,9 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 	}
 
 	if (render == NULL || strcmp(render_name, "pixman") == 0) {
-		render = wlf_pixman_renderer_create_from_backend(backend);
+		struct wlf_pixman_renderer *pixman =
+			wlf_pixman_renderer_create_from_backend(backend);
+		render = pixman != NULL ? &pixman->base : NULL;
 		if (render == NULL) {
 			wlf_log(WLF_ERROR, "Failed to create Pixman renderer");
 			return NULL;
