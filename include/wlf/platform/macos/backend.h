@@ -37,9 +37,9 @@ struct wlf_backend_macos {
  * AppKit event loop and exposes the native macOS application object via
  * @ref wlf_backend_impl.native_display.
  *
- * @return Pointer to the generic @ref wlf_backend, or NULL on failure.
+ * @return Pointer to a macOS backend, or NULL on failure.
  */
-struct wlf_backend *macos_backend_create(void);
+struct wlf_backend_macos *macos_backend_create(void);
 
 /**
  * @brief Register the macOS backend

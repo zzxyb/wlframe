@@ -47,7 +47,8 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 		}
 	}
 #elif WLF_HAS_MACOS_PLATFORM
-	backend = macos_backend_create();
+	struct wlf_backend_macos *macos = macos_backend_create();
+	backend = macos != NULL ? &macos->base : NULL;
 	if (backend == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create Mac backend");
 		return NULL;
