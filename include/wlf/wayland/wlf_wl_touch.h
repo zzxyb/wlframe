@@ -44,7 +44,7 @@ struct wlf_wl_touch {
  * @param seat The Wayland seat from which to obtain the touch device.
  * @return Pointer to the newly created wlf_touch, or NULL on failure.
  */
-struct wlf_touch *wlf_wl_touch_create(struct wl_seat *seat);
+struct wlf_wl_touch *wlf_wl_touch_create(struct wl_seat *seat);
 
 /**
  * @brief Checks whether a wlf_touch is backed by the Wayland backend.

@@ -291,10 +291,12 @@ static bool seat_create_keyboard(struct wlf_wl_seat *seat) {
 }
 
 static bool seat_create_touch(struct wlf_wl_seat *seat) {
-	seat->touch = wlf_wl_touch_create(seat->wl_seat);
-	if (seat->touch == NULL) {
+	struct wlf_wl_touch *touch =
+		wlf_wl_touch_create(seat->wl_seat);
+	if (touch == NULL) {
 		return false;
 	}
+	seat->touch = &touch->base;
 	seat->listeners.touch_down.notify = handle_touch_down;
 	seat->listeners.touch_up.notify = handle_touch_up;
 	seat->listeners.touch_motion.notify = handle_touch_motion;

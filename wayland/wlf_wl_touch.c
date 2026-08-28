@@ -111,7 +111,7 @@ static const struct wlf_touch_impl touch_impl = {
 	.destroy = touch_destroy,
 };
 
-struct wlf_touch *wlf_wl_touch_create(struct wl_seat *seat) {
+struct wlf_wl_touch *wlf_wl_touch_create(struct wl_seat *seat) {
 	assert(seat != NULL);
 
 	struct wlf_wl_touch *touch = calloc(1, sizeof(*touch));
@@ -130,7 +130,7 @@ struct wlf_touch *wlf_wl_touch_create(struct wl_seat *seat) {
 	wl_touch_add_listener(touch->touch, &wl_touch_listener, touch);
 	wlf_touch_init(&touch->base, &touch_impl);
 
-	return &touch->base;
+	return touch;
 }
 
 bool wlf_touch_is_wayland(const struct wlf_touch *touch) {
