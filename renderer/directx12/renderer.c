@@ -448,7 +448,7 @@ static IDXGIAdapter1 *dx12_select_adapter(IDXGIFactory6 *factory) {
 	return adapter;
 }
 
-struct wlf_renderer *wlf_dx12_renderer_create_from_backend(
+struct wlf_dx12_renderer *wlf_dx12_renderer_create_from_backend(
 		struct wlf_backend *backend) {
 	if (!wlf_backend_is_windows(backend)) {
 		wlf_log(WLF_ERROR, "DirectX 12 renderer requires a Windows backend");
@@ -523,7 +523,7 @@ struct wlf_renderer *wlf_dx12_renderer_create_from_backend(
 	}
 
 	dx12_log_renderer_info(renderer);
-	return &renderer->base;
+	return renderer;
 
 error:
 	wlf_renderer_destroy(&renderer->base);
