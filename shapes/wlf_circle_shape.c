@@ -13,13 +13,13 @@ static void shape_destroy(struct wlf_shape *shape) {
 
 static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 	struct wlf_circle_shape *circle_shape = wlf_circle_shape_from_shape(shape);
-	struct wlf_shape *clone =
+	struct wlf_circle_shape *clone =
 		wlf_circle_shape_create(circle_shape->cx, circle_shape->cy, circle_shape->r);
 	if (clone != NULL) {
-		wlf_circle_shape_from_shape(clone)->state = circle_shape->state;
+		clone->state = circle_shape->state;
 	}
 
-	return clone;
+	return clone != NULL ? &clone->base : NULL;
 }
 
 static const struct wlf_shape_impl shape_impl = {
@@ -27,7 +27,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_circle_shape_create(float cx, float cy, float r) {
+struct wlf_circle_shape *wlf_circle_shape_create(float cx, float cy, float r) {
 	struct wlf_circle_shape *circle = malloc(sizeof(*circle));
 	if (circle == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_circle_shape");
@@ -40,7 +40,7 @@ struct wlf_shape *wlf_circle_shape_create(float cx, float cy, float r) {
 	circle->r = r;
 	wlf_shape_state_init(&circle->state);
 
-	return &circle->base;
+	return circle;
 }
 
 bool wlf_shape_is_circle(struct wlf_shape *shape) {
