@@ -45,7 +45,9 @@ struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window, int w
 			wlf_egl_swapchain_create(window, width, height, format);
 		swapchain = egl != NULL ? &egl->base : NULL;
 	} else if (wlf_renderer_is_vk(window->state.renderer)) {
-		swapchain = wlf_vk_swapchain_create(window, width, height, format);
+		struct wlf_vk_swapchain *vulkan =
+			wlf_vk_swapchain_create(window, width, height, format);
+		swapchain = vulkan != NULL ? &vulkan->base : NULL;
 	}
 #endif
 
