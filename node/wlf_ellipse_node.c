@@ -1,4 +1,4 @@
-#include "wlf/scene/wlf_circle_node.h"
+#include "wlf/node/wlf_ellipse_node.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf_shape_node_impl.h"
 
@@ -7,27 +7,27 @@
 static void scene_node_render(struct wlf_render_list_entry *entry,
 	const struct wlf_render_data *data);
 
-WLF_DEFINE_SHAPE_NODE(circle_node, wlf_circle_node,
-	wlf_scene_node_is_circle, wlf_circle_node_from_node, scene_node_render)
+WLF_DEFINE_SHAPE_NODE(ellipse_node, wlf_ellipse_node,
+	wlf_scene_node_is_ellipse, wlf_ellipse_node_from_node, scene_node_render)
 
-static void bounds(const struct wlf_circle_shape *shape,
+static void bounds(const struct wlf_ellipse_shape *shape,
 		double *minx, double *miny, double *maxx, double *maxy) {
 	double pad = 1 + (shape->state.has_stroke && shape->state.stroke_width > 0 ?
 		shape->state.stroke_width / 2 : 0);
-	*minx = shape->cx - shape->r - pad;
-	*miny = shape->cy - shape->r - pad;
-	*maxx = shape->cx + shape->r + pad;
-	*maxy = shape->cy + shape->r + pad;
+	*minx = shape->cx - shape->rx - pad;
+	*miny = shape->cy - shape->ry - pad;
+	*maxx = shape->cx + shape->rx + pad;
+	*maxy = shape->cy + shape->ry + pad;
 }
 
-struct wlf_circle_node *wlf_circle_node_create(struct wlf_scene_node *parent,
-		int x, int y, struct wlf_circle_shape *shape) {
+struct wlf_ellipse_node *wlf_ellipse_node_create(struct wlf_scene_node *parent,
+		int x, int y, struct wlf_ellipse_shape *shape) {
 	if (shape == NULL) return NULL;
-	struct wlf_circle_node *node = calloc(1, sizeof(*node));
+	struct wlf_ellipse_node *node = calloc(1, sizeof(*node));
 	if (node == NULL) return NULL;
 	double minx, miny, maxx, maxy;
 	bounds(shape, &minx, &miny, &maxx, &maxy);
-	if (!wlf_shape_node_common_init(&node->base, &circle_node_impl,
+	if (!wlf_shape_node_common_init(&node->base, &ellipse_node_impl,
 			parent, x, y, minx, miny, maxx, maxy)) {
 		free(node);
 		return NULL;
@@ -38,8 +38,8 @@ struct wlf_circle_node *wlf_circle_node_create(struct wlf_scene_node *parent,
 	return node;
 }
 
-static void render_at(struct wlf_circle_node *node,
-		struct wlf_circle_pass *pass, struct wlf_render_target_info *target,
+static void render_at(struct wlf_ellipse_node *node,
+		struct wlf_ellipse_pass *pass, struct wlf_render_target_info *target,
 		const pixman_region32_t *clip, double x, double y) {
 	if (node == NULL || pass == NULL) return;
 	double minx, miny, maxx, maxy, ox, oy;
@@ -47,15 +47,15 @@ static void render_at(struct wlf_circle_node *node,
 	if (!wlf_shape_node_common_refresh_at(&node->base, minx, miny, maxx,
 			maxy, x, y, &ox, &oy)) return;
 	if (wlf_shape_node_common_invisible(&node->base)) return;
-	wlf_render_pass_add_circle(pass, target,
-		&(struct wlf_render_circle_options){
+	wlf_render_pass_add_ellipse(pass, target,
+		&(struct wlf_render_ellipse_options){
 			.shape = node->shape, .offset_x = ox, .offset_y = oy,
 			.opacity = node->base.state.opacity, .clip = clip,
 			.blend_mode = node->blend_mode });
 }
 
-void wlf_circle_node_render(struct wlf_circle_node *node,
-		struct wlf_circle_pass *pass, struct wlf_render_target_info *target,
+void wlf_ellipse_node_render(struct wlf_ellipse_node *node,
+		struct wlf_ellipse_pass *pass, struct wlf_render_target_info *target,
 		const pixman_region32_t *clip) {
 	int x, y;
 	if (node == NULL || !wlf_scene_node_coords(&node->base, &x, &y)) {
@@ -71,7 +71,8 @@ static void scene_node_render(struct wlf_render_list_entry *entry,
 		pixman_region32_fini(&render_region);
 		return;
 	}
-	render_at(wlf_circle_node_from_node(entry->node), data->scene->circle_pass,
-		data->target, &render_region, entry->x, entry->y);
+	render_at(wlf_ellipse_node_from_node(entry->node),
+		data->scene->ellipse_pass, data->target, &render_region,
+		entry->x, entry->y);
 	pixman_region32_fini(&render_region);
 }

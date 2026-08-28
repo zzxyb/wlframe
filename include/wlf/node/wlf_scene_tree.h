@@ -15,7 +15,7 @@
 #ifndef SCENE_WLF_SCENE_TREE_H
 #define SCENE_WLF_SCENE_TREE_H
 
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 #include "wlf/utils/wlf_linked_list.h"
 
 #include <stdbool.h>

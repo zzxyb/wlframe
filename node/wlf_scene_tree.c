@@ -1,4 +1,4 @@
-#include "wlf/scene/wlf_scene_tree.h"
+#include "wlf/node/wlf_scene_tree.h"
 #include "wlf/utils/wlf_log.h"
 
 #include <stdlib.h>

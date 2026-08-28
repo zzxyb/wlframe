@@ -15,7 +15,7 @@
 #define SCENE_WLF_RECT_SHAPE_NODE_H
 
 #include "wlf/pass/wlf_rect_shape_pass.h"
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 
 /**
  * @brief Scene node containing a rectangle shape.

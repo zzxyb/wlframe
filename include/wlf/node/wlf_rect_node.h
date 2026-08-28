@@ -15,7 +15,7 @@
 #define SCENE_WLF_RECT_NODE_H
 
 #include "wlf/pass/wlf_rect_pass.h"
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 #include "wlf/types/wlf_color.h"
 
 /**

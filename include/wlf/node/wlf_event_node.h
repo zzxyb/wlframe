@@ -14,7 +14,7 @@
 #ifndef SCENE_WLF_EVENT_NODE_H
 #define SCENE_WLF_EVENT_NODE_H
 
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 #include "wlf/types/wlf_cursor.h"
 
 struct wlf_pointer;

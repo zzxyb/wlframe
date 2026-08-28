@@ -16,7 +16,7 @@
 
 #include "wlf/pass/wlf_texture_pass.h"
 #include "wlf/platform/wlf_text.h"
-#include "wlf/scene/wlf_scene_node.h"
+#include "wlf/node/wlf_scene_node.h"
 #include "wlf/texture/wlf_texture.h"
 #include "wlf/types/wlf_color.h"
 
