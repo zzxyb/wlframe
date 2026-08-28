@@ -1,10 +1,4 @@
 #include "wlf/allocator/wlf_allocator.h"
-#include "wlf/config.h"
-#if WLF_HAS_LINUX_PLATFORM
-#include "wlf/allocator/shm/allocator.h"
-#include "wlf/platform/wayland/backend.h"
-#include "wlf/renderer/pixman/renderer.h"
-#endif
 
 #include <assert.h>
 #include <stdlib.h>
@@ -17,23 +11,6 @@ void wlf_allocator_init(struct wlf_allocator *allocator,
 	allocator->impl = impl;
 
 	wlf_signal_init(&allocator->events.destroy);
-}
-
-struct wlf_allocator *wlf_allocator_autocreate(struct wlf_backend *backend,
-		struct wlf_renderer *renderer) {
-#if WLF_HAS_LINUX_PLATFORM
-	if (wlf_backend_is_wayland(backend)) {
-		if (wlf_renderer_is_pixman(renderer)) {
-			struct wlf_wl_backend *wl_backend =
-				wlf_wl_backend_from_backend(backend);
-			return wlf_shm_allocator_create(wl_backend->wl_shm.shm);
-		}
-	}
-
-	return NULL;
-#endif
-
-	return NULL;
 }
 
 void wlf_allocator_destroy(struct wlf_allocator *allocator) {
