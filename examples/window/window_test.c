@@ -171,8 +171,10 @@ int main(int argc, char *argv[]) {
 		return EXIT_FAILURE;
 	}
 
-	struct wlf_window *window =
+	struct wlf_xdg_toplevel_window *toplevel =
 		wlf_xdg_toplevel_window_create_from_backend(backend, 760, 500);
+	struct wlf_window *window =
+		toplevel != NULL ? &toplevel->base : NULL;
 	if (window == NULL) {
 		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);

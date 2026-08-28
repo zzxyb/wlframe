@@ -524,7 +524,7 @@ static const struct wlf_window_impl xdg_toplevel_window_impl = {
 	.schedule_frame = xdg_toplevel_window_schedule_frame,
 };
 
-struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(
+struct wlf_xdg_toplevel_window *wlf_xdg_toplevel_window_create_from_backend(
 		struct wlf_backend *backend, uint32_t width, uint32_t height) {
 	if (backend == NULL || !wlf_backend_is_wayland(backend)) {
 		wlf_log(WLF_ERROR, "xdg_toplevel_window requires a Wayland backend");
@@ -577,7 +577,7 @@ struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(
 		&window->xdg_toplevel_close);
 	window->has_xdg_toplevel_close_listener = true;
 
-	return &window->base;
+	return window;
 }
 
 bool wlf_window_is_xdg_toplevel(const struct wlf_window *window) {

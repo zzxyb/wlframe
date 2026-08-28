@@ -79,7 +79,7 @@ struct wlf_xdg_toplevel_window {
  * @param height Initial window height.
  * @return Generic wlf_window pointer or NULL on failure.
  */
-struct wlf_window *wlf_xdg_toplevel_window_create_from_backend(
+struct wlf_xdg_toplevel_window *wlf_xdg_toplevel_window_create_from_backend(
 	struct wlf_backend *backend, uint32_t width, uint32_t height);
 
 /**
