@@ -60,7 +60,9 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		}
 	}
 #elif WLF_HAS_MACOS_PLATFORM
-	render = wlf_mtl_renderer_create_from_backend(backend);
+	struct wlf_mtl_renderer *metal =
+		wlf_mtl_renderer_create_from_backend(backend);
+	render = metal != NULL ? &metal->base : NULL;
 	if (render == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create Metal render");
 		return NULL;
