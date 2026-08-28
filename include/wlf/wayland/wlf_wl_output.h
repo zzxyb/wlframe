@@ -56,7 +56,7 @@ struct wlf_wl_output {
  * @param version The version of the wl_output interface.
  * @return Pointer to the newly created wlf_output, or NULL on failure.
  */
-struct wlf_output *wlf_output_create_from_wl_registry(
+struct wlf_wl_output *wlf_output_create_from_wl_registry(
 	struct wl_registry *wl_registry, uint32_t name, uint32_t version);
 
 /**

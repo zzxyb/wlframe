@@ -62,7 +62,7 @@ static const struct wlf_output_impl wlf_wl_output_impl = {
 	.destroy = output_destroy,
 };
 
-struct wlf_output *wlf_output_create_from_wl_registry(
+struct wlf_wl_output *wlf_output_create_from_wl_registry(
 		struct wl_registry *wl_registry, uint32_t name, uint32_t version) {
 	assert(wl_registry != NULL);
 
@@ -93,7 +93,7 @@ struct wlf_output *wlf_output_create_from_wl_registry(
 	wlf_log(WLF_DEBUG, "Successfully bound wl_output interface (name: %u, version: %u)",
 		name, bind_version);
 
-	return &output->base;
+	return output;
 }
 
 bool wlf_output_is_wayland(const struct wlf_output *output) {
