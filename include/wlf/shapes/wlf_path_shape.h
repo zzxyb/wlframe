@@ -45,7 +45,7 @@ struct wlf_path_shape {
  * @param owns_paths true if the shape takes ownership of paths.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_path_shape_create(struct wlf_path *paths, bool owns_paths);
+struct wlf_path_shape *wlf_path_shape_create(struct wlf_path *paths, bool owns_paths);
 
 /**
  * @brief Check whether a shape is a path shape.

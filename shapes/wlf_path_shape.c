@@ -25,12 +25,13 @@ static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 		paths = path_shape->paths;
 	}
 
-	struct wlf_shape *clone = wlf_path_shape_create(paths, path_shape->owns_paths);
+	struct wlf_path_shape *clone =
+		wlf_path_shape_create(paths, path_shape->owns_paths);
 	if (clone != NULL) {
-		wlf_path_shape_from_shape(clone)->state = path_shape->state;
+		clone->state = path_shape->state;
 	}
 
-	return clone;
+	return clone != NULL ? &clone->base : NULL;
 }
 
 static const struct wlf_shape_impl shape_impl = {
@@ -38,7 +39,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_path_shape_create(struct wlf_path *paths, bool owns_paths) {
+struct wlf_path_shape *wlf_path_shape_create(struct wlf_path *paths, bool owns_paths) {
 	struct wlf_path_shape *shape = malloc(sizeof(*shape));
 	if (shape == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_path_shape");
@@ -50,7 +51,7 @@ struct wlf_shape *wlf_path_shape_create(struct wlf_path *paths, bool owns_paths)
 	shape->owns_paths = owns_paths;
 	wlf_shape_state_init(&shape->state);
 
-	return &shape->base;
+	return shape;
 }
 
 bool wlf_shape_is_path(struct wlf_shape *shape) {

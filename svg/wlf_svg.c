@@ -2559,7 +2559,9 @@ static void wlf_svg_parse_path(struct wlf_svg_parser *p, const char** attr)
 	}
 
 	if (p->plist != NULL) {
-		p->shape_geometry = wlf_path_shape_create(p->plist, false);
+		struct wlf_path_shape *path =
+			wlf_path_shape_create(p->plist, false);
+		p->shape_geometry = path != NULL ? &path->base : NULL;
 	}
 	wlf_svg_add_shape(p);
 }
@@ -3199,7 +3201,8 @@ static struct wlf_shape *wlf_svg_clone_geometry_translated(
 				tail->next = clone;
 			tail = clone;
 		}
-		return wlf_path_shape_create(paths, true);
+		struct wlf_path_shape *clone = wlf_path_shape_create(paths, true);
+		return clone != NULL ? &clone->base : NULL;
 	}
 	if (wlf_shape_is_text(geometry)) {
 		struct wlf_text_shape *text = wlf_text_shape_from_shape(geometry);
