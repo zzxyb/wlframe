@@ -30,7 +30,7 @@ struct wlf_shape_tree {
  *
  * @return A new shape tree as base shape pointer, or NULL on allocation failure.
  */
-struct wlf_shape *wlf_shape_tree_create(void);
+struct wlf_shape_tree *wlf_shape_tree_create(void);
 
 /**
  * @brief Append a child shape to the tree.

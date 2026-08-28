@@ -32,15 +32,13 @@ static void shape_destroy(struct wlf_shape *shape) {
 
 static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 	struct wlf_shape_tree *src = wlf_shape_tree_from_shape(shape);
-	struct wlf_shape *dst_base = wlf_shape_tree_create();
-	struct wlf_shape_tree *dst;
+	struct wlf_shape_tree *dst = wlf_shape_tree_create();
 	struct wlf_shape *iter;
 
-	if (dst_base == NULL) {
+	if (dst == NULL) {
 		return NULL;
 	}
 
-	dst = wlf_shape_tree_from_shape(dst_base);
 	wlf_linked_list_for_each(iter, &src->children, link) {
 		struct wlf_shape *child_clone = wlf_shape_clone(iter);
 		if (child_clone == NULL) {
@@ -59,7 +57,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_shape_tree_create(void) {
+struct wlf_shape_tree *wlf_shape_tree_create(void) {
 	struct wlf_shape_tree *tree = malloc(sizeof(*tree));
 	if (tree == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_shape_tree");
@@ -69,7 +67,7 @@ struct wlf_shape *wlf_shape_tree_create(void) {
 	wlf_shape_init(&tree->base, &shape_impl);
 	wlf_linked_list_init(&tree->children);
 
-	return &tree->base;
+	return tree;
 }
 
 void wlf_shape_tree_add(struct wlf_shape_tree *tree, struct wlf_shape *shape) {
