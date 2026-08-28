@@ -2849,9 +2849,11 @@ static void wlf_svg_parse_text_end(struct wlf_svg_parser *p)
 	if (p->textContent[0] == '\0')
 		return;
 
-	p->shape_geometry = wlf_text_shape_create(p->textX, p->textY,
+	struct wlf_text_shape *text_shape = wlf_text_shape_create(
+		p->textX, p->textY,
 		p->textContent, p->textFontFamily, p->textFontSize,
 		(enum wlf_text_anchor)p->textAnchor);
+	p->shape_geometry = text_shape != NULL ? &text_shape->base : NULL;
 	if (p->shape_geometry == NULL)
 		return;
 
@@ -3212,8 +3214,10 @@ static struct wlf_shape *wlf_svg_clone_geometry_translated(
 	}
 	if (wlf_shape_is_text(geometry)) {
 		struct wlf_text_shape *text = wlf_text_shape_from_shape(geometry);
-		return wlf_text_shape_create(text->x + tx, text->y + ty,
-			text->text, text->font_family, text->font_size, text->text_anchor);
+		struct wlf_text_shape *clone = wlf_text_shape_create(text->x + tx,
+			text->y + ty, text->text, text->font_family, text->font_size,
+			text->text_anchor);
+		return clone != NULL ? &clone->base : NULL;
 	}
 
 	return NULL;
