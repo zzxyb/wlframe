@@ -34,7 +34,7 @@ struct wlf_line_shape {
  * @param y2 End y.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_line_shape_create(float x1, float y1, float x2, float y2);
+struct wlf_line_shape *wlf_line_shape_create(float x1, float y1, float x2, float y2);
 
 /**
  * @brief Check whether a shape is a line.
