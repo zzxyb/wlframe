@@ -271,8 +271,8 @@ int main(int argc, char *argv[]) {
 		wlf_color_from_rgb8(65, 190, 125), WLF_COLOR_YELLOW, 3);
 	render.ellipse = wlf_ellipse_node_create(&tree->base, 365, 140, ellipse);
 
-	struct wlf_line_shape *line = wlf_line_shape_from_shape(
-		wlf_line_shape_create(0, 5, 125, 70));
+	struct wlf_line_shape *line =
+		wlf_line_shape_create(0, 5, 125, 70);
 	line->state.has_fill = false;
 	line->state.has_stroke = true;
 	line->state.stroke_color = WLF_COLOR_ORANGE;

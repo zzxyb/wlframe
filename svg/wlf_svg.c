@@ -2707,7 +2707,8 @@ static void wlf_svg_parse_line(struct wlf_svg_parser *p, const char** attr)
 	}
 
 	wlf_svg_reset_path(p);
-	p->shape_geometry = wlf_line_shape_create(x1, y1, x2, y2);
+	struct wlf_line_shape *line = wlf_line_shape_create(x1, y1, x2, y2);
+	p->shape_geometry = line != NULL ? &line->base : NULL;
 
 	wlf_svg_move_to(p, x1, y1);
 	wlf_svg_line_to(p, x2, y2);
@@ -3162,8 +3163,10 @@ static struct wlf_shape *wlf_svg_clone_geometry_translated(
 	}
 	if (wlf_shape_is_line(geometry)) {
 		struct wlf_line_shape *line = wlf_line_shape_from_shape(geometry);
-		return wlf_line_shape_create(line->x1 + tx, line->y1 + ty,
-			line->x2 + tx, line->y2 + ty);
+		struct wlf_line_shape *clone =
+			wlf_line_shape_create(line->x1 + tx, line->y1 + ty,
+				line->x2 + tx, line->y2 + ty);
+		return clone != NULL ? &clone->base : NULL;
 	}
 	if (wlf_shape_is_poly(geometry)) {
 		struct wlf_poly_shape *poly = wlf_poly_shape_from_shape(geometry);

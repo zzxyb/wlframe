@@ -13,12 +13,12 @@ static void shape_destroy(struct wlf_shape *shape) {
 
 static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 	struct wlf_line_shape *line_shape = wlf_line_shape_from_shape(shape);
-	struct wlf_shape *clone =
+	struct wlf_line_shape *clone =
 		wlf_line_shape_create(line_shape->x1, line_shape->y1, line_shape->x2, line_shape->y2);
 	if (clone != NULL) {
-		wlf_line_shape_from_shape(clone)->state = line_shape->state;
+		clone->state = line_shape->state;
 	}
-	return clone;
+	return clone != NULL ? &clone->base : NULL;
 }
 
 static const struct wlf_shape_impl shape_impl = {
@@ -26,7 +26,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_line_shape_create(float x1, float y1, float x2, float y2) {
+struct wlf_line_shape *wlf_line_shape_create(float x1, float y1, float x2, float y2) {
 	struct wlf_line_shape *line = malloc(sizeof(*line));
 	if (line == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_line_shape");
@@ -40,7 +40,7 @@ struct wlf_shape *wlf_line_shape_create(float x1, float y1, float x2, float y2) 
 	line->y2 = y2;
 	wlf_shape_state_init(&line->state);
 
-	return &line->base;
+	return line;
 }
 
 bool wlf_shape_is_line(struct wlf_shape *shape) {
