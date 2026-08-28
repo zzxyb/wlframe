@@ -27,7 +27,7 @@ struct wlf_symbol_shape {
  * @param id Symbol id.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_symbol_shape_create(const char *id);
+struct wlf_symbol_shape *wlf_symbol_shape_create(const char *id);
 
 /**
  * @brief Check whether a shape is a symbol shape.
