@@ -24,7 +24,7 @@ static const struct wlf_curve_impl linear_impl = {
 	.destroy = linear_curve_destroy,
 };
 
-struct wlf_curve *wlf_curve_linear_create(void) {
+struct wlf_curve_linear *wlf_curve_linear_create(void) {
 	struct wlf_curve_linear *curve = malloc(sizeof(*curve));
 	if (curve == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_curve_linear");
@@ -33,7 +33,7 @@ struct wlf_curve *wlf_curve_linear_create(void) {
 
 	wlf_curve_init(&curve->base, &linear_impl);
 
-	return &curve->base;
+	return curve;
 }
 
 bool wlf_curve_is_linear(const struct wlf_curve *curve) {
