@@ -43,7 +43,7 @@ static const struct wlf_backend_impl windows_backend_impl = {
 	.native_display = windows_backend_native_display,
 };
 
-struct wlf_backend *windows_backend_create(void) {
+struct wlf_windows_backend *windows_backend_create(void) {
 	struct wlf_windows_backend *backend = calloc(1, sizeof(*backend));
 	if (backend == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_windows_backend");
@@ -57,7 +57,7 @@ struct wlf_backend *windows_backend_create(void) {
 
 	wlf_log(WLF_DEBUG, "Created %s backend", backend->base.impl->name);
 
-	return &backend->base;
+	return backend;
 }
 
 bool wlf_backend_is_windows(const struct wlf_backend *backend) {

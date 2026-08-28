@@ -50,9 +50,9 @@ struct wlf_windows_backend {
  * Allocates and initializes a backend that integrates wlframe with the Win32
  * message loop.
  *
- * @return Pointer to the generic @ref wlf_backend, or NULL on failure.
+ * @return Pointer to a Windows backend, or NULL on failure.
  */
-struct wlf_backend *windows_backend_create(void);
+struct wlf_windows_backend *windows_backend_create(void);
 
 /**
  * @brief Checks whether a backend is implemented by the Windows backend.

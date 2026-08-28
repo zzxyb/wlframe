@@ -53,7 +53,8 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 		return NULL;
 	}
 #elif WLF_HAS_WINDOWS_PLATFORM
-	backend = windows_backend_create();
+	struct wlf_windows_backend *windows = windows_backend_create();
+	backend = windows != NULL ? &windows->base : NULL;
 	if (backend == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create Windows backend");
 		return NULL;
