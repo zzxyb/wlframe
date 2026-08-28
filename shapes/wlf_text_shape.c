@@ -13,12 +13,12 @@ static void shape_destroy(struct wlf_shape *shape) {
 
 static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 	struct wlf_text_shape *src = wlf_text_shape_from_shape(shape);
-	struct wlf_shape *clone = wlf_text_shape_create(src->x, src->y,
+	struct wlf_text_shape *clone = wlf_text_shape_create(src->x, src->y,
 		src->text, src->font_family, src->font_size, src->text_anchor);
 	if (clone != NULL) {
-		wlf_text_shape_from_shape(clone)->state = src->state;
+		clone->state = src->state;
 	}
-	return clone;
+	return clone != NULL ? &clone->base : NULL;
 }
 
 static const struct wlf_shape_impl shape_impl = {
@@ -26,7 +26,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_text_shape_create(float x, float y,
+struct wlf_text_shape *wlf_text_shape_create(float x, float y,
 	const char *text, const char *font_family, float font_size,
 	enum wlf_text_anchor text_anchor) {
 	struct wlf_text_shape *shape = malloc(sizeof(*shape));
@@ -59,7 +59,7 @@ struct wlf_shape *wlf_text_shape_create(float x, float y,
 	wlf_shape_state_init(&shape->state);
 	shape->state.has_stroke = false;
 
-	return &shape->base;
+	return shape;
 }
 
 bool wlf_shape_is_text(struct wlf_shape *shape) {

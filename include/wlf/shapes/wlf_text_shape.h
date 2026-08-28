@@ -47,7 +47,7 @@ struct wlf_text_shape {
  * @param text_anchor Text anchor mode.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_text_shape_create(float x, float y,
+struct wlf_text_shape *wlf_text_shape_create(float x, float y,
 	const char *text, const char *font_family, float font_size,
 	enum wlf_text_anchor text_anchor);
 
