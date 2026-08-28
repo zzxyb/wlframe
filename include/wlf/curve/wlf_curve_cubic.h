@@ -60,7 +60,7 @@ struct wlf_curve_cubic *wlf_curve_out_cubic_create(void);
  *
  * @return Pointer to the created curve, or NULL on allocation failure.
  */
-struct wlf_curve *wlf_curve_in_out_cubic_create(void);
+struct wlf_curve_cubic *wlf_curve_in_out_cubic_create(void);
 
 /**
  * @brief Creates an ease-out-in cubic curve.
