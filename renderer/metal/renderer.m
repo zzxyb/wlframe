@@ -21,7 +21,9 @@ struct wlf_renderer *wlf_mtl_renderer_create_from_backend(
 		return NULL;
 	}
 
-	return wlf_mtl_renderer_create_for_device(device);
+	struct wlf_mtl_renderer *renderer =
+		wlf_mtl_renderer_create_for_device(device);
+	return renderer != NULL ? &renderer->base : NULL;
 }
 
 static void renderer_destroy(struct wlf_renderer *renderer) {
@@ -56,7 +58,7 @@ struct wlf_mtl_renderer *wlf_mtl_renderer_from_render(struct wlf_renderer *wlf_r
 	return mtl_renderer;
 }
 
-struct wlf_renderer *wlf_mtl_renderer_create_for_device(struct wlf_mtl_device *device) {
+struct wlf_mtl_renderer *wlf_mtl_renderer_create_for_device(struct wlf_mtl_device *device) {
 	@autoreleasepool {
 		struct wlf_mtl_renderer *renderer = calloc(1, sizeof(*renderer));
 		if (renderer == NULL) {
@@ -94,6 +96,6 @@ struct wlf_renderer *wlf_mtl_renderer_create_for_device(struct wlf_mtl_device *d
 
 		wlf_signal_init(&renderer->base.events.destroy);
 
-		return &renderer->base;
+		return renderer;
 	}
 }
