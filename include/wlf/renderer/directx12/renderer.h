@@ -63,7 +63,7 @@ struct wlf_dx12_renderer {
  * @param backend Pointer to the wlframe Windows backend.
  * @return Pointer to the created `wlf_renderer`, or NULL on failure.
  */
-struct wlf_renderer *wlf_dx12_renderer_create_from_backend(
+struct wlf_dx12_renderer *wlf_dx12_renderer_create_from_backend(
 	struct wlf_backend *backend);
 
 /**

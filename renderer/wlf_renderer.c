@@ -68,7 +68,9 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		return NULL;
 	}
 #elif WLF_HAS_WINDOWS_PLATFORM
-	render = wlf_dx12_renderer_create_from_backend(backend);
+	struct wlf_dx12_renderer *dx12 =
+		wlf_dx12_renderer_create_from_backend(backend);
+	render = dx12 != NULL ? &dx12->base : NULL;
 	if (render == NULL) {
 		wlf_log(WLF_ERROR, "Failed to create DirectX 12 renderer");
 		return NULL;
