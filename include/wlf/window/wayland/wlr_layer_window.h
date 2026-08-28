@@ -77,7 +77,7 @@ struct wlf_wlr_layer_window {
  * @param height Requested height, or zero for compositor-selected height.
  * @return A generic wlf_window pointer, or NULL on failure.
  */
-struct wlf_window *wlf_wlr_layer_window_create_from_backend(
+struct wlf_wlr_layer_window *wlf_wlr_layer_window_create_from_backend(
 	struct wlf_backend *backend, struct wl_output *output,
 	enum wlf_zwlr_layer_v1 layer, const char *namespace,
 	uint32_t width, uint32_t height);

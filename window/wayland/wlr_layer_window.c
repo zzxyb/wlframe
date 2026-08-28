@@ -173,7 +173,7 @@ static const struct wlf_window_impl layer_window_impl = {
 	.schedule_frame = layer_window_schedule_frame,
 };
 
-struct wlf_window *wlf_wlr_layer_window_create_from_backend(
+struct wlf_wlr_layer_window *wlf_wlr_layer_window_create_from_backend(
 		struct wlf_backend *backend, struct wl_output *output,
 		enum wlf_zwlr_layer_v1 layer, const char *namespace,
 		uint32_t width, uint32_t height) {
@@ -241,7 +241,7 @@ struct wlf_window *wlf_wlr_layer_window_create_from_backend(
 		&window->layer_surface_closed);
 	window->has_layer_surface_closed_listener = true;
 
-	return &window->base;
+	return window;
 }
 
 bool wlf_window_is_wlr_layer(const struct wlf_window *window) {
