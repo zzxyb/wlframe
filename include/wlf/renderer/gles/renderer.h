@@ -82,7 +82,7 @@ struct wlf_gles_renderer {
  * @param backend Pointer to the backend to create the renderer for.
  * @return Pointer to the base renderer interface, or NULL on failure.
  */
-struct wlf_renderer *wlf_gles_renderer_create_from_backend(
+struct wlf_gles_renderer *wlf_gles_renderer_create_from_backend(
 	struct wlf_backend *backend);
 
 /**

@@ -33,7 +33,9 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		render_options)];
 	bool is_auto = strcmp(render_name, "auto") == 0;
 	if (is_auto || strcmp(render_name, "gles") == 0) {
-		render = wlf_gles_renderer_create_from_backend(backend);
+		struct wlf_gles_renderer *gles =
+			wlf_gles_renderer_create_from_backend(backend);
+		render = gles != NULL ? &gles->base : NULL;
 		if (render == NULL && is_auto) {
 			wlf_log(WLF_INFO, "GLES renderer unavailable, falling back to Vulkan");
 		}
