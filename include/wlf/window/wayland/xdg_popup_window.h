@@ -60,7 +60,7 @@ struct wlf_xdg_popup_window {
  * @param height Initial popup height.
  * @return Generic wlf_window pointer or NULL on failure.
  */
-struct wlf_window *wlf_xdg_popup_window_create_from_backend(
+struct wlf_xdg_popup_window *wlf_xdg_popup_window_create_from_backend(
 	struct wlf_backend *backend, struct wlf_window *parent,
 	int32_t x, int32_t y, uint32_t width, uint32_t height);
 
