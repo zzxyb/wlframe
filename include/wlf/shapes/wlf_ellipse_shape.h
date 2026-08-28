@@ -34,7 +34,7 @@ struct wlf_ellipse_shape {
  * @param ry Radius on y axis.
  * @return New shape pointer, or NULL on failure.
  */
-struct wlf_shape *wlf_ellipse_shape_create(float cx, float cy, float rx, float ry);
+struct wlf_ellipse_shape *wlf_ellipse_shape_create(float cx, float cy, float rx, float ry);
 
 /**
  * @brief Check whether a shape is an ellipse.

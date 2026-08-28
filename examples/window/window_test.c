@@ -265,8 +265,8 @@ int main(int argc, char *argv[]) {
 		wlf_color_from_rgb8(245, 92, 105), WLF_COLOR_WHITE, 3);
 	render.circle = wlf_circle_node_create(&tree->base, 555, 25, circle);
 
-	struct wlf_ellipse_shape *ellipse = wlf_ellipse_shape_from_shape(
-		wlf_ellipse_shape_create(64, 35, 62, 32));
+	struct wlf_ellipse_shape *ellipse =
+		wlf_ellipse_shape_create(64, 35, 62, 32);
 	set_shape_style(&ellipse->state,
 		wlf_color_from_rgb8(65, 190, 125), WLF_COLOR_YELLOW, 3);
 	render.ellipse = wlf_ellipse_node_create(&tree->base, 365, 140, ellipse);

@@ -2671,7 +2671,9 @@ static void wlf_svg_parse_ellipse(struct wlf_svg_parser *p, const char** attr)
 	}
 
 	if (rx > 0.0f && ry > 0.0f) {
-		p->shape_geometry = wlf_ellipse_shape_create(cx, cy, rx, ry);
+		struct wlf_ellipse_shape *ellipse =
+			wlf_ellipse_shape_create(cx, cy, rx, ry);
+		p->shape_geometry = ellipse != NULL ? &ellipse->base : NULL;
 
 		wlf_svg_reset_path(p);
 
@@ -3153,8 +3155,10 @@ static struct wlf_shape *wlf_svg_clone_geometry_translated(
 	}
 	if (wlf_shape_is_ellipse(geometry)) {
 		struct wlf_ellipse_shape *ellipse = wlf_ellipse_shape_from_shape(geometry);
-		return wlf_ellipse_shape_create(ellipse->cx + tx, ellipse->cy + ty,
-			ellipse->rx, ellipse->ry);
+		struct wlf_ellipse_shape *clone =
+			wlf_ellipse_shape_create(ellipse->cx + tx, ellipse->cy + ty,
+				ellipse->rx, ellipse->ry);
+		return clone != NULL ? &clone->base : NULL;
 	}
 	if (wlf_shape_is_line(geometry)) {
 		struct wlf_line_shape *line = wlf_line_shape_from_shape(geometry);
