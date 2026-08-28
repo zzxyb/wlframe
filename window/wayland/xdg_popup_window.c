@@ -264,7 +264,7 @@ static const struct wlf_window_impl xdg_popup_window_impl = {
 	.schedule_frame = xdg_popup_window_schedule_frame,
 };
 
-struct wlf_window *wlf_xdg_popup_window_create_from_backend(
+struct wlf_xdg_popup_window *wlf_xdg_popup_window_create_from_backend(
 		struct wlf_backend *backend, struct wlf_window *parent,
 		int32_t x, int32_t y, uint32_t width, uint32_t height) {
 	if (backend == NULL || !wlf_backend_is_wayland(backend)) {
@@ -344,7 +344,7 @@ struct wlf_window *wlf_xdg_popup_window_create_from_backend(
 		&window->xdg_popup_done);
 	window->has_xdg_popup_done_listener = true;
 
-	return &window->base;
+	return window;
 }
 
 bool wlf_window_is_xdg_popup(const struct wlf_window *window) {
