@@ -126,7 +126,7 @@ static void load_gl_procs(struct wlf_gles_renderer *renderer) {
 	}
 }
 
-struct wlf_renderer *wlf_gles_renderer_create_from_backend(
+struct wlf_gles_renderer *wlf_gles_renderer_create_from_backend(
 		struct wlf_backend *backend) {
 	bool force_sw = wlf_env_parse_bool("WLF_RENDER_FORCE_SOFTWARE");
 	if (force_sw) {
@@ -220,5 +220,5 @@ struct wlf_renderer *wlf_gles_renderer_create_from_backend(
 	wlf_log(WLF_INFO, "GL renderer: %s", gl_renderer);
 	wlf_log(WLF_INFO, "Supported GLES extensions: %s", renderer->exts_str);
 
-	return &renderer->base;
+	return renderer;
 }
