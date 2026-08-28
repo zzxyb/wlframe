@@ -1045,7 +1045,7 @@ static const struct wlf_backend_impl wayland_backend_impl = {
 	.native_display = backend_native_display,
 };
 
-struct wlf_backend *wayland_backend_create(void) {
+struct wlf_wl_backend *wayland_backend_create(void) {
 	struct wlf_wl_backend *backend = calloc(1, sizeof(struct wlf_wl_backend));
 	if (backend == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_wl_backend");
@@ -1075,7 +1075,7 @@ struct wlf_backend *wayland_backend_create(void) {
 
 	wlf_log(WLF_DEBUG, "Created %s backend", backend->base.impl->name);
 
-	return &backend->base;
+	return backend;
 
 failed:
 	wlf_backend_destroy(&backend->base);

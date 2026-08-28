@@ -193,7 +193,7 @@ struct wlf_wl_backend {
 	} events;
 };
 
-struct wlf_backend *wayland_backend_create(void);
+struct wlf_wl_backend *wayland_backend_create(void);
 
 /**
  * @brief Check if a backend is a Wayland backend

@@ -39,7 +39,8 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 
 #if WLF_HAS_LINUX_PLATFORM
 	if (strcmp(wlf_get_env("XDG_SESSION_TYPE"), "wayland") == 0) {
-		backend = wayland_backend_create();
+		struct wlf_wl_backend *wayland = wayland_backend_create();
+		backend = wayland != NULL ? &wayland->base : NULL;
 		if (backend == NULL) {
 			wlf_log(WLF_ERROR, "Failed to create Wayland backend");
 			return NULL;
