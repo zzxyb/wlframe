@@ -13,9 +13,9 @@ static void shape_destroy(struct wlf_shape *shape) {
 
 static struct wlf_shape *shape_clone(struct wlf_shape *shape) {
 	struct wlf_symbol_shape *src = wlf_symbol_shape_from_shape(shape);
-	struct wlf_shape *clone = wlf_symbol_shape_create(src->id);
+	struct wlf_symbol_shape *clone = wlf_symbol_shape_create(src->id);
 
-	return clone;
+	return clone != NULL ? &clone->base : NULL;
 }
 
 static const struct wlf_shape_impl shape_impl = {
@@ -23,7 +23,7 @@ static const struct wlf_shape_impl shape_impl = {
 	.clone = shape_clone,
 };
 
-struct wlf_shape *wlf_symbol_shape_create(const char *id) {
+struct wlf_symbol_shape *wlf_symbol_shape_create(const char *id) {
 	struct wlf_symbol_shape *symbol = malloc(sizeof(*symbol));
 	if (symbol == NULL) {
 		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_symbol_shape");
@@ -35,7 +35,7 @@ struct wlf_shape *wlf_symbol_shape_create(const char *id) {
 	strncpy(symbol->id, id, sizeof(symbol->id) - 1);
 	symbol->id[sizeof(symbol->id) - 1] = '\0';
 
-	return &symbol->base;
+	return symbol;
 }
 
 bool wlf_shape_is_symbol(struct wlf_shape *shape) {
