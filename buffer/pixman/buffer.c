@@ -20,7 +20,7 @@ static void handle_destroy_buffer(struct wlf_listener *listener, void *data) {
 }
 
 struct wlf_pixman_buffer *wlf_pixman_buffer_create(
-	struct wlf_pixman_renderer *renderer,struct wlf_buffer *wlf_buffer) {
+	struct wlf_pixman_renderer *renderer, struct wlf_buffer *wlf_buffer) {
 	struct wlf_pixman_buffer *buffer = malloc(sizeof(*buffer));
 	if (buffer == NULL) {
 		wlf_log_errno(WLF_ERROR, "Failed to allocate wlf_pixman_buffer");

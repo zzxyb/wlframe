@@ -61,7 +61,8 @@ struct wlf_pixman_buffer {
  *
  * @param renderer    The pixman renderer to associate with this buffer.
  * @param wlf_buffer  The generic wlframe buffer to wrap.
- * @return Pointer to the newly created pixman buffer, or NULL on failure.
+ * @return Pointer to the newly created pixman buffer, or NULL when an input
+ *         is invalid or creation fails.
  */
 struct wlf_pixman_buffer *wlf_pixman_buffer_create(
 	struct wlf_pixman_renderer *renderer, struct wlf_buffer *wlf_buffer);
