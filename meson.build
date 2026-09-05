@@ -297,6 +297,7 @@ subdir('shapes')
 subdir('svg')
 subdir('swapchain')
 subdir('node')
+subdir('animation')
 
 wlf_inc = include_directories('include')
 
