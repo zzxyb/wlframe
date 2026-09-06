@@ -14,8 +14,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-02-02, initial version\n
  */
 
-#ifndef ANIMATOR_WLF_CURVE_BACK_H
-#define ANIMATOR_WLF_CURVE_BACK_H
+#ifndef CURVE_WLF_CURVE_BACK_H
+#define CURVE_WLF_CURVE_BACK_H
 
 #include <stdbool.h>
 
@@ -111,4 +111,4 @@ bool wlf_curve_is_back(const struct wlf_curve *curve);
 struct wlf_curve_back *wlf_curve_back_from_curve(
 	struct wlf_curve *curve);
 
-#endif // ANIMATOR_WLF_CURVE_BACK_H
+#endif // CURVE_WLF_CURVE_BACK_H

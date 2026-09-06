@@ -13,8 +13,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-02-12, initial version\n
  */
 
-#ifndef ANIMATOR_WLF_CURVE_LINEAR_H
-#define ANIMATOR_WLF_CURVE_LINEAR_H
+#ifndef CURVE_WLF_CURVE_LINEAR_H
+#define CURVE_WLF_CURVE_LINEAR_H
 
 #include "wlf/curve/wlf_curve.h"
 
@@ -70,4 +70,4 @@ bool wlf_curve_is_linear(const struct wlf_curve *curve);
 struct wlf_curve_linear *wlf_curve_linear_from_curve(
 	struct wlf_curve *curve);
 
-#endif // ANIMATOR_WLF_CURVE_LINEAR_H
+#endif // CURVE_WLF_CURVE_LINEAR_H

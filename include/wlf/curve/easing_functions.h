@@ -14,8 +14,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-02-02, initial version\n
  */
 
-#ifndef ANIMATOR_EASING_FUNCTIONS_H
-#define ANIMATOR_EASING_FUNCTIONS_H
+#ifndef CURVE_EASING_FUNCTIONS_H
+#define CURVE_EASING_FUNCTIONS_H
 
 #include <math.h>
 
@@ -504,4 +504,4 @@ static inline float ease_in_out_bounce(float t) {
 	return ease_out_bounce(t * 2.0f - 1.0f) * 0.5f + 0.5f;
 }
 
-#endif // ANIMATOR_EASING_FUNCTIONS_H
+#endif // CURVE_EASING_FUNCTIONS_H

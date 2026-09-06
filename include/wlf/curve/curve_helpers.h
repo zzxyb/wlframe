@@ -11,8 +11,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-02-02, initial version\n
  */
 
-#ifndef ANIMATOR_CURVE_HELPERS_H
-#define ANIMATOR_CURVE_HELPERS_H
+#ifndef CURVE_CURVE_HELPERS_H
+#define CURVE_CURVE_HELPERS_H
 
 #include <math.h>
 
@@ -52,4 +52,4 @@ static inline float clamp_t(float t) {
 	return t;
 }
 
-#endif // ANIMATOR_CURVE_HELPERS_H
+#endif // CURVE_CURVE_HELPERS_H

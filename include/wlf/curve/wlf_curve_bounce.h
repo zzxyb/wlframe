@@ -13,8 +13,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-02-11, initial version\n
  */
 
-#ifndef ANIMATOR_WLF_CURVE_BOUNCE_H
-#define ANIMATOR_WLF_CURVE_BOUNCE_H
+#ifndef CURVE_WLF_CURVE_BOUNCE_H
+#define CURVE_WLF_CURVE_BOUNCE_H
 
 #include "wlf/curve/wlf_curve.h"
 
@@ -102,4 +102,4 @@ bool wlf_curve_is_bounce(const struct wlf_curve *curve);
 struct wlf_curve_bounce *wlf_curve_bounce_from_curve(
 	struct wlf_curve *curve);
 
-#endif // ANIMATOR_WLF_CURVE_BOUNCE_H
+#endif // CURVE_WLF_CURVE_BOUNCE_H
