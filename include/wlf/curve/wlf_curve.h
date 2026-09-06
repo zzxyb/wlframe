@@ -14,8 +14,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-01-31, initial version\n
  */
 
-#ifndef ANIMATOR_WLF_CURVE_H
-#define ANIMATOR_WLF_CURVE_H
+#ifndef CURVE_WLF_CURVE_H
+#define CURVE_WLF_CURVE_H
 
 struct wlf_curve;
 
@@ -113,4 +113,4 @@ void wlf_curve_destroy(struct wlf_curve *curve);
 void wlf_curve_add_listener(struct wlf_curve *curve,
 	const struct wlf_curve_listener *listener, void *data);
 
-#endif // ANIMATOR_WLF_CURVE_H
+#endif // CURVE_WLF_CURVE_H

@@ -14,8 +14,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-02-13, initial version\n
  */
 
-#ifndef ANIMATOR_WLF_CURVE_QUINT_H
-#define ANIMATOR_WLF_CURVE_QUINT_H
+#ifndef CURVE_WLF_CURVE_QUINT_H
+#define CURVE_WLF_CURVE_QUINT_H
 
 #include "wlf/curve/wlf_curve.h"
 
@@ -102,4 +102,4 @@ bool wlf_curve_is_quint(const struct wlf_curve *curve);
 struct wlf_curve_quint *wlf_curve_quint_from_curve(
 	struct wlf_curve *curve);
 
-#endif // ANIMATOR_WLF_CURVE_QUINT_H
+#endif // CURVE_WLF_CURVE_QUINT_H
