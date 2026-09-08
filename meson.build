@@ -203,6 +203,9 @@ elif is_macos
 	metal = dependency('appleframeworks',
 		modules: ['Foundation', 'Metal', 'AppKit', 'QuartzCore'],
 		required: true)
+	core_text = dependency('appleframeworks',
+		modules: ['CoreFoundation', 'CoreGraphics', 'CoreText'],
+		required: true)
 elif is_windows
 	message('Building for Windows')
 	advapi32 = cc.find_library('advapi32', required: true)
@@ -247,6 +250,7 @@ if is_macos
 		math,
 		appkit,
 		metal,
+		core_text,
 	]
 elif is_linux
 	wlf_deps += [

@@ -4,6 +4,8 @@
 
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/linux/text.h"
+#elif WLF_HAS_MACOS_PLATFORM
+#include "wlf/platform/macos/text.h"
 #endif
 
 #include <assert.h>
@@ -31,10 +33,11 @@ struct wlf_text *wlf_text_autocreate(void) {
 	}
 
 	return &text->base;
+#elif WLF_HAS_MACOS_PLATFORM
+	struct wlf_macos_text *text = wlf_macos_text_create();
+	return text != NULL ? &text->base : NULL;
 #else
-	/* Core Text and DirectWrite implementations will be selected here once they are
-	 * implemented. Keeping the selection in this module leaves scene code
-	 * independent of platform text libraries. */
+	/* DirectWrite will be selected here once implemented. */
 	return NULL;
 #endif
 }
