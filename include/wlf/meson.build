@@ -34,6 +34,7 @@ subdirs = [
 	'swapchain',
 ]
 
+
 if is_linux
 	subdirs += [
 		'wayland',
@@ -45,5 +46,8 @@ if is_linux
 		'swapchain/egl',
 		'swapchain/vulkan',
 	]
+elif is_macos
+	subdirs += [
+		'buffer/metal',
+	]
 endif
-

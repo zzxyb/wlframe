@@ -6,4 +6,6 @@ if is_linux
 	subdir('pixman')
 	subdir('shm')
 	subdir('egl')
+elif is_macos
+	subdir('metal')
 endif
