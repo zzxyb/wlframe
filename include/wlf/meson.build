@@ -53,5 +53,6 @@ elif is_macos
 		'pass/metal',
 		'swapchain/metal',
 		'texture/metal',
+		'window/macos',
 	]
 endif
