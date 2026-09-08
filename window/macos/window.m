@@ -1,6 +1,8 @@
 #include "wlf/window/macos/window.h"
 
 #include "wlf/platform/macos/backend.h"
+#include "wlf/types/macos/keyboard.h"
+#include "wlf/types/macos/pointer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 
@@ -14,8 +16,106 @@
 @interface WLFMetalView : NSView {
 @public
 	struct wlf_macos_window *wlfWindow;
+	NSTrackingArea *wlfTrackingArea;
 }
 @end
+
+static uint32_t event_time_msec(NSEvent *event) {
+	return (uint32_t)(event.timestamp * 1000.0);
+}
+
+static NSPoint event_location(WLFMetalView *view, NSEvent *event) {
+	return [view convertPoint:event.locationInWindow fromView:nil];
+}
+
+static void emit_pointer_frame(struct wlf_macos_window *window) {
+	wlf_signal_emit_mutable(&window->pointer->base.events.frame, NULL);
+	wlf_window_pointer_frame(&window->base, NULL);
+}
+
+static void pointer_set_button(struct wlf_pointer *pointer, uint32_t button,
+		bool pressed) {
+	size_t index = 0;
+	while (index < pointer->button_count &&
+			pointer->buttons[index] != button) {
+		index++;
+	}
+	if (pressed) {
+		if (index == pointer->button_count &&
+				pointer->button_count < WLF_POINTER_BUTTONS_CAP) {
+			pointer->buttons[pointer->button_count++] = button;
+		}
+		return;
+	}
+	if (index == pointer->button_count) return;
+	for (size_t i = index + 1; i < pointer->button_count; ++i) {
+		pointer->buttons[i - 1] = pointer->buttons[i];
+	}
+	pointer->button_count--;
+}
+
+static uint32_t pointer_button_code(NSEvent *event) {
+	switch (event.buttonNumber) {
+	case 0: return WLF_POINTER_BUTTON_LEFT;
+	case 1: return WLF_POINTER_BUTTON_RIGHT;
+	case 2: return WLF_POINTER_BUTTON_MIDDLE;
+	default: return WLF_POINTER_BUTTON_LEFT + (uint32_t)event.buttonNumber;
+	}
+}
+
+static void emit_pointer_motion(WLFMetalView *view, NSEvent *event) {
+	struct wlf_macos_window *window = view->wlfWindow;
+	if (window == NULL) return;
+	NSPoint point = event_location(view, event);
+	struct wlf_pointer_motion_absolute_event motion = {
+		.pointer = &window->pointer->base,
+		.surface = window->view,
+		.time_msec = event_time_msec(event),
+		.x = point.x,
+		.y = point.y,
+	};
+	wlf_signal_emit_mutable(&window->pointer->base.events.motion_absolute,
+		&motion);
+	wlf_window_pointer_motion(&window->base, &motion);
+	emit_pointer_frame(window);
+}
+
+static void emit_pointer_button(WLFMetalView *view, NSEvent *event,
+		enum wlf_pointer_button_state state) {
+	struct wlf_macos_window *window = view->wlfWindow;
+	if (window == NULL) return;
+	uint32_t button = pointer_button_code(event);
+	pointer_set_button(&window->pointer->base, button,
+		state == WLF_POINTER_BUTTON_STATE_PRESSED);
+	struct wlf_pointer_button_event button_event = {
+		.pointer = &window->pointer->base,
+		.serial = wlf_macos_pointer_next_serial(window->pointer),
+		.time_msec = event_time_msec(event),
+		.button = button,
+		.state = state,
+	};
+	wlf_signal_emit_mutable(&window->pointer->base.events.button,
+		&button_event);
+	wlf_window_pointer_button(&window->base, &button_event);
+	emit_pointer_frame(window);
+}
+
+static void emit_keyboard_key(WLFMetalView *view, NSEvent *event,
+		enum wlf_keyboard_key_state state) {
+	struct wlf_macos_window *window = view->wlfWindow;
+	if (window == NULL) return;
+	uint32_t key = event.keyCode;
+	wlf_macos_keyboard_set_key_state(window->keyboard, key, state);
+	struct wlf_keyboard_key_event key_event = {
+		.keyboard = &window->keyboard->base,
+		.serial = wlf_macos_keyboard_next_serial(window->keyboard),
+		.time_msec = event_time_msec(event),
+		.key = key,
+		.state = state,
+	};
+	wlf_signal_emit_mutable(&window->keyboard->base.events.key, &key_event);
+	wlf_window_keyboard_key(&window->base, &key_event);
+}
 
 @implementation WLFMetalView
 - (CALayer *)makeBackingLayer {
@@ -24,6 +124,136 @@
 
 - (BOOL)isFlipped {
 	return YES;
+}
+
+- (BOOL)acceptsFirstResponder {
+	return YES;
+}
+
+- (void)updateTrackingAreas {
+	[super updateTrackingAreas];
+	if (wlfTrackingArea != nil) {
+		[self removeTrackingArea:wlfTrackingArea];
+		[wlfTrackingArea release];
+	}
+	NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
+		NSTrackingMouseMoved | NSTrackingActiveInKeyWindow |
+		NSTrackingInVisibleRect;
+	wlfTrackingArea = [[NSTrackingArea alloc] initWithRect:NSZeroRect
+		options:options owner:self userInfo:nil];
+	[self addTrackingArea:wlfTrackingArea];
+}
+
+- (void)dealloc {
+	if (wlfTrackingArea != nil) {
+		[self removeTrackingArea:wlfTrackingArea];
+		[wlfTrackingArea release];
+	}
+	[super dealloc];
+}
+
+- (void)mouseEntered:(NSEvent *)event {
+	if (wlfWindow == NULL || wlfWindow->pointer_inside) return;
+	wlfWindow->pointer_inside = true;
+	NSPoint point = event_location(self, event);
+	uint32_t serial = wlf_macos_pointer_next_serial(wlfWindow->pointer);
+	wlfWindow->pointer->base.cursor_serial = serial;
+	struct wlf_pointer_enter_event enter = {
+		.pointer = &wlfWindow->pointer->base,
+		.serial = serial,
+		.surface = wlfWindow->view,
+		.x = point.x,
+		.y = point.y,
+	};
+	wlf_signal_emit_mutable(&wlfWindow->pointer->base.events.enter, &enter);
+	wlf_window_pointer_enter(&wlfWindow->base, &enter);
+	emit_pointer_frame(wlfWindow);
+}
+
+- (void)mouseExited:(NSEvent *)event {
+	if (wlfWindow == NULL || !wlfWindow->pointer_inside) return;
+	wlfWindow->pointer_inside = false;
+	struct wlf_pointer_leave_event leave = {
+		.pointer = &wlfWindow->pointer->base,
+		.serial = wlf_macos_pointer_next_serial(wlfWindow->pointer),
+		.surface = wlfWindow->view,
+	};
+	wlf_signal_emit_mutable(&wlfWindow->pointer->base.events.leave, &leave);
+	wlf_window_pointer_leave(&wlfWindow->base, &leave);
+	wlfWindow->pointer->base.cursor_serial = 0;
+	emit_pointer_frame(wlfWindow);
+	(void)event;
+}
+
+- (void)mouseMoved:(NSEvent *)event { emit_pointer_motion(self, event); }
+- (void)mouseDragged:(NSEvent *)event { emit_pointer_motion(self, event); }
+- (void)rightMouseDragged:(NSEvent *)event { emit_pointer_motion(self, event); }
+- (void)otherMouseDragged:(NSEvent *)event { emit_pointer_motion(self, event); }
+- (void)mouseDown:(NSEvent *)event {
+	emit_pointer_button(self, event, WLF_POINTER_BUTTON_STATE_PRESSED);
+}
+- (void)mouseUp:(NSEvent *)event {
+	emit_pointer_button(self, event, WLF_POINTER_BUTTON_STATE_RELEASED);
+}
+- (void)rightMouseDown:(NSEvent *)event {
+	emit_pointer_button(self, event, WLF_POINTER_BUTTON_STATE_PRESSED);
+}
+- (void)rightMouseUp:(NSEvent *)event {
+	emit_pointer_button(self, event, WLF_POINTER_BUTTON_STATE_RELEASED);
+}
+- (void)otherMouseDown:(NSEvent *)event {
+	emit_pointer_button(self, event, WLF_POINTER_BUTTON_STATE_PRESSED);
+}
+- (void)otherMouseUp:(NSEvent *)event {
+	emit_pointer_button(self, event, WLF_POINTER_BUTTON_STATE_RELEASED);
+}
+
+- (void)scrollWheel:(NSEvent *)event {
+	if (wlfWindow == NULL) return;
+	double deltas[2] = {-event.scrollingDeltaY, -event.scrollingDeltaX};
+	for (int axis = 0; axis < 2; ++axis) {
+		if (deltas[axis] == 0) continue;
+		struct wlf_pointer_axis_event axis_event = {
+			.pointer = &wlfWindow->pointer->base,
+			.time_msec = event_time_msec(event),
+			.source = event.hasPreciseScrollingDeltas ?
+				WLF_POINTER_AXIS_SOURCE_FINGER : WLF_POINTER_AXIS_SOURCE_WHEEL,
+			.orientation = (enum wlf_pointer_axis)axis,
+			.relative_direction = event.directionInvertedFromDevice ?
+				WLF_POINTER_AXIS_RELATIVE_DIRECTION_INVERTED :
+				WLF_POINTER_AXIS_RELATIVE_DIRECTION_IDENTICAL,
+			.delta = deltas[axis],
+			.delta_discrete = event.hasPreciseScrollingDeltas ? 0 :
+				(int32_t)llround(deltas[axis] * 120.0),
+		};
+		wlf_signal_emit_mutable(&wlfWindow->pointer->base.events.axis,
+			&axis_event);
+		wlf_window_pointer_axis(&wlfWindow->base, &axis_event);
+	}
+	emit_pointer_frame(wlfWindow);
+}
+
+- (void)keyDown:(NSEvent *)event {
+	emit_keyboard_key(self, event, WLF_KEYBOARD_KEY_STATE_PRESSED);
+}
+
+- (void)keyUp:(NSEvent *)event {
+	emit_keyboard_key(self, event, WLF_KEYBOARD_KEY_STATE_RELEASED);
+}
+
+- (void)flagsChanged:(NSEvent *)event {
+	if (wlfWindow == NULL) return;
+	uint32_t modifiers = (uint32_t)(event.modifierFlags &
+		NSEventModifierFlagDeviceIndependentFlagsMask);
+	wlfWindow->keyboard->modifiers = modifiers;
+	struct wlf_keyboard_modifiers_event modifiers_event = {
+		.keyboard = &wlfWindow->keyboard->base,
+		.serial = wlf_macos_keyboard_next_serial(wlfWindow->keyboard),
+		.mods_depressed = modifiers,
+	};
+	wlf_signal_emit_mutable(&wlfWindow->keyboard->base.events.modifiers,
+		&modifiers_event);
+	wlf_window_keyboard_modifiers(&wlfWindow->base, &modifiers_event);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
@@ -86,6 +316,30 @@ static void update_window_scale(struct wlf_macos_window *window) {
 	wlfWindow->base.state.state |= WLF_WINDOW_ACTIVE;
 	wlf_signal_emit_mutable(&wlfWindow->base.events.focus_in,
 		&wlfWindow->base);
+	struct wlf_keyboard_keymap_event keymap = {
+		.keyboard = &wlfWindow->keyboard->base,
+		.format = WLF_KEYBOARD_KEYMAP_FORMAT_NO_KEYMAP,
+		.fd = -1,
+	};
+	wlf_signal_emit_mutable(&wlfWindow->keyboard->base.events.keymap, &keymap);
+	wlf_window_keyboard_keymap(&wlfWindow->base, &keymap);
+	struct wlf_keyboard_repeat_info_event repeat = {
+		.keyboard = &wlfWindow->keyboard->base,
+		.rate = 30,
+		.delay = 500,
+	};
+	wlf_signal_emit_mutable(&wlfWindow->keyboard->base.events.repeat_info,
+		&repeat);
+	wlf_window_keyboard_repeat_info(&wlfWindow->base, &repeat);
+	struct wlf_keyboard_enter_event enter = {
+		.keyboard = &wlfWindow->keyboard->base,
+		.serial = wlf_macos_keyboard_next_serial(wlfWindow->keyboard),
+		.window = &wlfWindow->base,
+		.keys = wlfWindow->keyboard->keys,
+		.keys_count = wlfWindow->keyboard->key_count,
+	};
+	wlf_signal_emit_mutable(&wlfWindow->keyboard->base.events.enter, &enter);
+	wlf_window_keyboard_enter(&wlfWindow->base, &enter);
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
@@ -95,6 +349,13 @@ static void update_window_scale(struct wlf_macos_window *window) {
 	wlfWindow->base.state.state &= ~WLF_WINDOW_ACTIVE;
 	wlf_signal_emit_mutable(&wlfWindow->base.events.focus_out,
 		&wlfWindow->base);
+	struct wlf_keyboard_leave_event leave = {
+		.keyboard = &wlfWindow->keyboard->base,
+		.serial = wlf_macos_keyboard_next_serial(wlfWindow->keyboard),
+		.window = &wlfWindow->base,
+	};
+	wlf_signal_emit_mutable(&wlfWindow->keyboard->base.events.leave, &leave);
+	wlf_window_keyboard_leave(&wlfWindow->base, &leave);
 }
 
 - (void)windowDidChangeBackingProperties:(NSNotification *)notification {
@@ -125,6 +386,8 @@ static void macos_window_destroy(struct wlf_window *base) {
 		native.delegate = nil;
 		[native orderOut:nil];
 	}
+	wlf_pointer_destroy(window->pointer != NULL ? &window->pointer->base : NULL);
+	wlf_keyboard_destroy(window->keyboard != NULL ? &window->keyboard->base : NULL);
 	[delegate release];
 	[native release];
 	free(window);
@@ -287,6 +550,12 @@ struct wlf_macos_window *wlf_macos_window_create_from_backend(
 		wlf_window_init(&window->base, WLF_WINDOW_TYPE_TOPLEVEL,
 			&macos_window_impl, backend, width, height);
 		window->backend = backend;
+		window->pointer = wlf_macos_pointer_create();
+		window->keyboard = wlf_macos_keyboard_create();
+		if (window->pointer == NULL || window->keyboard == NULL) {
+			wlf_window_destroy(&window->base);
+			return NULL;
+		}
 
 		NSWindowStyleMask style = NSWindowStyleMaskTitled |
 			NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable |
@@ -315,6 +584,7 @@ struct wlf_macos_window *wlf_macos_window_create_from_backend(
 		delegate->wlfWindow = window;
 		view.wantsLayer = YES;
 		native.contentView = view;
+		native.acceptsMouseMovedEvents = YES;
 		native.delegate = delegate;
 		[native center];
 		[view release];
@@ -338,4 +608,16 @@ void *wlf_macos_window_get_nswindow(const struct wlf_macos_window *window) {
 
 void *wlf_macos_window_get_view(const struct wlf_macos_window *window) {
 	return window != NULL ? window->view : NULL;
+}
+
+struct wlf_pointer *wlf_macos_window_get_pointer(
+		const struct wlf_macos_window *window) {
+	return window != NULL && window->pointer != NULL ?
+		&window->pointer->base : NULL;
+}
+
+struct wlf_keyboard *wlf_macos_window_get_keyboard(
+		const struct wlf_macos_window *window) {
+	return window != NULL && window->keyboard != NULL ?
+		&window->keyboard->base : NULL;
 }

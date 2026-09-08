@@ -17,7 +17,10 @@ struct wlf_macos_window {
 	void *ns_window; /**< Retained NSWindow. */
 	void *view; /**< Borrowed content NSView. */
 	void *delegate; /**< Retained NSWindowDelegate. */
+	struct wlf_macos_pointer *pointer;
+	struct wlf_macos_keyboard *keyboard;
 	bool frame_pending;
+	bool pointer_inside;
 };
 
 struct wlf_macos_window *wlf_macos_window_create_from_backend(
@@ -31,5 +34,11 @@ struct wlf_macos_window *wlf_macos_window_from_window(
 void *wlf_macos_window_get_nswindow(const struct wlf_macos_window *window);
 
 void *wlf_macos_window_get_view(const struct wlf_macos_window *window);
+
+struct wlf_pointer *wlf_macos_window_get_pointer(
+	const struct wlf_macos_window *window);
+
+struct wlf_keyboard *wlf_macos_window_get_keyboard(
+	const struct wlf_macos_window *window);
 
 #endif /* WLF_WINDOW_MACOS_WINDOW_H */
