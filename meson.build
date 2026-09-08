@@ -200,7 +200,9 @@ elif is_macos
 		error('giflib not found on macOS. Install giflib (for example: brew install giflib).')
 	endif
 
-	metal = dependency('appleframeworks', modules: ['Foundation', 'Metal', 'AppKit'], required: true)
+	metal = dependency('appleframeworks',
+		modules: ['Foundation', 'Metal', 'AppKit', 'QuartzCore'],
+		required: true)
 elif is_windows
 	message('Building for Windows')
 	advapi32 = cc.find_library('advapi32', required: true)

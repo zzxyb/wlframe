@@ -8,6 +8,9 @@
 #include "wlf/renderer/pixman/renderer.h"
 #include "wlf/swapchain/egl/swapchain.h"
 #include "wlf/swapchain/vulkan/swapchain.h"
+#elif WLF_HAS_MACOS_PLATFORM
+#include "wlf/renderer/metal/renderer.h"
+#include "wlf/swapchain/metal/swapchain.h"
 #endif
 
 #include <assert.h>
@@ -48,6 +51,12 @@ struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window, int w
 		struct wlf_vk_swapchain *vulkan =
 			wlf_vk_swapchain_create(window, width, height, format);
 		swapchain = vulkan != NULL ? &vulkan->base : NULL;
+	}
+#elif WLF_HAS_MACOS_PLATFORM
+	if (wlf_renderer_is_mtl(window->state.renderer)) {
+		struct wlf_mtl_swapchain *metal =
+			wlf_mtl_swapchain_create(window, width, height, format);
+		swapchain = metal != NULL ? &metal->base : NULL;
 	}
 #endif
 

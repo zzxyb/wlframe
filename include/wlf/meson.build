@@ -51,6 +51,7 @@ elif is_macos
 		'allocator/metal',
 		'buffer/metal',
 		'pass/metal',
+		'swapchain/metal',
 		'texture/metal',
 	]
 endif
