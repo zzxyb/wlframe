@@ -99,8 +99,12 @@ static bool backend_process_appkit_events(struct wlf_backend_macos *macos) {
 
 			handled_event = true;
 			[NSApp sendEvent:event];
-			[NSApp updateWindows];
 		}
+
+		/* Flush invalidated views even when no NSEvent was dequeued. Scene
+		 * animations schedule frames with setNeedsDisplay:, which must continue
+		 * rendering while the application is otherwise idle. */
+		[NSApp updateWindows];
 	}
 
 	return handled_event;
