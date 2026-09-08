@@ -7,6 +7,9 @@
 #include "wlf/pass/pixman/vector_pass.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
+#elif WLF_HAS_MACOS_PLATFORM
+#include "wlf/pass/metal/vector_pass.h"
+#include "wlf/renderer/metal/renderer.h"
 #endif
 
 #include <assert.h>
@@ -20,6 +23,11 @@ struct wlf_vector_pass *wlf_vector_pass_auto_create(struct wlf_renderer *rendere
 		return wlf_pixman_vector_pass_create();
 	} else {
 		wlf_log(WLF_ERROR, "Scene rendering is unsupported by this renderer");
+	}
+#elif WLF_HAS_MACOS_PLATFORM
+	if (wlf_renderer_is_mtl(renderer)) {
+		pass = wlf_mtl_vector_pass_create(
+			wlf_mtl_renderer_from_render(renderer));
 	}
 #endif
 

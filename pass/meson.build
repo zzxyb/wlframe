@@ -16,4 +16,6 @@ if is_linux
 	subdir('gles')
 	subdir('pixman')
 	subdir('vulkan')
+elif is_macos
+	subdir('metal')
 endif

@@ -23,8 +23,7 @@ struct wlf_mtl_device *wlf_mtl_device_create(void) {
 			return NULL;
 		}
 
-		// Store device with retained reference
-		[mtl_device retain];
+		// MTLCreateSystemDefaultDevice follows the Create ownership rule.
 		device->device = (__bridge void *)mtl_device;
 		
 		// Copy device name
