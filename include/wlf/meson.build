@@ -48,6 +48,7 @@ if is_linux
 	]
 elif is_macos
 	subdirs += [
+		'allocator/metal',
 		'buffer/metal',
 	]
 endif
