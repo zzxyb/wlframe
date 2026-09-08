@@ -50,5 +50,6 @@ elif is_macos
 	subdirs += [
 		'allocator/metal',
 		'buffer/metal',
+		'texture/metal',
 	]
 endif
