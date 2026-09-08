@@ -12,3 +12,7 @@ wlf_files += files(
 	'wlf_keyboard.c',
 	'wlf_cursor.c',
 )
+
+if is_macos
+	subdir('macos')
+endif
