@@ -1,1 +1,4 @@
-wlf_files += files('pointer.m')
+wlf_files += files(
+	'keyboard.m',
+	'pointer.m',
+)
