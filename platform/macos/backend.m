@@ -11,6 +11,10 @@
 #include <poll.h>
 #include <stdlib.h>
 
+@protocol WLFFrameDispatching
+- (void)wlfDispatchPendingFrame;
+@end
+
 enum {
 	WLF_MACOS_EVENT_LOOP_TIMEOUT_MS = 16,
 };
@@ -102,9 +106,14 @@ static bool backend_process_appkit_events(struct wlf_backend_macos *macos) {
 		}
 
 		/* Flush invalidated views even when no NSEvent was dequeued. Scene
-		 * animations schedule frames with setNeedsDisplay:, which must continue
-		 * rendering while the application is otherwise idle. */
+		 * animations also need to advance while the application is idle. */
 		[NSApp updateWindows];
+		for (NSWindow *window in NSApp.windows) {
+			id view = window.contentView;
+			if ([view respondsToSelector:@selector(wlfDispatchPendingFrame)]) {
+				[(id<WLFFrameDispatching>)view wlfDispatchPendingFrame];
+			}
+		}
 	}
 
 	return handled_event;

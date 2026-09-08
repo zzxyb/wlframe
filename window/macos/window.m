@@ -256,9 +256,11 @@ static void emit_keyboard_key(WLFMetalView *view, NSEvent *event,
 	wlf_window_keyboard_modifiers(&wlfWindow->base, &modifiers_event);
 }
 
-- (void)drawRect:(NSRect)dirtyRect {
-	(void)dirtyRect;
+- (void)wlfDispatchPendingFrame {
 	if (wlfWindow == NULL) {
+		return;
+	}
+	if (!wlfWindow->frame_pending || !wlfWindow->base.state.visible) {
 		return;
 	}
 	wlfWindow->frame_pending = false;
@@ -403,10 +405,9 @@ static void macos_window_show(struct wlf_window *base) {
 	NSWindow *native = (__bridge NSWindow *)window->ns_window;
 	[NSApp activateIgnoringOtherApps:YES];
 	[native makeKeyAndOrderFront:nil];
-	if (!window->frame_pending) {
-		window->frame_pending = true;
-		[(__bridge NSView *)window->view setNeedsDisplay:YES];
-	}
+	/* Damage can schedule a frame while the view is still hidden. Showing the
+	 * window must keep that request pending for the backend dispatcher. */
+	window->frame_pending = true;
 }
 
 static void macos_window_hide(struct wlf_window *base) {
@@ -500,7 +501,6 @@ static void macos_window_schedule_frame(struct wlf_window *base) {
 	struct wlf_macos_window *window = macos_from_base(base);
 	if (window->frame_pending) return;
 	window->frame_pending = true;
-	[(__bridge NSView *)window->view setNeedsDisplay:YES];
 }
 
 static void macos_window_arm_frame(struct wlf_window *base) {

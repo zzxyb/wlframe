@@ -86,21 +86,6 @@ static CFAttributedStringRef create_attributed_string(
 	return attributed;
 }
 
-static void flip_rows(uint8_t *data, size_t stride, uint32_t height) {
-	uint8_t *row = malloc(stride);
-	if (row == NULL) {
-		return;
-	}
-	for (uint32_t y = 0; y < height / 2; ++y) {
-		uint8_t *top = data + (size_t)y * stride;
-		uint8_t *bottom = data + (size_t)(height - y - 1) * stride;
-		memcpy(row, top, stride);
-		memcpy(top, bottom, stride);
-		memcpy(bottom, row, stride);
-	}
-	free(row);
-}
-
 static void macos_text_raster_destroy(struct wlf_text *text,
 		struct wlf_text_raster *raster) {
 	(void)text;
@@ -201,7 +186,6 @@ static bool macos_text_rasterize(struct wlf_text *text,
 			CFRelease(frame);
 		}
 		CGContextRelease(context);
-		flip_rows(pixels, stride, height);
 
 		raster->width = width;
 		raster->height = height;
