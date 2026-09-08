@@ -1,11 +1,16 @@
 #include "wlf/platform/wlf_backend.h"
+#include "wlf/config.h"
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/node/wlf_rect_node.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/node/wlf_scene_tree.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/window/wayland/xdg_toplevel_window.h"
 #include "wlf/window/wlf_window.h"
+#if WLF_HAS_LINUX_PLATFORM
+#include "wlf/window/wayland/xdg_toplevel_window.h"
+#elif WLF_HAS_MACOS_PLATFORM
+#include "wlf/window/macos/window.h"
+#endif
 
 #include <stdlib.h>
 
@@ -16,6 +21,24 @@ struct test_state {
 	struct wlf_listener frame_done;
 	struct wlf_listener close;
 };
+
+static struct wlf_window *create_test_window(struct wlf_backend *backend,
+		uint32_t width, uint32_t height) {
+#if WLF_HAS_LINUX_PLATFORM
+	struct wlf_xdg_toplevel_window *window =
+		wlf_xdg_toplevel_window_create_from_backend(backend, width, height);
+	return window != NULL ? &window->base : NULL;
+#elif WLF_HAS_MACOS_PLATFORM
+	struct wlf_macos_window *window =
+		wlf_macos_window_create_from_backend(backend, width, height);
+	return window != NULL ? &window->base : NULL;
+#else
+	(void)backend;
+	(void)width;
+	(void)height;
+	return NULL;
+#endif
+}
 
 static void handle_frame_done(struct wlf_listener *listener, void *data) {
 	(void)data;
@@ -46,11 +69,9 @@ int main(void) {
 	}
 
 	struct wlf_renderer *renderer = wlf_renderer_autocreate(backend);
-	struct wlf_xdg_toplevel_window *toplevel =
-		wlf_xdg_toplevel_window_create_from_backend(backend, 640, 360);
-	struct wlf_window *window =
-		toplevel != NULL ? &toplevel->base : NULL;
+	struct wlf_window *window = create_test_window(backend, 640, 360);
 	if (renderer == NULL || window == NULL) {
+		wlf_window_destroy(window);
 		wlf_renderer_destroy(renderer);
 		wlf_backend_destroy(backend);
 		return EXIT_FAILURE;

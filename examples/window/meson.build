@@ -13,7 +13,7 @@ window_examples = {
 	},
 }
 
-if is_linux
+if is_linux or is_macos
 	foreach example, info : window_examples
 		executable(
 			example,
