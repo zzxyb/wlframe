@@ -4,6 +4,8 @@
  */
 
 #include "wlf/svg/wlf_svg.h"
+#include "wlf/effect/wlf_gaussian_blur.h"
+#include "wlf/effect/wlf_drop_shadow.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/shapes/wlf_circle_shape.h"
 #include "wlf/shapes/wlf_ellipse_shape.h"
@@ -716,6 +718,15 @@ static void wlf_svg_delete_use_data(struct wlf_svg_use_data *use)
 	}
 }
 
+static void wlf_svg_delete_filters(struct wlf_filter *filter)
+{
+	while (filter != NULL) {
+		struct wlf_filter *next = filter->next;
+		wlf_shape_destroy(&filter->base);
+		filter = next;
+	}
+}
+
 static void wlf_svg_delete_parser(struct wlf_svg_parser *p)
 {
 	if (p != NULL) {
@@ -1085,6 +1096,7 @@ static void wlf_svg_add_shape(struct wlf_svg_parser *p)
 	memcpy(shape->id, attr->id, sizeof shape->id);
 	memcpy(shape->fill_gradient, attr->fillGradient, sizeof shape->fill_gradient);
 	memcpy(shape->stroke_gradient, attr->strokeGradient, sizeof shape->stroke_gradient);
+	memcpy(shape->filter_id, attr->filter, sizeof shape->filter_id);
 	memcpy(shape->xform, attr->xform, sizeof shape->xform);
 	scale = wlf_svg_get_average_scale(attr->xform);
 	shape->stroke_width = attr->strokeWidth * scale;
@@ -1698,6 +1710,7 @@ static const struct wlf_svg_name_map wlf_svg_attr_name_map[] = {
 	{ "stop-opacity", WLF_SVG_ATTR_STOP_OPACITY },
 	{ "offset", WLF_SVG_ATTR_OFFSET },
 	{ "paint-order", WLF_SVG_ATTR_PAINT_ORDER },
+	{ "filter", WLF_SVG_ATTR_FILTER },
 	{ "id", WLF_SVG_ATTR_ID },
 };
 
@@ -1718,6 +1731,9 @@ static const struct wlf_svg_name_map wlf_svg_element_name_map[] = {
 	{ "symbol", WLF_SVG_EL_SYMBOL },
 	{ "use", WLF_SVG_EL_USE },
 	{ "text", WLF_SVG_EL_TEXT },
+	{ "filter", WLF_SVG_EL_FILTER },
+	{ "feGaussianBlur", WLF_SVG_EL_GAUSSIAN_BLUR },
+	{ "feDropShadow", WLF_SVG_EL_DROP_SHADOW },
 };
 
 static const struct wlf_svg_name_map wlf_svg_gradient_attr_name_map[] = {
@@ -1999,6 +2015,13 @@ static int wlf_svg_parse_attr(struct wlf_svg_parser *p, const char* name, const 
 			break;
 		case WLF_SVG_ATTR_PAINT_ORDER:
 			attr->paintOrder = wlf_svg_parse_paint_order(value);
+			break;
+		case WLF_SVG_ATTR_FILTER:
+			if (strcmp(value, "none") == 0) {
+				attr->filter[0] = '\0';
+			} else if (strncmp(value, "url(", 4) == 0) {
+				wlf_svg_parse_url(attr->filter, value);
+			}
 			break;
 		case WLF_SVG_ATTR_ID:
 			strncpy(attr->id, value, 63);
@@ -3236,6 +3259,8 @@ static struct wlf_svg_shape *wlf_svg_clone_shape_translated(const struct wlf_svg
 	memcpy(dst->id, src->id, sizeof dst->id);
 	memcpy(dst->fill_gradient, src->fill_gradient, sizeof dst->fill_gradient);
 	memcpy(dst->stroke_gradient, src->stroke_gradient, sizeof dst->stroke_gradient);
+	memcpy(dst->filter_id, src->filter_id, sizeof dst->filter_id);
+	dst->filter = src->filter;
 	memcpy(dst->xform, src->xform, sizeof dst->xform);
 	dst->opacity = src->opacity;
 	dst->fill_opacity = src->fill_opacity;
@@ -3368,10 +3393,138 @@ static void wlf_svg_parse_use(struct wlf_svg_parser *p, const char **attr)
 	}
 }
 
+static float wlf_svg_parse_filter_region_value(struct wlf_svg_parser *p,
+		const char *value, enum wlf_filter_units units, float origin,
+		float length) {
+	if (units == WLF_FILTER_UNITS_OBJECT_BOUNDING_BOX) {
+		float parsed = (float)wlf_svg_atof(value);
+		if (strchr(value, '%') != NULL) parsed /= 100.0f;
+		return parsed;
+	}
+	return wlf_svg_parse_coordinate(p, value, origin, length);
+}
+
+static enum wlf_filter_units wlf_svg_parse_filter_units(const char *value) {
+	return strcmp(value, "userSpaceOnUse") == 0
+		? WLF_FILTER_UNITS_USER_SPACE
+		: WLF_FILTER_UNITS_OBJECT_BOUNDING_BOX;
+}
+
+static void wlf_svg_parse_filter(struct wlf_svg_parser *p, const char **attr) {
+	const char *id = NULL;
+	struct wlf_filter *filter;
+	int i;
+
+	for (i = 0; attr[i]; i += 2) {
+		if (strcmp(attr[i], "id") == 0) id = attr[i + 1];
+	}
+	filter = wlf_filter_create(id);
+	if (filter == NULL) return;
+
+	for (i = 0; attr[i]; i += 2) {
+		if (strcmp(attr[i], "filterUnits") == 0)
+			filter->units = wlf_svg_parse_filter_units(attr[i + 1]);
+		else if (strcmp(attr[i], "primitiveUnits") == 0)
+			filter->primitive_units = wlf_svg_parse_filter_units(attr[i + 1]);
+	}
+	for (i = 0; attr[i]; i += 2) {
+		if (strcmp(attr[i], "x") == 0)
+			filter->x = wlf_svg_parse_filter_region_value(p, attr[i + 1],
+				filter->units, wlf_svg_actual_orig_x(p), wlf_svg_actual_width(p));
+		else if (strcmp(attr[i], "y") == 0)
+			filter->y = wlf_svg_parse_filter_region_value(p, attr[i + 1],
+				filter->units, wlf_svg_actual_orig_y(p), wlf_svg_actual_height(p));
+		else if (strcmp(attr[i], "width") == 0)
+			filter->width = wlf_svg_parse_filter_region_value(p, attr[i + 1],
+				filter->units, 0.0f, wlf_svg_actual_width(p));
+		else if (strcmp(attr[i], "height") == 0)
+			filter->height = wlf_svg_parse_filter_region_value(p, attr[i + 1],
+				filter->units, 0.0f, wlf_svg_actual_height(p));
+	}
+
+	if (p->image->filters == NULL) p->image->filters = filter;
+	else p->filters_tail->next = filter;
+	p->filters_tail = filter;
+	p->current_filter = filter;
+}
+
+static void wlf_svg_parse_std_deviation(const char *value, float *x, float *y) {
+	char item[64];
+	const char *next = wlf_svg_parse_number(value, item, sizeof(item));
+	*x = (float)wlf_svg_atof(item);
+	*y = *x;
+	while (*next && (wlf_svg_isspace(*next) || *next == ',')) next++;
+	if (*next) {
+		wlf_svg_parse_number(next, item, sizeof(item));
+		*y = (float)wlf_svg_atof(item);
+	}
+	if (*x < 0.0f) *x = 0.0f;
+	if (*y < 0.0f) *y = 0.0f;
+}
+
+static void wlf_svg_parse_blur(struct wlf_svg_parser *p, const char **attr) {
+	float x = 0.0f, y = 0.0f;
+	struct wlf_gaussian_blur *blur;
+	int i;
+	if (p->current_filter == NULL) return;
+	for (i = 0; attr[i]; i += 2) {
+		if (strcmp(attr[i], "stdDeviation") == 0)
+			wlf_svg_parse_std_deviation(attr[i + 1], &x, &y);
+	}
+	blur = wlf_gaussian_blur_create(x, y);
+	if (blur == NULL) return;
+	for (i = 0; attr[i]; i += 2) {
+		if (strcmp(attr[i], "in") == 0)
+			strncpy(blur->input, attr[i + 1], sizeof(blur->input) - 1);
+		else if (strcmp(attr[i], "result") == 0)
+			strncpy(blur->result, attr[i + 1], sizeof(blur->result) - 1);
+	}
+	wlf_filter_add(p->current_filter, &blur->base);
+}
+
+static void wlf_svg_parse_shadow(struct wlf_svg_parser *p, const char **attr) {
+	float dx = 2.0f, dy = 2.0f, x = 2.0f, y = 2.0f, opacity = 1.0f;
+	struct wlf_color color = WLF_COLOR_BLACK;
+	struct wlf_drop_shadow *shadow;
+	int i;
+	if (p->current_filter == NULL) return;
+	for (i = 0; attr[i]; i += 2) {
+		if (strcmp(attr[i], "dx") == 0) dx = (float)wlf_svg_atof(attr[i + 1]);
+		else if (strcmp(attr[i], "dy") == 0) dy = (float)wlf_svg_atof(attr[i + 1]);
+		else if (strcmp(attr[i], "stdDeviation") == 0)
+			wlf_svg_parse_std_deviation(attr[i + 1], &x, &y);
+		else if (strcmp(attr[i], "flood-color") == 0)
+			color = wlf_svg_color_to_wlf(wlf_svg_parse_color(attr[i + 1]));
+		else if (strcmp(attr[i], "flood-opacity") == 0)
+			opacity = wlf_svg_parse_opacity(attr[i + 1]);
+	}
+	shadow = wlf_drop_shadow_create(dx, dy, x, y, color, opacity);
+	if (shadow == NULL) return;
+	for (i = 0; attr[i]; i += 2) {
+		if (strcmp(attr[i], "in") == 0)
+			strncpy(shadow->input, attr[i + 1], sizeof(shadow->input) - 1);
+		else if (strcmp(attr[i], "result") == 0)
+			strncpy(shadow->result, attr[i + 1], sizeof(shadow->result) - 1);
+	}
+	wlf_filter_add(p->current_filter, &shadow->base);
+}
+
 static void wlf_svg_start_element(void* ud, const char* el, const char** attr)
 {
 	struct wlf_svg_parser *p = (struct wlf_svg_parser  *)ud;
 	enum wlf_svg_element_name element_name = wlf_svg_lookup_element_name(el);
+	if (element_name == WLF_SVG_EL_FILTER) {
+		wlf_svg_parse_filter(p, attr);
+		return;
+	}
+	if (element_name == WLF_SVG_EL_GAUSSIAN_BLUR) {
+		wlf_svg_parse_blur(p, attr);
+		return;
+	}
+	if (element_name == WLF_SVG_EL_DROP_SHADOW) {
+		wlf_svg_parse_shadow(p, attr);
+		return;
+	}
 
 	/* <symbol> can appear inside <defs> or standalone — handle before defsFlag. */
 	if (element_name == WLF_SVG_EL_SYMBOL) {
@@ -3545,6 +3698,9 @@ static void wlf_svg_end_element(void* ud, const char* el)
 		case WLF_SVG_EL_TEXT:
 			wlf_svg_parse_text_end(p);
 			wlf_svg_pop_attr(p);
+			break;
+		case WLF_SVG_EL_FILTER:
+			p->current_filter = NULL;
 			break;
 		default:
 			break;
@@ -3781,6 +3937,60 @@ static void wlf_svg_scale_to_viewbox(struct wlf_svg_parser *p, const char* units
 		for (i = 0; i < shape->stroke_dash_count; i++)
 			shape->stroke_dash_array[i] *= avgs;
 	}
+
+	for (struct wlf_filter *filter = p->image->filters; filter != NULL;
+			filter = filter->next) {
+		if (filter->units == WLF_FILTER_UNITS_USER_SPACE) {
+			filter->x = (filter->x + tx) * sx;
+			filter->y = (filter->y + ty) * sy;
+			filter->width *= sx;
+			filter->height *= sy;
+		}
+		if (filter->primitive_units != WLF_FILTER_UNITS_USER_SPACE) continue;
+		struct wlf_shape *effect;
+		wlf_linked_list_for_each(effect, &filter->effects, link) {
+			if (wlf_shape_is_gaussian_blur(effect)) {
+				struct wlf_gaussian_blur *blur =
+					wlf_gaussian_blur_from_shape(effect);
+				blur->std_deviation_x *= sx;
+				blur->std_deviation_y *= sy;
+			} else if (wlf_shape_is_drop_shadow(effect)) {
+				struct wlf_drop_shadow *shadow =
+					wlf_drop_shadow_from_shape(effect);
+				shadow->dx *= sx;
+				shadow->dy *= sy;
+				shadow->std_deviation_x *= sx;
+				shadow->std_deviation_y *= sy;
+			}
+		}
+	}
+}
+
+static struct wlf_filter *wlf_svg_find_filter(struct wlf_svg_image *image,
+		const char *id) {
+	if (id == NULL || *id == '\0') return NULL;
+	for (struct wlf_filter *filter = image->filters; filter != NULL;
+			filter = filter->next) {
+		if (strcmp(filter->id, id) == 0) return filter;
+	}
+	return NULL;
+}
+
+static void wlf_svg_resolve_filter_list(struct wlf_svg_image *image,
+		struct wlf_shape *list) {
+	for (struct wlf_shape *base = list; base != NULL;
+			base = (struct wlf_shape *)wlf_svg_shape_from_shape(base)->next) {
+		struct wlf_svg_shape *shape = wlf_svg_shape_from_shape(base);
+		shape->filter = wlf_svg_find_filter(image, shape->filter_id);
+	}
+}
+
+static void wlf_svg_resolve_filters(struct wlf_svg_parser *p) {
+	wlf_svg_resolve_filter_list(p->image, p->image->shapes);
+	for (struct wlf_svg_symbol_data *symbol = p->symbols; symbol != NULL;
+			symbol = symbol->next) {
+		wlf_svg_resolve_filter_list(p->image, symbol->shapes);
+	}
 }
 
 static void wlf_svg_create_gradients(struct wlf_svg_parser *p)
@@ -3865,6 +4075,7 @@ struct wlf_svg_image *wlf_svg_parse(char *input, const char *units, float dpi) {
 
 	// Create gradients after all definitions have been parsed
 	wlf_svg_create_gradients(p);
+	wlf_svg_resolve_filters(p);
 
 	// Scale to viewBox
 	wlf_svg_scale_to_viewbox(p, units);
@@ -4003,6 +4214,11 @@ static void wlf_svg_write_style(FILE *fp, const struct wlf_svg_shape *shape)
 		fprintf(fp, "stroke-linejoin=\"%s\" ",
 			wlf_svg_join_to_str(shape->stroke_line_join));
 	}
+	const char *filter_id = shape->filter != NULL
+		? shape->filter->id : shape->filter_id;
+	if (filter_id[0] != '\0') {
+		fprintf(fp, "filter=\"url(#%s)\" ", filter_id);
+	}
 }
 
 static void wlf_svg_write_float(FILE *fp, float value)
@@ -4034,6 +4250,78 @@ static void wlf_svg_write_attr_float(FILE *fp, const char *attr, float value)
 	fprintf(fp, " %s=\"", attr);
 	wlf_svg_write_float(fp, value);
 	fprintf(fp, "\"");
+}
+
+static void wlf_svg_write_indent(FILE *fp, int indent);
+
+static void wlf_svg_write_filter_value(FILE *fp, const char *attr, float value,
+		enum wlf_filter_units units) {
+	fprintf(fp, " %s=\"", attr);
+	if (units == WLF_FILTER_UNITS_OBJECT_BOUNDING_BOX) {
+		wlf_svg_write_float(fp, value * 100.0f);
+		fprintf(fp, "%%");
+	} else {
+		wlf_svg_write_float(fp, value);
+	}
+	fprintf(fp, "\"");
+}
+
+static void wlf_svg_write_filter(FILE *fp, const struct wlf_filter *filter,
+		int indent) {
+	struct wlf_shape *effect;
+	wlf_svg_write_indent(fp, indent);
+	fprintf(fp, "<filter id=\"%s\" filterUnits=\"%s\" primitiveUnits=\"%s\"",
+		filter->id,
+		filter->units == WLF_FILTER_UNITS_USER_SPACE
+			? "userSpaceOnUse" : "objectBoundingBox",
+		filter->primitive_units == WLF_FILTER_UNITS_USER_SPACE
+			? "userSpaceOnUse" : "objectBoundingBox");
+	wlf_svg_write_filter_value(fp, "x", filter->x, filter->units);
+	wlf_svg_write_filter_value(fp, "y", filter->y, filter->units);
+	wlf_svg_write_filter_value(fp, "width", filter->width, filter->units);
+	wlf_svg_write_filter_value(fp, "height", filter->height, filter->units);
+	fprintf(fp, ">\n");
+
+	wlf_linked_list_for_each(effect, &filter->effects, link) {
+		wlf_svg_write_indent(fp, indent + 2);
+		if (wlf_shape_is_gaussian_blur(effect)) {
+			struct wlf_gaussian_blur *blur =
+				wlf_gaussian_blur_from_shape(effect);
+			fprintf(fp, "<feGaussianBlur stdDeviation=\"");
+			wlf_svg_write_float(fp, blur->std_deviation_x);
+			if (fabsf(blur->std_deviation_y - blur->std_deviation_x) > 1e-6f) {
+				fprintf(fp, " ");
+				wlf_svg_write_float(fp, blur->std_deviation_y);
+			}
+			fprintf(fp, "\"");
+			if (blur->input[0] != '\0') fprintf(fp, " in=\"%s\"", blur->input);
+			if (blur->result[0] != '\0') fprintf(fp, " result=\"%s\"", blur->result);
+			fprintf(fp, "/>\n");
+		} else if (wlf_shape_is_drop_shadow(effect)) {
+			struct wlf_drop_shadow *shadow =
+				wlf_drop_shadow_from_shape(effect);
+			struct wlf_color color = shadow->color;
+			float opacity = shadow->opacity * (float)color.a;
+			color.a = 1.0;
+			fprintf(fp, "<feDropShadow");
+			wlf_svg_write_attr_float(fp, "dx", shadow->dx);
+			wlf_svg_write_attr_float(fp, "dy", shadow->dy);
+			fprintf(fp, " stdDeviation=\"");
+			wlf_svg_write_float(fp, shadow->std_deviation_x);
+			if (fabsf(shadow->std_deviation_y - shadow->std_deviation_x) > 1e-6f) {
+				fprintf(fp, " ");
+				wlf_svg_write_float(fp, shadow->std_deviation_y);
+			}
+			fprintf(fp, "\" ");
+			wlf_svg_write_color(fp, &color, "flood-color");
+			fprintf(fp, " flood-opacity=\"%.3f\"", opacity);
+			if (shadow->input[0] != '\0') fprintf(fp, " in=\"%s\"", shadow->input);
+			if (shadow->result[0] != '\0') fprintf(fp, " result=\"%s\"", shadow->result);
+			fprintf(fp, "/>\n");
+		}
+	}
+	wlf_svg_write_indent(fp, indent);
+	fprintf(fp, "</filter>\n");
 }
 
 static void wlf_svg_write_path_data(FILE *fp, const struct wlf_path *path)
@@ -4294,8 +4582,12 @@ bool wlf_svg_save(const struct wlf_svg_image *image, const char *filename)
 	}
 	fprintf(fp, ">\n");
 
-	if (image->symbols != NULL) {
+	if (image->symbols != NULL || image->filters != NULL) {
 		fprintf(fp, "  <defs>\n");
+		for (struct wlf_filter *filter = image->filters; filter != NULL;
+			filter = filter->next) {
+			wlf_svg_write_filter(fp, filter, 4);
+		}
 		for (struct wlf_svg_symbol_data *sym = image->symbols; sym != NULL;
 			sym = sym->next) {
 			float bounds[4];
@@ -4349,6 +4641,7 @@ void wlf_svg_destroy(struct wlf_svg_image *image) {
 	}
 	wlf_svg_delete_symbol_data(image->symbols);
 	wlf_svg_delete_use_data(image->uses);
+	wlf_svg_delete_filters(image->filters);
 	free(image);
 }
 
