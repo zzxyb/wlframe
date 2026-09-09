@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="100" height="80"
+     viewBox="0 0 100 80">
+  <rect id="filtered-rect" x="10" y="10" width="30" height="20"
+        fill="#ff0000" filter="url(#soft-shadow)"/>
+  <g style="filter: url(#soft-shadow)">
+    <circle id="filtered-circle" cx="65" cy="30" r="12" fill="#00ff00"/>
+  </g>
+  <defs>
+    <filter id="soft-shadow" x="-20%" y="-25%" width="140%" height="150%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3 4" result="blurred"/>
+      <feDropShadow in="SourceGraphic" dx="5" dy="6" stdDeviation="2"
+                    flood-color="#336699" flood-opacity="0.5" result="shadow"/>
+    </filter>
+  </defs>
+</svg>
