@@ -25,6 +25,7 @@
 
 #include "wlf/shapes/wlf_shape.h"
 #include "wlf/shapes/wlf_path_shape.h"
+#include "wlf/effect/wlf_filter.h"
 #include "wlf/types/wlf_gradient.h"
 
 enum wlf_svg_paint_type {
@@ -92,6 +93,7 @@ enum wlf_svg_attr_name {
 	WLF_SVG_ATTR_STOP_OPACITY,
 	WLF_SVG_ATTR_OFFSET,
 	WLF_SVG_ATTR_PAINT_ORDER,
+	WLF_SVG_ATTR_FILTER,
 	WLF_SVG_ATTR_ID,
 };
 
@@ -113,6 +115,9 @@ enum wlf_svg_element_name {
 	WLF_SVG_EL_SYMBOL,
 	WLF_SVG_EL_USE,
 	WLF_SVG_EL_TEXT,
+	WLF_SVG_EL_FILTER,
+	WLF_SVG_EL_GAUSSIAN_BLUR,
+	WLF_SVG_EL_DROP_SHADOW,
 };
 
 enum wlf_svg_gradient_attr_name {
@@ -207,6 +212,8 @@ struct wlf_svg_shape {
 	float bounds[4];               /**< Tight bounding box [minx, miny, maxx, maxy]. */
 	char fill_gradient[64];        /**< Optional 'id' of the fill gradient definition. */
 	char stroke_gradient[64];      /**< Optional 'id' of the stroke gradient definition. */
+	char filter_id[64];            /**< Optional 'id' of the referenced filter definition. */
+	struct wlf_filter *filter;     /**< Resolved non-owning filter reference. */
 	float xform[6];                /**< Root transform matrix for fill/stroke gradient. */
 	struct wlf_svg_shape *next;    /**< Next shape in the linked list, or NULL. */
 };
@@ -232,6 +239,7 @@ struct wlf_svg_image {
 	struct wlf_shape *shapes;      /**< Linked list of shapes parsed from the SVG. */
 	struct wlf_svg_symbol_data *symbols; /**< Parsed <symbol> definitions. */
 	struct wlf_svg_use_data *uses; /**< Parsed <use> elements. */
+	struct wlf_filter *filters;    /**< Owned linked list of parsed filter definitions. */
 };
 
 /**
@@ -326,6 +334,7 @@ struct wlf_svg_attrib {
 	float        strokeOpacity;
 	char         fillGradient[64];
 	char         strokeGradient[64];
+	char         filter[64];
 	float        strokeWidth;
 	float        strokeDashOffset;
 	float        strokeDashArray[WLF_SVG_MAX_DASHES];
@@ -367,6 +376,8 @@ struct wlf_svg_parser {
 	struct wlf_svg_symbol_data *symbols;        /**< All parsed \<symbol\> definitions. */
 	struct wlf_svg_symbol_data *current_symbol; /**< Non-NULL while inside \<symbol\>. */
 	struct wlf_svg_use_data    *uses;           /**< All parsed \<use\> elements. */
+	struct wlf_filter          *filters_tail;   /**< Tail of image->filters. */
+	struct wlf_filter          *current_filter; /**< Filter currently collecting primitives. */
 	float viewMinx, viewMiny, viewWidth, viewHeight;
 	int   alignX, alignY, alignType;
 	float dpi;
