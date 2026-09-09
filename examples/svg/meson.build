@@ -1,14 +1,15 @@
-svg_examples = {
-	'svg_info_test': {
-		'src': ['svg_info_test.c'],
-		'dep': [],
-	},
-}
+svg_info_test = executable(
+	'svg_info_test',
+	'svg_info_test.c',
+	dependencies: [wlframe],
+)
 
-foreach example, info : svg_examples
-	executable(
-		example,
-		info.get('src', []),
-		dependencies: [wlframe] + info.get('dep', []),
-	)
-endforeach
+test(
+	'svg_effects',
+	svg_info_test,
+	args: [
+		'--input', meson.current_source_dir() / 'resources/effects.svg',
+		'--output', meson.current_build_dir() / 'effects-roundtrip.svg',
+		'--expect-effects',
+	],
+)
