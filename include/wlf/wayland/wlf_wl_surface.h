@@ -25,6 +25,7 @@
 #include "wlf/utils/wlf_signal.h"
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <pixman.h>
 
