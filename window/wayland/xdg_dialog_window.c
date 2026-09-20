@@ -110,10 +110,10 @@ static void handle_xdg_surface_configure(struct wlf_listener *listener,
 		void *data) {
 	struct wlf_xdg_dialog_window *window =
 		wlf_container_of(listener, window, xdg_surface_configure);
-	uint32_t serial = (uint32_t)(uintptr_t)data;
+	uint32_t serial = *(uint32_t *)data;
 
 	wlf_xdg_surface_ack_configure(window->xdg_surface, serial);
-	wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
+	wlf_signal_emit_mutable(&window->base.events.expose, NULL);
 }
 
 static void handle_xdg_toplevel_configure(struct wlf_listener *listener,
@@ -129,7 +129,7 @@ static void handle_xdg_toplevel_configure(struct wlf_listener *listener,
 
 	window->base.state.geometry.width = toplevel->configure_width;
 	window->base.state.geometry.height = toplevel->configure_height;
-	wlf_signal_emit_mutable(&window->base.events.resize, &window->base);
+	wlf_signal_emit_mutable(&window->base.events.resize, NULL);
 }
 
 static void handle_xdg_toplevel_close(struct wlf_listener *listener,

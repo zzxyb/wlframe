@@ -188,8 +188,10 @@ struct wlf_wl_backend {
 	} zwp_keyboard_shortcuts_inhibit_manager_v1;
 
 	struct {
-		struct wlf_signal global_add;   /**< Signal emitted when a global is added */
-		struct wlf_signal global_remove;/**< Signal emitted when a global is removed */
+		/** Emitted when a global is added. Payload: wlf_wl_interface. */
+		struct wlf_signal global_add;
+		/** Emitted when a global is removed. Payload: wlf_wl_interface. */
+		struct wlf_signal global_remove;
 	} events;
 };
 

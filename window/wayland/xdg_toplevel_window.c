@@ -50,20 +50,22 @@ static void update_surface_scale(struct wlf_xdg_toplevel_window *window,
 
 static void handle_preferred_buffer_scale(struct wlf_listener *listener,
 		void *data) {
+	WLF_UNUSED(data);
 	struct wlf_xdg_toplevel_window *window =
 		wlf_container_of(listener, window, preferred_buffer_scale);
-	struct wlf_wl_surface *surface = data;
 	if (window->fractional_scale == NULL) {
-		update_surface_scale(window, surface->preferred_buffer_scale);
+		update_surface_scale(window,
+			window->surface->preferred_buffer_scale);
 	}
 }
 
 static void handle_preferred_fractional_scale(struct wlf_listener *listener,
 		void *data) {
+	WLF_UNUSED(data);
 	struct wlf_xdg_toplevel_window *window =
 		wlf_container_of(listener, window, preferred_fractional_scale);
-	struct wlf_wp_fractional_scale_v1 *fractional_scale = data;
-	update_surface_scale(window, fractional_scale->preferred_scale_double);
+	update_surface_scale(window,
+		window->fractional_scale->preferred_scale_double);
 }
 
 static bool create_scale_objects(struct wlf_xdg_toplevel_window *window) {
@@ -241,10 +243,10 @@ static void handle_xdg_surface_configure(struct wlf_listener *listener,
 		void *data) {
 	struct wlf_xdg_toplevel_window *window =
 		wlf_container_of(listener, window, xdg_surface_configure);
-	uint32_t serial = (uint32_t)(uintptr_t)data;
+	uint32_t serial = *(uint32_t *)data;
 
 	wlf_xdg_surface_ack_configure(window->xdg_surface, serial);
-	wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
+	wlf_signal_emit_mutable(&window->base.events.expose, NULL);
 }
 
 static void handle_xdg_toplevel_configure(struct wlf_listener *listener,
@@ -276,7 +278,7 @@ static void handle_xdg_toplevel_configure(struct wlf_listener *listener,
 	}
 	if (focus_changed) {
 		wlf_signal_emit_mutable(focused ? &window->base.events.focus_in :
-			&window->base.events.focus_out, &window->base);
+			&window->base.events.focus_out, NULL);
 	}
 
 	if (toplevel->configure_width <= 0 || toplevel->configure_height <= 0) {
@@ -289,7 +291,7 @@ static void handle_xdg_toplevel_configure(struct wlf_listener *listener,
 		wlf_wp_viewport_set_destination(window->viewport,
 			toplevel->configure_width, toplevel->configure_height);
 	}
-	wlf_signal_emit_mutable(&window->base.events.resize, &window->base);
+	wlf_signal_emit_mutable(&window->base.events.resize, NULL);
 }
 
 static void handle_xdg_toplevel_close(struct wlf_listener *listener,
@@ -302,11 +304,11 @@ static void handle_xdg_toplevel_close(struct wlf_listener *listener,
 
 static void handle_decoration_configure(struct wlf_listener *listener,
 		void *data) {
+	WLF_UNUSED(data);
 	struct wlf_xdg_toplevel_window *window =
 		wlf_container_of(listener, window, decoration_configure);
-	struct wlf_zxdg_toplevel_decoration_v1 *decoration = data;
 	bool server_side = !window->force_client_side_decorations &&
-		decoration->mode == WLF_DECORATION_MODE_SERVER_SIDE;
+		window->decoration->mode == WLF_DECORATION_MODE_SERVER_SIDE;
 	window->base.state.server_side_decorated = server_side;
 	if (!update_client_side_decoration(window)) {
 		wlf_log(WLF_ERROR, "Failed to update negotiated window decoration");

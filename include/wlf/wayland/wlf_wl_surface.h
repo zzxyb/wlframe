@@ -65,12 +65,12 @@ struct wlf_wl_surface {
 	uint32_t version;                     /**< Bound wl_surface protocol version. */
 
 	struct {
-		struct wlf_signal destroy;                    /**< Emitted before destruction. Payload: wlf_wl_surface. */
+		struct wlf_signal destroy;                    /**< Emitted before destruction. */
 		struct wlf_signal enter;                      /**< Emitted when the surface enters an output. Payload: wlf_wl_surface_output_event. */
 		struct wlf_signal leave;                      /**< Emitted when the surface leaves an output. Payload: wlf_wl_surface_output_event. */
-		struct wlf_signal preferred_buffer_scale;     /**< Emitted when preferred_buffer_scale changes. Payload: wlf_wl_surface. */
-		struct wlf_signal preferred_buffer_transform; /**< Emitted when preferred_buffer_transform changes. Payload: wlf_wl_surface. */
-		struct wlf_signal throttle_done;              /**< Emitted when the pending throttle sync callback completes. Payload: wlf_wl_surface. */
+		struct wlf_signal preferred_buffer_scale;     /**< Emitted when preferred_buffer_scale changes. */
+		struct wlf_signal preferred_buffer_transform; /**< Emitted when preferred_buffer_transform changes. */
+		struct wlf_signal throttle_done;              /**< Emitted when the pending throttle sync callback completes. */
 	} events;
 };
 

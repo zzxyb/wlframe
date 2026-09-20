@@ -194,23 +194,23 @@ void wlf_event_node_set_input_region(struct wlf_event_node *node,
 }
 
 void wlf_event_node_notify_pointer_enter(struct wlf_event_node *node,
-		const struct wlf_event_pointer_focus_event *event) {
+		struct wlf_event_pointer_focus_event *event) {
 	assert(node != NULL);
 	if (node->pointer_inside) {
 		return;
 	}
 	node->pointer_inside = true;
-	wlf_signal_emit_mutable(&node->events.pointer_enter, (void *)event);
+	wlf_signal_emit_mutable(&node->events.pointer_enter, event);
 }
 
 void wlf_event_node_notify_pointer_leave(struct wlf_event_node *node,
-		const struct wlf_event_pointer_focus_event *event) {
+		struct wlf_event_pointer_focus_event *event) {
 	assert(node != NULL);
 	if (!node->pointer_inside) {
 		return;
 	}
 	node->pointer_inside = false;
-	wlf_signal_emit_mutable(&node->events.pointer_leave, (void *)event);
+	wlf_signal_emit_mutable(&node->events.pointer_leave, event);
 }
 
 bool wlf_scene_node_is_event(const struct wlf_scene_node *node) {

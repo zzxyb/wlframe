@@ -63,13 +63,7 @@ struct wlf_wp_fractional_scale_v1 {
 	double preferred_scale_double;       /**< Last preferred scale as a double */
 
 	struct {
-		/**
-		 * Emitted when the compositor sends preferred_scale.
-		 *
-		 * Signal data: struct wlf_wp_fractional_scale_v1 *
-		 */
-		struct wlf_signal preferred_scale;
-
+		struct wlf_signal preferred_scale; /**< Emitted when the compositor sends preferred_scale */
 		struct wlf_signal destroy; /**< Emitted just before object is freed */
 	} events;
 };

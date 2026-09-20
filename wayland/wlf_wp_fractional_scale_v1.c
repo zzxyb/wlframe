@@ -20,8 +20,7 @@ static void fractional_scale_handle_preferred_scale(void *data,
 	fractional_scale->preferred_scale_double =
 		wlf_wp_fractional_scale_v1_to_double(scale);
 
-	wlf_signal_emit_mutable(&fractional_scale->events.preferred_scale,
-		fractional_scale);
+	wlf_signal_emit_mutable(&fractional_scale->events.preferred_scale, NULL);
 }
 
 static const struct wp_fractional_scale_v1_listener fractional_scale_listener = {
@@ -74,7 +73,7 @@ void wlf_wp_fractional_scale_manager_v1_destroy(
 		return;
 	}
 
-	wlf_signal_emit_mutable(&manager->events.destroy, manager);
+	wlf_signal_emit_mutable(&manager->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&manager->events.destroy.listener_list));
 
 	if (manager->base != NULL) {
@@ -127,14 +126,12 @@ double wlf_wp_fractional_scale_v1_to_double(uint32_t preferred_scale) {
 		(double)WLF_WP_FRACTIONAL_SCALE_V1_DENOMINATOR;
 }
 
-void wlf_wp_fractional_scale_v1_destroy(
-		struct wlf_wp_fractional_scale_v1 *fractional_scale) {
+void wlf_wp_fractional_scale_v1_destroy(struct wlf_wp_fractional_scale_v1 *fractional_scale) {
 	if (fractional_scale == NULL) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&fractional_scale->events.destroy,
-		fractional_scale);
+	wlf_signal_emit_mutable(&fractional_scale->events.destroy, NULL);
 	assert(wlf_linked_list_empty(
 		&fractional_scale->events.destroy.listener_list));
 	assert(wlf_linked_list_empty(

@@ -43,7 +43,7 @@ void wlf_wl_subcompositor_destroy(struct wlf_wl_subcompositor *subcompositor) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&subcompositor->events.destroy, subcompositor);
+	wlf_signal_emit_mutable(&subcompositor->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&subcompositor->events.destroy.listener_list));
 
 	if (subcompositor->wl_subcompositor != NULL) {

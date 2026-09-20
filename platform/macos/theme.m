@@ -108,12 +108,10 @@ void wlf_macos_theme_reload(struct wlf_macos_theme *theme) {
 	theme->base.appearance = appearance;
 	memcpy(theme->base.palette, palette, sizeof(palette));
 	if (appearance_changed) {
-		wlf_signal_emit_mutable(&theme->base.events.theme_changed,
-			&theme->base);
+		wlf_signal_emit_mutable(&theme->base.events.theme_changed, NULL);
 	}
 	if (highlight_changed) {
-		wlf_signal_emit_mutable(&theme->base.events.highlight_changed,
-			&theme->base);
+		wlf_signal_emit_mutable(&theme->base.events.highlight_changed, NULL);
 	}
 }
 

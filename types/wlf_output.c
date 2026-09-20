@@ -31,7 +31,7 @@ void wlf_output_destroy(struct wlf_output *output) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&output->events.destroy, output);
+	wlf_signal_emit_mutable(&output->events.destroy, NULL);
 
 	if (output->impl && output->impl->destroy) {
 		output->impl->destroy(output);

@@ -44,7 +44,7 @@ void wlf_rect_pass_destroy(struct wlf_rect_pass *pass) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&pass->events.destroy, pass);
+	wlf_signal_emit_mutable(&pass->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&pass->events.destroy.listener_list));
 
 	if (pass->impl->destroy != NULL) {

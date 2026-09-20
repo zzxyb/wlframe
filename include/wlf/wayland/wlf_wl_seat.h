@@ -71,8 +71,8 @@ struct wlf_wl_seat {
 
 	struct {
 		struct wlf_signal destroy;       /**< Emitted before destruction. */
-		struct wlf_signal capabilities;  /**< Emitted on capability change. Payload: wlf_wl_seat. */
-		struct wlf_signal name;          /**< Emitted on name change. Payload: wlf_wl_seat. */
+		struct wlf_signal capabilities;  /**< Emitted on capability change. */
+		struct wlf_signal name;          /**< Emitted on name change. */
 	} events;
 };
 

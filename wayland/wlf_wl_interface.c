@@ -31,7 +31,9 @@ void wlf_wl_interface_destroy(struct wlf_wl_interface *interface) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&interface->events.destroy, interface);
+	wlf_signal_emit_mutable(&interface->events.destroy, NULL);
+	assert(wlf_linked_list_empty(&interface->events.destroy.listener_list));
+
 	wlf_linked_list_remove(&interface->link);
 	free(interface->interface);
 	free(interface);

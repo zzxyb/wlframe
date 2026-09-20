@@ -18,7 +18,7 @@ void wlf_allocator_destroy(struct wlf_allocator *allocator) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&allocator->events.destroy, allocator);
+	wlf_signal_emit_mutable(&allocator->events.destroy, NULL);
 
 	assert(wlf_linked_list_empty(&allocator->events.destroy.listener_list));
 

@@ -7,6 +7,7 @@
 #include "wlf/swapchain/wlf_swapchain.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <limits.h>
@@ -64,9 +65,10 @@ static uint32_t get_render_format(bool has_alpha) {
 }
 
 static void handle_theme_changed(struct wlf_listener *listener, void *data) {
+	WLF_UNUSED(data);
 	struct wlf_window *window =
 		wlf_container_of(listener, window, theme_changed);
-	struct wlf_theme *theme = data;
+	struct wlf_theme *theme = window->state.backend->theme;
 	if (!window->uses_theme_background) {
 		return;
 	}
@@ -156,7 +158,9 @@ void wlf_window_destroy(struct wlf_window *window) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&window->events.destroy, window);
+	wlf_signal_emit_mutable(&window->events.destroy, NULL);
+	assert(wlf_linked_list_empty(&window->events.destroy.listener_list));
+
 	if (window->theme_listener_attached) {
 		wlf_linked_list_remove(&window->theme_changed.link);
 		window->theme_listener_attached = false;
@@ -184,7 +188,7 @@ void wlf_window_close(struct wlf_window *window) {
 	}
 
 	window->state.visible = false;
-	wlf_signal_emit_mutable(&window->events.close, window);
+	wlf_signal_emit_mutable(&window->events.close, NULL);
 }
 
 void wlf_window_show(struct wlf_window *window) {
@@ -193,7 +197,7 @@ void wlf_window_show(struct wlf_window *window) {
 	}
 
 	window->state.visible = true;
-	wlf_signal_emit_mutable(&window->events.show, window);
+	wlf_signal_emit_mutable(&window->events.show, NULL);
 }
 
 void wlf_window_hide(struct wlf_window *window) {
@@ -202,7 +206,7 @@ void wlf_window_hide(struct wlf_window *window) {
 	}
 
 	window->state.visible = false;
-	wlf_signal_emit_mutable(&window->events.hide, window);
+	wlf_signal_emit_mutable(&window->events.hide, NULL);
 }
 
 void wlf_window_set_title(struct wlf_window *window, const char *title) {
@@ -237,7 +241,7 @@ void wlf_window_set_geometry(struct wlf_window *window,
 		window->impl->set_geometry(window, &window->state.geometry);
 	}
 	if (resized) {
-		wlf_signal_emit_mutable(&window->events.resize, window);
+		wlf_signal_emit_mutable(&window->events.resize, NULL);
 	}
 }
 
@@ -251,7 +255,7 @@ void wlf_window_set_size(struct wlf_window *window, int width, int height) {
 		window->impl->set_size(window, width, height);
 	}
 	if (resized) {
-		wlf_signal_emit_mutable(&window->events.resize, window);
+		wlf_signal_emit_mutable(&window->events.resize, NULL);
 	}
 }
 
@@ -280,7 +284,7 @@ void wlf_window_set_position(struct wlf_window *window, int x, int y) {
 
 	window->state.geometry.x = x;
 	window->state.geometry.y = y;
-	wlf_signal_emit_mutable(&window->events.move, window);
+	wlf_signal_emit_mutable(&window->events.move, NULL);
 }
 
 void wlf_window_begin_move(struct wlf_window *window,
@@ -322,7 +326,7 @@ void wlf_window_set_scale(struct wlf_window *window, double scale) {
 	}
 
 	window->state.scale = scale;
-	wlf_signal_emit_mutable(&window->events.scale, window);
+	wlf_signal_emit_mutable(&window->events.scale, NULL);
 	if (window->scene != NULL) {
 		wlf_scene_damage_whole(window->scene);
 	}
@@ -442,7 +446,7 @@ void wlf_window_schedule_frame(struct wlf_window *window) {
 	}
 
 	/* Backends without explicit frame callbacks render on the expose signal. */
-	wlf_signal_emit_mutable(&window->events.expose, window);
+	wlf_signal_emit_mutable(&window->events.expose, NULL);
 }
 
 void wlf_window_arm_frame(struct wlf_window *window) {
@@ -484,18 +488,18 @@ static void window_update_pointer_node(struct wlf_window *window,
 }
 
 void wlf_window_pointer_enter(struct wlf_window *window,
-		const struct wlf_pointer_enter_event *event) {
+		struct wlf_pointer_enter_event *event) {
 	window->pointer_x = event->x;
 	window->pointer_y = event->y;
 	wlf_pointer_set_cursor_shape(event->pointer,
 		WLF_CURSOR_SHAPE_DEFAULT);
-	wlf_signal_emit_mutable(&window->events.pointer_enter, (void *)event);
+	wlf_signal_emit_mutable(&window->events.pointer_enter, event);
 	window_update_pointer_node(window, event->pointer, event->x, event->y);
 }
 
 void wlf_window_pointer_leave(struct wlf_window *window,
-		const struct wlf_pointer_leave_event *event) {
-	wlf_signal_emit_mutable(&window->events.pointer_leave, (void *)event);
+		struct wlf_pointer_leave_event *event) {
+	wlf_signal_emit_mutable(&window->events.pointer_leave, event);
 	if (window->pointer_event_node != NULL) {
 		struct wlf_event_pointer_focus_event focus = {
 			.window = window,
@@ -510,20 +514,20 @@ void wlf_window_pointer_leave(struct wlf_window *window,
 }
 
 void wlf_window_pointer_motion(struct wlf_window *window,
-		const struct wlf_pointer_motion_absolute_event *event) {
+		struct wlf_pointer_motion_absolute_event *event) {
 	window->pointer_x = event->x;
 	window->pointer_y = event->y;
-	wlf_signal_emit_mutable(&window->events.pointer_motion, (void *)event);
+	wlf_signal_emit_mutable(&window->events.pointer_motion, event);
 	window_update_pointer_node(window, event->pointer, event->x, event->y);
 	if (window->pointer_event_node != NULL) {
 		wlf_signal_emit_mutable(
-			&window->pointer_event_node->events.pointer_motion, (void *)event);
+			&window->pointer_event_node->events.pointer_motion, event);
 	}
 }
 
 void wlf_window_pointer_button(struct wlf_window *window,
-		const struct wlf_pointer_button_event *event) {
-	wlf_signal_emit_mutable(&window->events.pointer_button, (void *)event);
+		struct wlf_pointer_button_event *event) {
+	wlf_signal_emit_mutable(&window->events.pointer_button, event);
 	struct wlf_event_node *target = window->pointer_event_node;
 	if (event->state == WLF_POINTER_BUTTON_STATE_PRESSED &&
 			window->pointer_grab_event_node == NULL) {
@@ -540,16 +544,16 @@ void wlf_window_pointer_button(struct wlf_window *window,
 			window->keyboard_event_node = target;
 		}
 		wlf_signal_emit_mutable(
-			&target->events.pointer_button, (void *)event);
+			&target->events.pointer_button, event);
 	}
 }
 
 void wlf_window_pointer_axis(struct wlf_window *window,
-		const struct wlf_pointer_axis_event *event) {
-	wlf_signal_emit_mutable(&window->events.pointer_axis, (void *)event);
+		struct wlf_pointer_axis_event *event) {
+	wlf_signal_emit_mutable(&window->events.pointer_axis, event);
 	if (window->pointer_event_node != NULL) {
 		wlf_signal_emit_mutable(
-			&window->pointer_event_node->events.pointer_axis, (void *)event);
+			&window->pointer_event_node->events.pointer_axis, event);
 	}
 }
 
@@ -562,67 +566,67 @@ void wlf_window_pointer_frame(struct wlf_window *window, void *event) {
 }
 
 void wlf_window_keyboard_enter(struct wlf_window *window,
-		const struct wlf_keyboard_enter_event *event) {
+		struct wlf_keyboard_enter_event *event) {
 	if (window->keyboard_event_node == NULL) {
 		window->keyboard_event_node = window->pointer_event_node;
 	}
-	wlf_signal_emit_mutable(&window->events.keyboard_enter, (void *)event);
+	wlf_signal_emit_mutable(&window->events.keyboard_enter, event);
 	if (window->keyboard_event_node != NULL) {
 		wlf_signal_emit_mutable(
-			&window->keyboard_event_node->events.keyboard_enter, (void *)event);
+			&window->keyboard_event_node->events.keyboard_enter, event);
 	}
 }
 
 void wlf_window_keyboard_leave(struct wlf_window *window,
-		const struct wlf_keyboard_leave_event *event) {
-	wlf_signal_emit_mutable(&window->events.keyboard_leave, (void *)event);
+		struct wlf_keyboard_leave_event *event) {
+	wlf_signal_emit_mutable(&window->events.keyboard_leave, event);
 	if (window->keyboard_event_node != NULL) {
 		wlf_signal_emit_mutable(
-			&window->keyboard_event_node->events.keyboard_leave, (void *)event);
+			&window->keyboard_event_node->events.keyboard_leave, event);
 		window->keyboard_event_node = NULL;
 	}
 }
 
 void wlf_window_keyboard_keymap(struct wlf_window *window,
-		const struct wlf_keyboard_keymap_event *event) {
-	wlf_signal_emit_mutable(&window->events.keyboard_keymap, (void *)event);
+		struct wlf_keyboard_keymap_event *event) {
+	wlf_signal_emit_mutable(&window->events.keyboard_keymap, event);
 	if (window->keyboard_event_node != NULL) {
 		wlf_signal_emit_mutable(
-			&window->keyboard_event_node->events.keyboard_keymap, (void *)event);
+			&window->keyboard_event_node->events.keyboard_keymap, event);
 	}
 }
 
 void wlf_window_keyboard_key(struct wlf_window *window,
-		const struct wlf_keyboard_key_event *event) {
-	wlf_signal_emit_mutable(&window->events.keyboard_key, (void *)event);
+		struct wlf_keyboard_key_event *event) {
+	wlf_signal_emit_mutable(&window->events.keyboard_key, event);
 	if (window->keyboard_event_node != NULL) {
 		wlf_signal_emit_mutable(
-			&window->keyboard_event_node->events.keyboard_key, (void *)event);
+			&window->keyboard_event_node->events.keyboard_key, event);
 	}
 }
 
 void wlf_window_keyboard_modifiers(struct wlf_window *window,
-		const struct wlf_keyboard_modifiers_event *event) {
-	wlf_signal_emit_mutable(&window->events.keyboard_modifiers, (void *)event);
+		struct wlf_keyboard_modifiers_event *event) {
+	wlf_signal_emit_mutable(&window->events.keyboard_modifiers, event);
 	if (window->keyboard_event_node != NULL) {
 		wlf_signal_emit_mutable(
-			&window->keyboard_event_node->events.keyboard_modifiers, (void *)event);
+			&window->keyboard_event_node->events.keyboard_modifiers, event);
 	}
 }
 
 void wlf_window_keyboard_repeat_info(struct wlf_window *window,
-		const struct wlf_keyboard_repeat_info_event *event) {
-	wlf_signal_emit_mutable(&window->events.keyboard_repeat_info, (void *)event);
+		struct wlf_keyboard_repeat_info_event *event) {
+	wlf_signal_emit_mutable(&window->events.keyboard_repeat_info, event);
 	if (window->keyboard_event_node != NULL) {
 		wlf_signal_emit_mutable(
 			&window->keyboard_event_node->events.keyboard_repeat_info,
-			(void *)event);
+			event);
 	}
 }
 
 void wlf_window_touch_down(struct wlf_window *window,
-		const struct wlf_touch_down_event *event) {
-	wlf_signal_emit_mutable(&window->events.touch_down, (void *)event);
+		struct wlf_touch_down_event *event) {
+	wlf_signal_emit_mutable(&window->events.touch_down, event);
 	window_touch_point_remove(window, event->touch_id);
 	struct wlf_event_node *node = window_event_node_at(window, event->x, event->y);
 	if (node == NULL) {
@@ -639,37 +643,35 @@ void wlf_window_touch_down(struct wlf_window *window,
 	point->frame_pending = true;
 	point->next = window->touch_points;
 	window->touch_points = point;
-	wlf_signal_emit_mutable(&node->events.touch_down, (void *)event);
+	wlf_signal_emit_mutable(&node->events.touch_down, event);
 }
 
 void wlf_window_touch_motion(struct wlf_window *window,
-		const struct wlf_touch_motion_event *event) {
-	wlf_signal_emit_mutable(&window->events.touch_motion, (void *)event);
+		struct wlf_touch_motion_event *event) {
+	wlf_signal_emit_mutable(&window->events.touch_motion, event);
 	struct wlf_window_touch_point *point =
 		window_touch_point_find(window, event->touch_id);
 	if (point != NULL && point->active && point->event_node != NULL) {
 		point->frame_pending = true;
-		wlf_signal_emit_mutable(&point->event_node->events.touch_motion,
-			(void *)event);
+		wlf_signal_emit_mutable(&point->event_node->events.touch_motion, event);
 	}
 }
 
-void wlf_window_touch_up(struct wlf_window *window,
-		const struct wlf_touch_up_event *event) {
-	wlf_signal_emit_mutable(&window->events.touch_up, (void *)event);
+void wlf_window_touch_up(struct wlf_window *window, struct wlf_touch_up_event *event) {
+	wlf_signal_emit_mutable(&window->events.touch_up, event);
 	struct wlf_window_touch_point *point =
 		window_touch_point_find(window, event->touch_id);
 	if (point != NULL && point->active && point->event_node != NULL) {
 		point->active = false;
 		point->frame_pending = true;
 		wlf_signal_emit_mutable(&point->event_node->events.touch_up,
-			(void *)event);
+			event);
 	}
 }
 
 void wlf_window_touch_cancel(struct wlf_window *window,
-		const struct wlf_touch_cancel_event *event) {
-	wlf_signal_emit_mutable(&window->events.touch_cancel, (void *)event);
+		struct wlf_touch_cancel_event *event) {
+	wlf_signal_emit_mutable(&window->events.touch_cancel, event);
 	for (struct wlf_window_touch_point *point = window->touch_points;
 			point != NULL; point = point->next) {
 		if (point->event_node == NULL) {
@@ -684,34 +686,31 @@ void wlf_window_touch_cancel(struct wlf_window *window,
 			}
 		}
 		if (!already_notified) {
-			wlf_signal_emit_mutable(&point->event_node->events.touch_cancel,
-				(void *)event);
+			wlf_signal_emit_mutable(&point->event_node->events.touch_cancel, event);
 		}
 	}
 	window_touch_points_finish(window);
 }
 
 void wlf_window_touch_shape(struct wlf_window *window,
-		const struct wlf_touch_shape_event *event) {
-	wlf_signal_emit_mutable(&window->events.touch_shape, (void *)event);
+		struct wlf_touch_shape_event *event) {
+	wlf_signal_emit_mutable(&window->events.touch_shape, event);
 	struct wlf_window_touch_point *point =
 		window_touch_point_find(window, event->touch_id);
 	if (point != NULL && point->active && point->event_node != NULL) {
 		point->frame_pending = true;
-		wlf_signal_emit_mutable(&point->event_node->events.touch_shape,
-			(void *)event);
+		wlf_signal_emit_mutable(&point->event_node->events.touch_shape, event);
 	}
 }
 
 void wlf_window_touch_orientation(struct wlf_window *window,
-		const struct wlf_touch_orientation_event *event) {
-	wlf_signal_emit_mutable(&window->events.touch_orientation, (void *)event);
+		struct wlf_touch_orientation_event *event) {
+	wlf_signal_emit_mutable(&window->events.touch_orientation, event);
 	struct wlf_window_touch_point *point =
 		window_touch_point_find(window, event->touch_id);
 	if (point != NULL && point->active && point->event_node != NULL) {
 		point->frame_pending = true;
-		wlf_signal_emit_mutable(&point->event_node->events.touch_orientation,
-			(void *)event);
+		wlf_signal_emit_mutable(&point->event_node->events.touch_orientation, event);
 	}
 }
 

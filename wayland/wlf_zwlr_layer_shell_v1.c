@@ -21,7 +21,7 @@ static void layer_surface_handle_configure(void *data,
 	surface->configure_serial = serial;
 	surface->width = width;
 	surface->height = height;
-	wlf_signal_emit_mutable(&surface->events.configure, surface);
+	wlf_signal_emit_mutable(&surface->events.configure, NULL);
 }
 
 static void layer_surface_handle_closed(void *data,
@@ -29,7 +29,7 @@ static void layer_surface_handle_closed(void *data,
 	WLF_UNUSED(base);
 
 	struct wlf_zwlr_layer_surface_v1 *surface = data;
-	wlf_signal_emit_mutable(&surface->events.closed, surface);
+	wlf_signal_emit_mutable(&surface->events.closed, NULL);
 }
 
 static const struct zwlr_layer_surface_v1_listener layer_surface_listener = {
@@ -80,7 +80,7 @@ void wlf_zwlr_layer_shell_v1_destroy(struct wlf_zwlr_layer_shell_v1 *shell) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&shell->events.destroy, shell);
+	wlf_signal_emit_mutable(&shell->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&shell->events.destroy.listener_list));
 	if (shell->base != NULL) {
 		if (shell->version >=
@@ -248,7 +248,7 @@ void wlf_zwlr_layer_surface_v1_destroy(struct wlf_zwlr_layer_surface_v1 *surface
 		return;
 	}
 
-	wlf_signal_emit_mutable(&surface->events.destroy, surface);
+	wlf_signal_emit_mutable(&surface->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&surface->events.configure.listener_list));
 	assert(wlf_linked_list_empty(&surface->events.closed.listener_list));
 	assert(wlf_linked_list_empty(&surface->events.destroy.listener_list));

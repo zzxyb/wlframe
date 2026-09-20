@@ -9,9 +9,13 @@
 #include <signal.h>
 
 struct wlf_backend *active_backend;
-struct wlf_listener theme_destroy_listener;
-struct wlf_listener theme_changed_listener;
-struct wlf_listener highlight_changed_listener;
+
+struct theme_state {
+	struct wlf_theme *theme;
+	struct wlf_listener destroy;
+	struct wlf_listener changed;
+	struct wlf_listener highlight_changed;
+};
 
 static const char *role_name(enum wlf_theme_color_role role);
 
@@ -35,23 +39,29 @@ static void print_theme_summary(struct wlf_theme *theme) {
 }
 
 static void theme_destroy_notify(struct wlf_listener *listener, void *data) {
-	wlf_linked_list_remove(&theme_destroy_listener.link);
-	wlf_linked_list_remove(&theme_changed_listener.link);
-	wlf_linked_list_remove(&highlight_changed_listener.link);
+	WLF_UNUSED(data);
+	struct theme_state *state =
+		wlf_container_of(listener, state, destroy);
+	wlf_linked_list_remove(&state->destroy.link);
+	wlf_linked_list_remove(&state->changed.link);
+	wlf_linked_list_remove(&state->highlight_changed.link);
 }
 
 static void theme_changed_notify(struct wlf_listener *listener, void *data) {
-	struct wlf_theme *theme = data;
-	WLF_UNUSED(listener);
+	WLF_UNUSED(data);
+	struct theme_state *state =
+		wlf_container_of(listener, state, changed);
 
 	wlf_log(WLF_INFO, "theme_changed: appearance=%s",
-		wlf_theme_appearance_name(theme->appearance));
+		wlf_theme_appearance_name(state->theme->appearance));
 }
 
 static void highlight_changed_notify(struct wlf_listener *listener, void *data) {
-	struct wlf_theme *theme = data;
-	struct wlf_color highlight = theme->palette[WLF_THEME_COLOR_HIGHLIGHT];
-	WLF_UNUSED(listener);
+	WLF_UNUSED(data);
+	struct theme_state *state =
+		wlf_container_of(listener, state, highlight_changed);
+	struct wlf_color highlight =
+		state->theme->palette[WLF_THEME_COLOR_HIGHLIGHT];
 
 	wlf_log(WLF_INFO, "highlight_changed: highlight=#%06X",
 		wlf_color_to_hex_rgb(&highlight));
@@ -89,14 +99,18 @@ int main(void) {
 		return EXIT_FAILURE;
 	}
 
-	theme_destroy_listener.notify = theme_destroy_notify;
-	wlf_signal_add(&theme->events.destroy, &theme_destroy_listener);
+	struct theme_state state = {
+		.theme = theme,
+	};
+	state.destroy.notify = theme_destroy_notify;
+	wlf_signal_add(&theme->events.destroy, &state.destroy);
 
-	theme_changed_listener.notify = theme_changed_notify;
-	wlf_signal_add(&theme->events.theme_changed, &theme_changed_listener);
+	state.changed.notify = theme_changed_notify;
+	wlf_signal_add(&theme->events.theme_changed, &state.changed);
 
-	highlight_changed_listener.notify = highlight_changed_notify;
-	wlf_signal_add(&theme->events.highlight_changed, &highlight_changed_listener);
+	state.highlight_changed.notify = highlight_changed_notify;
+	wlf_signal_add(&theme->events.highlight_changed,
+		&state.highlight_changed);
 
 	print_theme_summary(theme);
 

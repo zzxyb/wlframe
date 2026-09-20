@@ -35,7 +35,7 @@ struct wlf_wl_subcompositor {
 	uint32_t version;                          /**< Bound wl_subcompositor protocol version. */
 
 	struct {
-		struct wlf_signal destroy; /**< Emitted before destruction. Payload: wlf_wl_subcompositor. */
+		struct wlf_signal destroy; /**< Emitted before destruction. */
 	} events;
 };
 

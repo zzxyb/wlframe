@@ -126,7 +126,7 @@ void wlf_scene_node_destroy(struct wlf_scene_node *node) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&node->events.destroy, node);
+	wlf_signal_emit_mutable(&node->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&node->events.destroy.listener_list));
 	wlf_addon_set_finish(&node->addons);
 

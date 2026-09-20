@@ -93,7 +93,7 @@ void wlf_theme_destroy(struct wlf_theme *theme) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&theme->events.destroy, theme);
+	wlf_signal_emit_mutable(&theme->events.destroy, NULL);
 
 	assert(wlf_linked_list_empty(&theme->events.destroy.listener_list));
 	assert(wlf_linked_list_empty(&theme->events.theme_changed.listener_list));

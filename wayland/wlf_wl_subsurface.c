@@ -11,7 +11,7 @@ void wlf_wl_subsurface_destroy(struct wlf_wl_subsurface *subsurface) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&subsurface->events.destroy, subsurface);
+	wlf_signal_emit_mutable(&subsurface->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&subsurface->events.destroy.listener_list));
 
 	if (subsurface->wl_subsurface != NULL) {
