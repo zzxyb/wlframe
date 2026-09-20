@@ -63,7 +63,7 @@ void wlf_swapchain_destroy(struct wlf_swapchain *swapchain) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&swapchain->events.destroy, swapchain);
+	wlf_signal_emit_mutable(&swapchain->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&swapchain->events.destroy.listener_list));
 	struct wlf_allocator *allocator = swapchain->allocator;
 	swapchain->allocator = NULL;

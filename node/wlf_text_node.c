@@ -107,9 +107,10 @@ static void handle_renderer_destroy(struct wlf_listener *listener, void *data) {
 }
 
 static void handle_window_scale(struct wlf_listener *listener, void *data) {
+	WLF_UNUSED(data);
 	struct wlf_text_node *node =
 		wlf_container_of(listener, node, window_scale);
-	struct wlf_window *window = data;
+	struct wlf_window *window = node->base.window;
 	if (node->raster_scale == window->state.scale) {
 		return;
 	}

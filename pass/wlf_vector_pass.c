@@ -38,7 +38,7 @@ void wlf_vector_pass_destroy(struct wlf_vector_pass *pass) {
 	if (pass == NULL) {
 		return;
 	}
-	wlf_signal_emit_mutable(&pass->events.destroy, pass);
+	wlf_signal_emit_mutable(&pass->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&pass->events.destroy.listener_list));
 	pass->impl->destroy(pass);
 }

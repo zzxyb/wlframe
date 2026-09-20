@@ -123,7 +123,7 @@ void wlf_buffer_init(struct wlf_buffer *buffer,
 }
 
 void wlf_buffer_finish(struct wlf_buffer *buffer) {
-	wlf_signal_emit_mutable(&buffer->events.destroy, buffer);
+	wlf_signal_emit_mutable(&buffer->events.destroy, NULL);
 	wlf_addon_set_finish(&buffer->addons);
 
 	assert(wlf_linked_list_empty(&buffer->events.destroy.listener_list));

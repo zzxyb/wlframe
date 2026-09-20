@@ -17,6 +17,7 @@
 #include "wlf/utils/wlf_utils.h"
 
 #include <stdlib.h>
+#include <assert.h>
 
 #define HIGHLIGHT_DAMAGE_FADEOUT_TIME 250
 
@@ -387,7 +388,9 @@ void wlf_scene_destroy(struct wlf_scene *scene) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&scene->events.destroy, scene);
+	wlf_signal_emit_mutable(&scene->events.destroy, NULL);
+	assert(wlf_linked_list_empty(&scene->events.destroy.listener_list));
+
 	wlf_linked_list_remove(&scene->window_expose.link);
 	wlf_linked_list_remove(&scene->window_resize.link);
 	if (scene->window != NULL && scene->window->scene == scene) {
@@ -600,9 +603,8 @@ bool wlf_scene_commit(struct wlf_scene *scene) {
 	return true;
 }
 
-void wlf_scene_send_frame_done(struct wlf_scene *scene,
-		const struct timespec *when) {
+void wlf_scene_send_frame_done(struct wlf_scene *scene, struct timespec *when) {
 	if (scene != NULL && when != NULL) {
-		wlf_signal_emit_mutable(&scene->events.frame_done, (void *)when);
+		wlf_signal_emit_mutable(&scene->events.frame_done, when);
 	}
 }

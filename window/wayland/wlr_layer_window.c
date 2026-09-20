@@ -48,10 +48,10 @@ static void handle_layer_surface_configure(struct wlf_listener *listener,
 		resized = true;
 	}
 	if (resized) {
-		wlf_signal_emit_mutable(&window->base.events.resize, &window->base);
+		wlf_signal_emit_mutable(&window->base.events.resize, NULL);
 	}
 
-	wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
+	wlf_signal_emit_mutable(&window->base.events.expose, NULL);
 }
 
 static void handle_layer_surface_closed(struct wlf_listener *listener,

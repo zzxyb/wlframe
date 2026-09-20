@@ -33,7 +33,7 @@ struct wlf_wl_subsurface {
 	uint32_t version;                    /**< Bound wl_subsurface protocol version. */
 
 	struct {
-		struct wlf_signal destroy; /**< Emitted before destruction. Payload: wlf_wl_subsurface. */
+		struct wlf_signal destroy; /**< Emitted before destruction. */
 	} events;
 };
 

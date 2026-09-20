@@ -72,11 +72,11 @@ void wlf_event_node_set_cursor_shape(struct wlf_event_node *node,
 
 /** Updates pointer focus state and emits pointer_enter once per transition. */
 void wlf_event_node_notify_pointer_enter(struct wlf_event_node *node,
-	const struct wlf_event_pointer_focus_event *event);
+	struct wlf_event_pointer_focus_event *event);
 
 /** Updates pointer focus state and emits pointer_leave once per transition. */
 void wlf_event_node_notify_pointer_leave(struct wlf_event_node *node,
-	const struct wlf_event_pointer_focus_event *event);
+	struct wlf_event_pointer_focus_event *event);
 
 bool wlf_scene_node_is_event(const struct wlf_scene_node *node);
 struct wlf_event_node *wlf_event_node_from_node(struct wlf_scene_node *node);

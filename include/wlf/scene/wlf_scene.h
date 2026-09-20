@@ -79,7 +79,8 @@ struct wlf_scene {
 	struct wlf_listener window_expose;
 	struct wlf_listener window_resize;
 	struct {
-		struct wlf_signal frame_done; /**< Payload is a const struct timespec pointer. */
+		/** Payload: struct timespec pointer, valid during signal emission. */
+		struct wlf_signal frame_done;
 		struct wlf_signal destroy; /**< Emitted before the scene is destroyed. */
 	} events;
 };
@@ -184,7 +185,6 @@ bool wlf_scene_set_client_side_decorated(struct wlf_scene *scene,
  * @param scene Scene sending the frame-done signal.
  * @param when Presentation timestamp payload.
  */
-void wlf_scene_send_frame_done(struct wlf_scene *scene,
-	const struct timespec *when);
+void wlf_scene_send_frame_done(struct wlf_scene *scene, struct timespec *when);
 
 #endif // SCENE_WLF_SCENE_H

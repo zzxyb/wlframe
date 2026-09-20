@@ -40,7 +40,7 @@ void wlf_pointer_destroy(struct wlf_pointer *pointer) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&pointer->events.destroy, pointer);
+	wlf_signal_emit_mutable(&pointer->events.destroy, NULL);
 
 	assert(wlf_linked_list_empty(&pointer->events.destroy.listener_list));
 

@@ -85,7 +85,7 @@ void wlf_renderer_destroy(struct wlf_renderer *render) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&render->events.destroy, render);
+	wlf_signal_emit_mutable(&render->events.destroy, NULL);
 
 	assert(wlf_linked_list_empty(&render->events.destroy.listener_list));
 

@@ -26,7 +26,7 @@ void wlf_keyboard_destroy(struct wlf_keyboard *keyboard) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&keyboard->events.destroy, keyboard);
+	wlf_signal_emit_mutable(&keyboard->events.destroy, NULL);
 
 	assert(wlf_linked_list_empty(&keyboard->events.destroy.listener_list));
 	assert(wlf_linked_list_empty(&keyboard->events.keymap.listener_list));

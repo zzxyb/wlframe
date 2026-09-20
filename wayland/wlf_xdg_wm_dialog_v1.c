@@ -44,7 +44,7 @@ void wlf_xdg_wm_dialog_v1_destroy(struct wlf_xdg_wm_dialog_v1 *manager) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&manager->events.destroy, manager);
+	wlf_signal_emit_mutable(&manager->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&manager->events.destroy.listener_list));
 	if (manager->base != NULL) {
 		xdg_wm_dialog_v1_destroy(manager->base);
@@ -110,7 +110,7 @@ void wlf_xdg_dialog_v1_destroy(struct wlf_xdg_dialog_v1 *dialog) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&dialog->events.destroy, dialog);
+	wlf_signal_emit_mutable(&dialog->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&dialog->events.destroy.listener_list));
 
 	if (dialog->base != NULL) {

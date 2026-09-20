@@ -16,7 +16,7 @@ static void toplevel_decoration_configure(void *data,
 
 	struct wlf_zxdg_toplevel_decoration_v1 *decoration = data;
 	decoration->mode = (enum wlf_decoration_mode)mode;
-	wlf_signal_emit_mutable(&decoration->events.configure, decoration);
+	wlf_signal_emit_mutable(&decoration->events.configure, NULL);
 }
 
 static const struct zxdg_toplevel_decoration_v1_listener
@@ -74,7 +74,7 @@ void wlf_zxdg_decoration_manager_v1_destroy(
 		return;
 	}
 
-	wlf_signal_emit_mutable(&manager->events.destroy, manager);
+	wlf_signal_emit_mutable(&manager->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&manager->events.destroy.listener_list));
 
 	if (manager->base != NULL) {
@@ -145,7 +145,7 @@ void wlf_zxdg_toplevel_decoration_v1_destroy(
 		return;
 	}
 
-	wlf_signal_emit_mutable(&decoration->events.destroy, decoration);
+	wlf_signal_emit_mutable(&decoration->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&decoration->events.destroy.listener_list));
 
 	if (decoration->base != NULL) {

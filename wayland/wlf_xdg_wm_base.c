@@ -15,7 +15,7 @@ static void wm_base_ping(void *data, struct xdg_wm_base *xdg_wm_base,
 
 	struct wlf_xdg_wm_base *wm_base = data;
 	xdg_wm_base_pong(xdg_wm_base, serial);
-	wlf_signal_emit_mutable(&wm_base->events.ping, (void *)(uintptr_t)serial);
+	wlf_signal_emit_mutable(&wm_base->events.ping, &serial);
 }
 
 static const struct xdg_wm_base_listener wm_base_listener = {
@@ -29,8 +29,7 @@ static void surface_configure(void *data, struct xdg_surface *xdg_surface,
 	struct wlf_xdg_surface *surface = data;
 	surface->configure_serial = serial;
 	surface->has_pending_configure = true;
-	wlf_signal_emit_mutable(&surface->events.configure,
-		(void *)(uintptr_t)serial);
+	wlf_signal_emit_mutable(&surface->events.configure, &serial);
 }
 
 static const struct xdg_surface_listener surface_listener = {
@@ -54,14 +53,14 @@ static void toplevel_configure(void *data, struct xdg_toplevel *xdg_toplevel,
 	}
 
 	toplevel->configure_states = mask;
-	wlf_signal_emit_mutable(&toplevel->events.configure, toplevel);
+	wlf_signal_emit_mutable(&toplevel->events.configure, NULL);
 }
 
 static void toplevel_close(void *data, struct xdg_toplevel *xdg_toplevel) {
 	WLF_UNUSED(xdg_toplevel);
 
 	struct wlf_xdg_toplevel *toplevel = data;
-	wlf_signal_emit_mutable(&toplevel->events.close, toplevel);
+	wlf_signal_emit_mutable(&toplevel->events.close, NULL);
 }
 
 static void toplevel_configure_bounds(void *data,
@@ -72,7 +71,7 @@ static void toplevel_configure_bounds(void *data,
 	struct wlf_xdg_toplevel *toplevel = data;
 	toplevel->bounds_width  = width;
 	toplevel->bounds_height = height;
-	wlf_signal_emit_mutable(&toplevel->events.configure_bounds, toplevel);
+	wlf_signal_emit_mutable(&toplevel->events.configure_bounds, NULL);
 }
 
 static void toplevel_wm_capabilities(void *data,
@@ -90,7 +89,7 @@ static void toplevel_wm_capabilities(void *data,
 		}
 	}
 	toplevel->wm_capabilities = mask;
-	wlf_signal_emit_mutable(&toplevel->events.wm_capabilities, toplevel);
+	wlf_signal_emit_mutable(&toplevel->events.wm_capabilities, NULL);
 }
 
 static const struct xdg_toplevel_listener toplevel_listener = {
@@ -109,14 +108,14 @@ static void popup_configure(void *data, struct xdg_popup *xdg_popup,
 	popup->configure_y      = y;
 	popup->configure_width  = width;
 	popup->configure_height = height;
-	wlf_signal_emit_mutable(&popup->events.configure, popup);
+	wlf_signal_emit_mutable(&popup->events.configure, NULL);
 }
 
 static void popup_done(void *data, struct xdg_popup *xdg_popup) {
 	WLF_UNUSED(xdg_popup);
 
 	struct wlf_xdg_popup *popup = data;
-	wlf_signal_emit_mutable(&popup->events.popup_done, popup);
+	wlf_signal_emit_mutable(&popup->events.popup_done, NULL);
 }
 
 static void popup_repositioned(void *data, struct xdg_popup *xdg_popup,
@@ -125,8 +124,7 @@ static void popup_repositioned(void *data, struct xdg_popup *xdg_popup,
 
 	struct wlf_xdg_popup *popup = data;
 	popup->repositioned_token = token;
-	wlf_signal_emit_mutable(&popup->events.repositioned,
-		(void *)(uintptr_t)token);
+	wlf_signal_emit_mutable(&popup->events.repositioned, &token);
 }
 
 static const struct xdg_popup_listener popup_listener = {
@@ -182,7 +180,8 @@ void wlf_xdg_wm_base_destroy(struct wlf_xdg_wm_base *wm_base) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&wm_base->events.destroy, wm_base);
+	wlf_signal_emit_mutable(&wm_base->events.destroy, NULL);
+	assert(wlf_linked_list_empty(&wm_base->events.destroy.listener_list));
 
 	if (wm_base->base != NULL) {
 		xdg_wm_base_destroy(wm_base->base);
@@ -429,7 +428,7 @@ void wlf_xdg_surface_destroy(struct wlf_xdg_surface *surface) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&surface->events.destroy, surface);
+	wlf_signal_emit_mutable(&surface->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&surface->events.destroy.listener_list));
 	if (surface->base != NULL) {
 		xdg_surface_destroy(surface->base);
@@ -552,7 +551,7 @@ void wlf_xdg_toplevel_destroy(struct wlf_xdg_toplevel *toplevel) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&toplevel->events.destroy, toplevel);
+	wlf_signal_emit_mutable(&toplevel->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&toplevel->events.destroy.listener_list));
 	if (toplevel->base != NULL) {
 		xdg_toplevel_destroy(toplevel->base);
@@ -586,7 +585,7 @@ void wlf_xdg_popup_destroy(struct wlf_xdg_popup *popup) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&popup->events.destroy, popup);
+	wlf_signal_emit_mutable(&popup->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&popup->events.destroy.listener_list));
 	if (popup->base != NULL) {
 		xdg_popup_destroy(popup->base);

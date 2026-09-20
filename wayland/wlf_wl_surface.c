@@ -40,7 +40,7 @@ static void surface_handle_preferred_buffer_scale(void *data,
 
 	struct wlf_wl_surface *surface = data;
 	surface->preferred_buffer_scale = factor;
-	wlf_signal_emit_mutable(&surface->events.preferred_buffer_scale, surface);
+	wlf_signal_emit_mutable(&surface->events.preferred_buffer_scale, NULL);
 }
 
 static void surface_handle_preferred_buffer_transform(void *data,
@@ -49,7 +49,7 @@ static void surface_handle_preferred_buffer_transform(void *data,
 
 	struct wlf_wl_surface *surface = data;
 	surface->preferred_buffer_transform = transform;
-	wlf_signal_emit_mutable(&surface->events.preferred_buffer_transform, surface);
+	wlf_signal_emit_mutable(&surface->events.preferred_buffer_transform, NULL);
 }
 
 static const struct wl_surface_listener wl_surface_listener = {
@@ -66,7 +66,7 @@ static void wayland_throttle_callback(void *data,
 	struct wlf_wl_surface *surface = data;
 
 	surface->throttle_callback = NULL;
-	wlf_signal_emit_mutable(&surface->events.throttle_done, surface);
+	wlf_signal_emit_mutable(&surface->events.throttle_done, NULL);
 	wl_callback_destroy(callback);
 }
 
@@ -83,7 +83,7 @@ static void wayland_frame_callback(void *data,
 	surface->frame_window = NULL;
 	wl_callback_destroy(callback);
 	if (window != NULL) {
-		wlf_signal_emit_mutable(&window->events.expose, window);
+		wlf_signal_emit_mutable(&window->events.expose, NULL);
 	}
 }
 
@@ -144,7 +144,7 @@ void wlf_wl_surface_destroy(struct wlf_wl_surface *surface) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&surface->events.destroy, surface);
+	wlf_signal_emit_mutable(&surface->events.destroy, NULL);
 
 	assert(wlf_linked_list_empty(&surface->events.destroy.listener_list));
 	assert(wlf_linked_list_empty(&surface->events.enter.listener_list));

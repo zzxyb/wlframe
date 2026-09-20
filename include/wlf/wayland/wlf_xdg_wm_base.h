@@ -144,7 +144,8 @@ struct wlf_xdg_wm_base {
 	struct {
 		/**
 		 * Emitted when a ping event arrives (after the automatic pong
-		 * reply has already been sent).  Signal data is the serial.
+		 * reply has already been sent). Signal data points to the uint32_t
+		 * serial and is valid only during signal emission.
 		 */
 		struct wlf_signal ping;
 		/** Emitted before the manager is destroyed and freed. */
@@ -185,7 +186,8 @@ struct wlf_xdg_surface {
 	struct {
 		/**
 		 * Emitted when the compositor sends a configure event.
-		 * Signal data is the uint32_t serial.  The caller must call
+		 * Signal data points to the uint32_t serial and is valid only during
+		 * signal emission. The caller must call
 		 * wlf_xdg_surface_ack_configure() and then commit.
 		 */
 		struct wlf_signal configure;
@@ -255,7 +257,10 @@ struct wlf_xdg_popup {
 		struct wlf_signal configure;
 		/** Popup has been dismissed by the compositor. */
 		struct wlf_signal popup_done;
-		/** Reposition reply received (since v3). Signal data is the token. */
+		/**
+		 * Reposition reply received (since v3). Signal data points to the
+		 * uint32_t token and is valid only during signal emission.
+		 */
 		struct wlf_signal repositioned;
 		/** Emitted before the xdg_popup wrapper is destroyed and freed. */
 		struct wlf_signal destroy;

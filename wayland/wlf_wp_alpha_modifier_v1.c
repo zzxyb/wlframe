@@ -44,7 +44,7 @@ void wlf_wp_alpha_modifier_v1_destroy(struct wlf_wp_alpha_modifier_v1 *manager) 
 		return;
 	}
 
-	wlf_signal_emit_mutable(&manager->events.destroy, manager);
+	wlf_signal_emit_mutable(&manager->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&manager->events.destroy.listener_list));
 
 	if (manager->base != NULL) {
@@ -110,7 +110,7 @@ void wlf_wp_alpha_modifier_surface_v1_destroy(
 		return;
 	}
 
-	wlf_signal_emit_mutable(&surface->events.destroy, surface);
+	wlf_signal_emit_mutable(&surface->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&surface->events.destroy.listener_list));
 
 	if (surface->base != NULL) {

@@ -37,7 +37,7 @@ void wlf_render_target_info_destroy(struct wlf_render_target_info *render_target
 		return;
 	}
 
-	wlf_signal_emit_mutable(&render_target->events.destroy, render_target);
+	wlf_signal_emit_mutable(&render_target->events.destroy, NULL);
 
 	assert(wlf_linked_list_empty(&render_target->events.destroy.listener_list));
 

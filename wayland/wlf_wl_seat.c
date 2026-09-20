@@ -339,7 +339,7 @@ static void seat_handle_capabilities(void *data, struct wl_seat *base,
 			(previous & WL_SEAT_CAPABILITY_TOUCH)) {
 		seat_destroy_touch(seat);
 	}
-	wlf_signal_emit_mutable(&seat->events.capabilities, seat);
+	wlf_signal_emit_mutable(&seat->events.capabilities, NULL);
 }
 
 static void seat_handle_name(void *data, struct wl_seat *base,
@@ -349,7 +349,7 @@ static void seat_handle_name(void *data, struct wl_seat *base,
 	struct wlf_wl_seat *seat = data;
 	free(seat->name);
 	seat->name = strdup(name);
-	wlf_signal_emit_mutable(&seat->events.name, seat);
+	wlf_signal_emit_mutable(&seat->events.name, NULL);
 }
 
 static const struct wl_seat_listener wl_seat_listener = {
@@ -394,7 +394,7 @@ void wlf_wl_seat_destroy(struct wlf_wl_seat *seat) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&seat->events.destroy, seat);
+	wlf_signal_emit_mutable(&seat->events.destroy, NULL);
 	seat_destroy_touch(seat);
 	seat_destroy_keyboard(seat);
 	seat_destroy_pointer(seat);

@@ -53,7 +53,7 @@ void wlf_wp_viewporter_destroy(struct wlf_wp_viewporter *viewporter) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&viewporter->events.destroy, viewporter);
+	wlf_signal_emit_mutable(&viewporter->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&viewporter->events.destroy.listener_list));
 
 	if (viewporter->base != NULL) {
@@ -115,7 +115,7 @@ void wlf_wp_viewport_destroy(struct wlf_wp_viewport *viewport) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&viewport->events.destroy, viewport);
+	wlf_signal_emit_mutable(&viewport->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&viewport->events.destroy.listener_list));
 
 	if (viewport->base != NULL) {

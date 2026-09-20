@@ -57,7 +57,7 @@ void wlf_wp_content_type_manager_v1_destroy(struct wlf_wp_content_type_manager_v
 		return;
 	}
 
-	wlf_signal_emit_mutable(&manager->events.destroy, manager);
+	wlf_signal_emit_mutable(&manager->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&manager->events.destroy.listener_list));
 
 	if (manager->base != NULL) {
@@ -120,7 +120,7 @@ void wlf_wp_content_type_v1_destroy(struct wlf_wp_content_type_v1 *content_type)
 		return;
 	}
 
-	wlf_signal_emit_mutable(&content_type->events.destroy, content_type);
+	wlf_signal_emit_mutable(&content_type->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&content_type->events.destroy.listener_list));
 
 	if (content_type->base != NULL) {

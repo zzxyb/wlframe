@@ -89,7 +89,8 @@ void wlf_backend_destroy(struct wlf_backend *backend) {
 
 	wlf_log(WLF_DEBUG, "Destroying backend %s", backend->impl->name);
 
-	wlf_signal_emit_mutable(&backend->events.destroy, backend);
+	wlf_signal_emit_mutable(&backend->events.destroy, NULL);
+	assert(wlf_linked_list_empty(&backend->events.destroy.listener_list));
 	wlf_theme_destroy(backend->theme);
 	backend->theme = NULL;
 	free(backend->event_sources);

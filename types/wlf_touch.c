@@ -28,7 +28,7 @@ void wlf_touch_destroy(struct wlf_touch *touch) {
 		return;
 	}
 
-	wlf_signal_emit_mutable(&touch->events.destroy, touch);
+	wlf_signal_emit_mutable(&touch->events.destroy, NULL);
 
 	assert(wlf_linked_list_empty(&touch->events.destroy.listener_list));
 

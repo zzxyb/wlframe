@@ -181,7 +181,7 @@ struct wlf_window {
 
 	struct {
 		struct wlf_signal destroy;      /**< Emitted when window is destroyed */
-		struct wlf_signal expose;       /**< Emitted when window needs redraw */
+		struct wlf_signal expose;       /**< Emitted when window needs redraw. */
 		struct wlf_signal resize;       /**< Emitted when window is resized */
 		struct wlf_signal move;         /**< Emitted when window is moved */
 		struct wlf_signal close;        /**< Emitted when close is requested */
@@ -190,26 +190,26 @@ struct wlf_window {
 		struct wlf_signal scale;        /**< Emitted after the buffer scale changes */
 		struct wlf_signal show;         /**< Emitted when window is shown */
 		struct wlf_signal hide;         /**< Emitted when window is hidden */
-		struct wlf_signal pointer_enter;
-		struct wlf_signal pointer_leave;
-		struct wlf_signal pointer_motion;
-		struct wlf_signal pointer_button;
-		struct wlf_signal pointer_axis;
-		struct wlf_signal pointer_frame;
-		struct wlf_signal keyboard_enter;
-		struct wlf_signal keyboard_leave;
-		struct wlf_signal keyboard_keymap;
-		struct wlf_signal keyboard_key;
-		struct wlf_signal keyboard_modifiers;
-		struct wlf_signal keyboard_repeat_info;
+		struct wlf_signal pointer_enter; /**< Payload: wlf_pointer_enter_event. */
+		struct wlf_signal pointer_leave; /**< Payload: wlf_pointer_leave_event. */
+		struct wlf_signal pointer_motion; /**< Payload: wlf_pointer_motion_absolute_event. */
+		struct wlf_signal pointer_button; /**< Payload: wlf_pointer_button_event. */
+		struct wlf_signal pointer_axis; /**< Payload: wlf_pointer_axis_event. */
+		struct wlf_signal pointer_frame; /**< Emitted to delimit a logical event frame. */
+		struct wlf_signal keyboard_enter; /**< Payload: wlf_keyboard_enter_event. */
+		struct wlf_signal keyboard_leave; /**< Payload: wlf_keyboard_leave_event. */
+		struct wlf_signal keyboard_keymap; /**< Payload: wlf_keyboard_keymap_event. */
+		struct wlf_signal keyboard_key; /**< Payload: wlf_keyboard_key_event. */
+		struct wlf_signal keyboard_modifiers; /**< Payload: wlf_keyboard_modifiers_event. */
+		struct wlf_signal keyboard_repeat_info; /**< Payload: wlf_keyboard_repeat_info_event. */
 		struct wlf_signal tablet;
-		struct wlf_signal touch_down;
-		struct wlf_signal touch_up;
-		struct wlf_signal touch_motion;
-		struct wlf_signal touch_cancel;
+		struct wlf_signal touch_down; /**< Payload: wlf_touch_down_event. */
+		struct wlf_signal touch_up; /**< Payload: wlf_touch_up_event. */
+		struct wlf_signal touch_motion; /**< Payload: wlf_touch_motion_event. */
+		struct wlf_signal touch_cancel; /**< Payload: wlf_touch_cancel_event. */
 		struct wlf_signal touch_frame;
-		struct wlf_signal touch_shape;
-		struct wlf_signal touch_orientation;
+		struct wlf_signal touch_shape; /**< Payload: wlf_touch_shape_event. */
+		struct wlf_signal touch_orientation; /**< Payload: wlf_touch_orientation_event. */
 	} events;
 };
 
@@ -420,7 +420,7 @@ void wlf_window_arm_frame(struct wlf_window *window);
  * @param event Pointer-enter event payload.
  */
 void wlf_window_pointer_enter(struct wlf_window *window,
-	const struct wlf_pointer_enter_event *event);
+	struct wlf_pointer_enter_event *event);
 
 /**
  * @brief Forwards a pointer-leave event to the window event tree.
@@ -428,7 +428,7 @@ void wlf_window_pointer_enter(struct wlf_window *window,
  * @param event Pointer-leave event payload.
  */
 void wlf_window_pointer_leave(struct wlf_window *window,
-	const struct wlf_pointer_leave_event *event);
+	struct wlf_pointer_leave_event *event);
 
 /**
  * @brief Forwards pointer motion to the window event tree.
@@ -436,7 +436,7 @@ void wlf_window_pointer_leave(struct wlf_window *window,
  * @param event Pointer-motion event payload.
  */
 void wlf_window_pointer_motion(struct wlf_window *window,
-	const struct wlf_pointer_motion_absolute_event *event);
+	struct wlf_pointer_motion_absolute_event *event);
 
 /**
  * @brief Forwards a pointer-button event to the window event tree.
@@ -444,7 +444,7 @@ void wlf_window_pointer_motion(struct wlf_window *window,
  * @param event Pointer-button event payload.
  */
 void wlf_window_pointer_button(struct wlf_window *window,
-	const struct wlf_pointer_button_event *event);
+	struct wlf_pointer_button_event *event);
 
 /**
  * @brief Forwards a pointer-axis event to the window event tree.
@@ -452,7 +452,7 @@ void wlf_window_pointer_button(struct wlf_window *window,
  * @param event Pointer-axis event payload.
  */
 void wlf_window_pointer_axis(struct wlf_window *window,
-	const struct wlf_pointer_axis_event *event);
+	struct wlf_pointer_axis_event *event);
 
 /**
  * @brief Forwards the end of a pointer event frame.
@@ -467,7 +467,7 @@ void wlf_window_pointer_frame(struct wlf_window *window, void *event);
  * @param event Keyboard-enter event payload.
  */
 void wlf_window_keyboard_enter(struct wlf_window *window,
-	const struct wlf_keyboard_enter_event *event);
+	struct wlf_keyboard_enter_event *event);
 
 /**
  * @brief Forwards a keyboard-leave event to the focused event node.
@@ -475,7 +475,7 @@ void wlf_window_keyboard_enter(struct wlf_window *window,
  * @param event Keyboard-leave event payload.
  */
 void wlf_window_keyboard_leave(struct wlf_window *window,
-	const struct wlf_keyboard_leave_event *event);
+	struct wlf_keyboard_leave_event *event);
 
 /**
  * @brief Forwards a keyboard keymap event to the focused event node.
@@ -483,7 +483,7 @@ void wlf_window_keyboard_leave(struct wlf_window *window,
  * @param event Keyboard-keymap event payload.
  */
 void wlf_window_keyboard_keymap(struct wlf_window *window,
-	const struct wlf_keyboard_keymap_event *event);
+	struct wlf_keyboard_keymap_event *event);
 
 /**
  * @brief Forwards a keyboard-key event to the focused event node.
@@ -491,7 +491,7 @@ void wlf_window_keyboard_keymap(struct wlf_window *window,
  * @param event Keyboard-key event payload.
  */
 void wlf_window_keyboard_key(struct wlf_window *window,
-	const struct wlf_keyboard_key_event *event);
+	struct wlf_keyboard_key_event *event);
 
 /**
  * @brief Forwards keyboard modifier state to the focused event node.
@@ -499,7 +499,7 @@ void wlf_window_keyboard_key(struct wlf_window *window,
  * @param event Keyboard-modifier event payload.
  */
 void wlf_window_keyboard_modifiers(struct wlf_window *window,
-	const struct wlf_keyboard_modifiers_event *event);
+	struct wlf_keyboard_modifiers_event *event);
 
 /**
  * @brief Forwards keyboard repeat information to the focused event node.
@@ -507,7 +507,7 @@ void wlf_window_keyboard_modifiers(struct wlf_window *window,
  * @param event Keyboard-repeat event payload.
  */
 void wlf_window_keyboard_repeat_info(struct wlf_window *window,
-	const struct wlf_keyboard_repeat_info_event *event);
+	struct wlf_keyboard_repeat_info_event *event);
 
 /**
  * @brief Forwards a touch-down event to the window event tree.
@@ -515,7 +515,7 @@ void wlf_window_keyboard_repeat_info(struct wlf_window *window,
  * @param event Touch-down event payload.
  */
 void wlf_window_touch_down(struct wlf_window *window,
-	const struct wlf_touch_down_event *event);
+	struct wlf_touch_down_event *event);
 
 /**
  * @brief Forwards a touch-up event to the window event tree.
@@ -523,7 +523,7 @@ void wlf_window_touch_down(struct wlf_window *window,
  * @param event Touch-up event payload.
  */
 void wlf_window_touch_up(struct wlf_window *window,
-	const struct wlf_touch_up_event *event);
+	struct wlf_touch_up_event *event);
 
 /**
  * @brief Forwards touch motion to the window event tree.
@@ -531,7 +531,7 @@ void wlf_window_touch_up(struct wlf_window *window,
  * @param event Touch-motion event payload.
  */
 void wlf_window_touch_motion(struct wlf_window *window,
-	const struct wlf_touch_motion_event *event);
+	struct wlf_touch_motion_event *event);
 
 /**
  * @brief Forwards a touch-cancel event to the window event tree.
@@ -539,7 +539,7 @@ void wlf_window_touch_motion(struct wlf_window *window,
  * @param event Touch-cancel event payload.
  */
 void wlf_window_touch_cancel(struct wlf_window *window,
-	const struct wlf_touch_cancel_event *event);
+	struct wlf_touch_cancel_event *event);
 
 /**
  * @brief Forwards the end of a touch event frame.
@@ -554,7 +554,7 @@ void wlf_window_touch_frame(struct wlf_window *window, void *event);
  * @param event Touch-shape event payload.
  */
 void wlf_window_touch_shape(struct wlf_window *window,
-	const struct wlf_touch_shape_event *event);
+	struct wlf_touch_shape_event *event);
 
 /**
  * @brief Forwards a touch-orientation event to the window event tree.
@@ -562,7 +562,7 @@ void wlf_window_touch_shape(struct wlf_window *window,
  * @param event Touch-orientation event payload.
  */
 void wlf_window_touch_orientation(struct wlf_window *window,
-	const struct wlf_touch_orientation_event *event);
+	struct wlf_touch_orientation_event *event);
 
 /**
  * @brief Drops active touch-point references to an event node being disabled or destroyed.

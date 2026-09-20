@@ -102,10 +102,10 @@ static void handle_xdg_surface_configure(struct wlf_listener *listener,
 		void *data) {
 	struct wlf_xdg_popup_window *window =
 		wlf_container_of(listener, window, xdg_surface_configure);
-	uint32_t serial = (uint32_t)(uintptr_t)data;
+	uint32_t serial = *(uint32_t *)data;
 
 	wlf_xdg_surface_ack_configure(window->xdg_surface, serial);
-	wlf_signal_emit_mutable(&window->base.events.expose, &window->base);
+	wlf_signal_emit_mutable(&window->base.events.expose, NULL);
 }
 
 static void handle_xdg_popup_configure(struct wlf_listener *listener,
@@ -120,9 +120,9 @@ static void handle_xdg_popup_configure(struct wlf_listener *listener,
 	if (popup->configure_width > 0 && popup->configure_height > 0) {
 		window->base.state.geometry.width = popup->configure_width;
 		window->base.state.geometry.height = popup->configure_height;
-		wlf_signal_emit_mutable(&window->base.events.resize, &window->base);
+		wlf_signal_emit_mutable(&window->base.events.resize, NULL);
 	}
-	wlf_signal_emit_mutable(&window->base.events.move, &window->base);
+	wlf_signal_emit_mutable(&window->base.events.move, NULL);
 }
 
 static void handle_xdg_popup_done(struct wlf_listener *listener,
