@@ -3070,7 +3070,7 @@ static void wlf_svg_parse_gradient(struct wlf_svg_parser *p, const char** attr, 
 				break;
 			}
 			default:
-				(void)wlf_svg_parse_attr(p, attr[i], attr[i + 1]);
+				wlf_svg_parse_attr(p, attr[i], attr[i + 1]);
 				break;
 		}
 	}

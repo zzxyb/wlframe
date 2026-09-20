@@ -2,6 +2,7 @@
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_compat.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <ctype.h>
@@ -494,7 +495,7 @@ static bool parse_color_line(const char *line, int cpp, struct wlf_xpm_color *ou
 }
 
 static bool xpm_image_load(struct wlf_image *image, const char *filename, bool enable_16_bit) {
-	(void)enable_16_bit;
+	WLF_UNUSED(enable_16_bit);
 
 	size_t file_size = 0;
 	char *buf = read_file_all(filename, &file_size);

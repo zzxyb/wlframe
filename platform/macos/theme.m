@@ -2,6 +2,7 @@
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_compat.h"
 #include "wlf/utils/wlf_env.h"
+#include "wlf/utils/wlf_utils.h"
 
 #import <AppKit/AppKit.h>
 
@@ -136,7 +137,7 @@ static void macos_theme_fill_palette(
 }
 
 - (void)appearanceChanged:(NSNotification *)notification {
-	(void)notification;
+	WLF_UNUSED(notification);
 
 	if (_theme == NULL) {
 		return;

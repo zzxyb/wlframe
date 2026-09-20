@@ -1,6 +1,6 @@
 #include "wlf/platform/linux/text.h"
-
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <cairo/cairo.h>
 #include <limits.h>
@@ -82,7 +82,7 @@ static void measure_layout(PangoLayout *layout,
 
 static void linux_text_raster_destroy(struct wlf_text *text,
 		struct wlf_text_raster *raster) {
-	(void)text;
+	WLF_UNUSED(text);
 	if (raster->private_data != NULL) {
 		cairo_surface_destroy(raster->private_data);
 	}
@@ -92,7 +92,7 @@ static void linux_text_raster_destroy(struct wlf_text *text,
 static bool linux_text_rasterize(struct wlf_text *text,
 		const struct wlf_text_options *options,
 		struct wlf_text_raster *raster) {
-	(void)text;
+	WLF_UNUSED(text);
 
 	cairo_surface_t *measure_surface = cairo_image_surface_create(
 		CAIRO_FORMAT_ARGB32, 1, 1);

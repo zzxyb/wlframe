@@ -33,7 +33,7 @@ static void backend_dispatch_event_sources(struct wlf_backend *backend,
 		int timeout_ms) {
 	if (backend->event_source_count == 0) {
 		if (timeout_ms > 0) {
-			(void)poll(NULL, 0, timeout_ms);
+			poll(NULL, 0, timeout_ms);
 		}
 		return;
 	}

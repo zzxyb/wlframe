@@ -21,7 +21,7 @@
 
 static void handle_pointer_window_destroy(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_wl_seat *seat =
 		SEAT_FROM_LISTENER(listener, pointer_window_destroy);
 	wlf_linked_list_remove(&listener->link);
@@ -30,7 +30,7 @@ static void handle_pointer_window_destroy(struct wlf_listener *listener,
 
 static void handle_keyboard_window_destroy(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_wl_seat *seat =
 		SEAT_FROM_LISTENER(listener, keyboard_window_destroy);
 	wlf_linked_list_remove(&listener->link);
@@ -39,7 +39,7 @@ static void handle_keyboard_window_destroy(struct wlf_listener *listener,
 
 static void handle_touch_window_destroy(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_wl_seat *seat =
 		SEAT_FROM_LISTENER(listener, touch_window_destroy);
 	wlf_linked_list_remove(&listener->link);
@@ -322,19 +322,19 @@ static void seat_handle_capabilities(void *data, struct wl_seat *base,
 	uint32_t previous = seat->capabilities;
 	seat->capabilities = capabilities;
 	if ((capabilities & WL_SEAT_CAPABILITY_POINTER) && seat->pointer == NULL) {
-		(void)seat_create_pointer(seat);
+		seat_create_pointer(seat);
 	} else if (!(capabilities & WL_SEAT_CAPABILITY_POINTER) &&
 			(previous & WL_SEAT_CAPABILITY_POINTER)) {
 		seat_destroy_pointer(seat);
 	}
 	if ((capabilities & WL_SEAT_CAPABILITY_KEYBOARD) && seat->keyboard == NULL) {
-		(void)seat_create_keyboard(seat);
+		seat_create_keyboard(seat);
 	} else if (!(capabilities & WL_SEAT_CAPABILITY_KEYBOARD) &&
 			(previous & WL_SEAT_CAPABILITY_KEYBOARD)) {
 		seat_destroy_keyboard(seat);
 	}
 	if ((capabilities & WL_SEAT_CAPABILITY_TOUCH) && seat->touch == NULL) {
-		(void)seat_create_touch(seat);
+		seat_create_touch(seat);
 	} else if (!(capabilities & WL_SEAT_CAPABILITY_TOUCH) &&
 			(previous & WL_SEAT_CAPABILITY_TOUCH)) {
 		seat_destroy_touch(seat);

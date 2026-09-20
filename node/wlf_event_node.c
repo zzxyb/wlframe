@@ -1,6 +1,7 @@
 #include "wlf/node/wlf_event_node.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wlf_window.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <math.h>
@@ -68,16 +69,16 @@ static void event_node_get_size(struct wlf_scene_node *base,
 }
 
 static bool event_node_invisible(struct wlf_scene_node *base) {
-	(void)base;
+	WLF_UNUSED(base);
 	return true;
 }
 
 static void event_node_bounds(struct wlf_scene_node *base,
 		int x, int y, pixman_region32_t *bounds) {
-	(void)base;
-	(void)x;
-	(void)y;
-	(void)bounds;
+	WLF_UNUSED(base);
+	WLF_UNUSED(x);
+	WLF_UNUSED(y);
+	WLF_UNUSED(bounds);
 	/* Input-only nodes never contribute pixels, visibility or damage. */
 }
 

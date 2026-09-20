@@ -86,7 +86,7 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 		uint32_t width, uint32_t height) {
 	assert(impl->destroy);
 	assert(backend != NULL);
-	(void)wlf_backend_init_theme(backend);
+	wlf_backend_init_theme(backend);
 
 	*window = (struct wlf_window){
 		.impl = impl,
@@ -476,7 +476,7 @@ static void window_update_pointer_node(struct wlf_window *window,
 			window->pointer_event_node, &event);
 	}
 	window->pointer_event_node = next;
-	(void)wlf_pointer_set_cursor_shape(pointer, next != NULL ?
+	wlf_pointer_set_cursor_shape(pointer, next != NULL ?
 		next->cursor_shape : WLF_CURSOR_SHAPE_DEFAULT);
 	if (next != NULL) {
 		wlf_event_node_notify_pointer_enter(next, &event);
@@ -487,7 +487,7 @@ void wlf_window_pointer_enter(struct wlf_window *window,
 		const struct wlf_pointer_enter_event *event) {
 	window->pointer_x = event->x;
 	window->pointer_y = event->y;
-	(void)wlf_pointer_set_cursor_shape(event->pointer,
+	wlf_pointer_set_cursor_shape(event->pointer,
 		WLF_CURSOR_SHAPE_DEFAULT);
 	wlf_signal_emit_mutable(&window->events.pointer_enter, (void *)event);
 	window_update_pointer_node(window, event->pointer, event->x, event->y);

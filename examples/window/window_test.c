@@ -16,6 +16,7 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wayland/xdg_toplevel_window.h"
 #include "wlf/window/wlf_window.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -58,14 +59,14 @@ static void update_event_test_color(struct render_state *render) {
 }
 
 static void handle_event_test_enter(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct render_state *render = wlf_container_of(listener, render,
 		event_test.pointer_enter);
 	update_event_test_color(render);
 }
 
 static void handle_event_test_leave(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct render_state *render = wlf_container_of(listener, render,
 		event_test.pointer_leave);
 	update_event_test_color(render);
@@ -73,7 +74,7 @@ static void handle_event_test_leave(struct wlf_listener *listener, void *data) {
 
 static void handle_event_test_touch_down(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct render_state *render = wlf_container_of(listener, render,
 		event_test.touch_down);
 	render->event_test.active_touches++;
@@ -82,7 +83,7 @@ static void handle_event_test_touch_down(struct wlf_listener *listener,
 
 static void handle_event_test_touch_up(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct render_state *render = wlf_container_of(listener, render,
 		event_test.touch_up);
 	if (render->event_test.active_touches > 0) {
@@ -93,7 +94,7 @@ static void handle_event_test_touch_up(struct wlf_listener *listener,
 
 static void handle_event_test_touch_cancel(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct render_state *render = wlf_container_of(listener, render,
 		event_test.touch_cancel);
 	render->event_test.active_touches = 0;

@@ -1,6 +1,7 @@
 #include "wlf/wayland/wlf_wp_fractional_scale_v1.h"
 
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 #include "wayland/protocols/fractional-scale-v1-client-protocol.h"
 
 #include <assert.h>
@@ -13,7 +14,7 @@
 static void fractional_scale_handle_preferred_scale(void *data,
 		struct wp_fractional_scale_v1 *wp_fractional_scale_v1,
 		uint32_t scale) {
-	(void)wp_fractional_scale_v1;
+	WLF_UNUSED(wp_fractional_scale_v1);
 
 	struct wlf_wp_fractional_scale_v1 *fractional_scale = data;
 	fractional_scale->preferred_scale_double =

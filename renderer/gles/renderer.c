@@ -8,6 +8,7 @@
 #include "wlf/texture/gles/texture.h"
 #include "wlf/pass/gles/render_target_info.h"
 #include "wlf/config.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -34,7 +35,7 @@ static struct wlf_texture *renderer_texture_from_buffer(
 static struct wlf_render_target_info *renderer_begin_buffer_pass(
 		struct wlf_renderer *renderer, struct wlf_buffer *buffer,
 		const struct wlf_buffer_pass_options *options) {
-	(void)options;
+	WLF_UNUSED(options);
 	if (!wlf_buffer_is_egl(buffer)) {
 		return NULL;
 	}

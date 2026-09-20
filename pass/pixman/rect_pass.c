@@ -1,7 +1,7 @@
 #include "wlf/pass/pixman/rect_pass.h"
-
 #include "wlf/pass/pixman/render_target_info.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <math.h>
 #include <stdint.h>
@@ -26,7 +26,7 @@ static void pixman_rect_pass_destroy(struct wlf_rect_pass *pass) {
 static void pixman_rect_pass_render(struct wlf_rect_pass *pass,
 		struct wlf_render_target_info *render_target_info,
 		const struct wlf_render_rect_options *options) {
-	(void)pass;
+	WLF_UNUSED(pass);
 
 	if (!wlf_render_target_info_is_pixman(render_target_info)) {
 		wlf_log(WLF_ERROR, "pixman rect pass requires a pixman render target");

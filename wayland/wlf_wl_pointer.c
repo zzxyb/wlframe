@@ -276,7 +276,7 @@ void wlf_wl_pointer_configure_cursor(struct wlf_wl_pointer *pointer,
 	pointer->base.cursor = wlf_wl_cursor_create(pointer->pointer,
 		shape_manager, compositor, shm);
 	if (pointer->base.cursor != NULL && pointer->base.cursor_serial != 0) {
-		(void)wlf_pointer_set_cursor_shape(&pointer->base,
+		wlf_pointer_set_cursor_shape(&pointer->base,
 			WLF_CURSOR_SHAPE_DEFAULT);
 	}
 }

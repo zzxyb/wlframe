@@ -2,6 +2,7 @@
 #include "wlf/utils/wlf_compat.h"
 #include "wlf/utils/wlf_env.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <gio/gio.h>
 
@@ -288,7 +289,7 @@ static void linux_theme_fill_palette(struct wlf_linux_theme *theme,
 		return;
 	}
 
-	(void)linux_theme_gsettings_accent(&palette[WLF_THEME_COLOR_HIGHLIGHT]);
+	linux_theme_gsettings_accent(&palette[WLF_THEME_COLOR_HIGHLIGHT]);
 }
 
 void wlf_linux_theme_reload(struct wlf_linux_theme *theme) {
@@ -335,8 +336,8 @@ static void linux_theme_portal_signal(GDBusProxy *proxy,
 	const char *key;
 	GVariant *value;
 
-	(void)proxy;
-	(void)sender_name;
+	WLF_UNUSED(proxy);
+	WLF_UNUSED(sender_name);
 
 	if (strcmp(signal_name, "SettingChanged") != 0) {
 		return;

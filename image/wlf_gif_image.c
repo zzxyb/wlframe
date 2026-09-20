@@ -1,6 +1,7 @@
 #include "wlf/image/wlf_gif_image.h"
 #include "wlf/utils/wlf_linked_list.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -541,7 +542,7 @@ static void wlf_blend_saved_image_to_canvas(unsigned char *canvas, GifFileType *
 }
 
 static bool image_load(struct wlf_image *image, const char *filename, bool enable_16_bit) {
-	(void)enable_16_bit;
+	WLF_UNUSED(enable_16_bit);
 	if (image == NULL || filename == NULL) {
 		return false;
 	}
