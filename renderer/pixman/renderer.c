@@ -2,6 +2,7 @@
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/texture/wlf_texture.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 #include "wlf/buffer/pixman/buffer.h"
 #include "wlf/pass/pixman/render_target_info.h"
 #include "wlf/texture/pixman/texture.h"
@@ -78,7 +79,7 @@ static struct wlf_texture *pixman_renderer_texture_from_buffer(struct wlf_render
 static struct wlf_render_target_info *pixman_renderer_begin_buffer_pass(
 		struct wlf_renderer *renderer, struct wlf_buffer *buffer,
 		const struct wlf_buffer_pass_options *options) {
-	(void)options;
+	WLF_UNUSED(options);
 	if (buffer == NULL) {
 		return NULL;
 	}

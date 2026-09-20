@@ -1,6 +1,7 @@
 #include "wlf/image/wlf_webp_image.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -247,7 +248,7 @@ anim_out:
 }
 
 static bool image_load(struct wlf_image *image, const char *filename, bool enable_16_bit) {
-	(void)enable_16_bit;
+	WLF_UNUSED(enable_16_bit);
 	size_t file_size = 0;
 	uint8_t *file_data = read_file(filename, &file_size);
 	if (file_data == NULL) {

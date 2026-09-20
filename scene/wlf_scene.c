@@ -14,6 +14,7 @@
 #include "wlf/swapchain/wlf_swapchain.h"
 #include "wlf/window/wlf_window.h"
 #include "wlf/window/wlf_titlebar.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <stdlib.h>
 
@@ -288,7 +289,7 @@ static void scene_render_background(struct wlf_scene *scene,
 }
 
 static void handle_window_expose(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_scene *scene =
 		wlf_container_of(listener, scene, window_expose);
 	scene->frame_scheduled = false;
@@ -306,7 +307,7 @@ static void handle_window_expose(struct wlf_listener *listener, void *data) {
 }
 
 static void handle_window_resize(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_scene *scene =
 		wlf_container_of(listener, scene, window_resize);
 	wlf_scene_damage_whole(scene);

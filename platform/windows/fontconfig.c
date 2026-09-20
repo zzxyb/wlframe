@@ -1,5 +1,4 @@
 #include "wlf/platform/windows/fontconfig.h"
-
 #include "wlf/utils/wlf_compat.h"
 #include "wlf/utils/wlf_env.h"
 #include "wlf/utils/wlf_linked_list.h"
@@ -98,7 +97,7 @@ static void windows_fontconfig_fill_defaults(struct wlf_fontconfig *config) {
 	char ui_family[WLF_FONTCONFIG_FAMILY_NAME_MAX] = "Segoe UI";
 	const char *ui = ui_family;
 
-	(void)windows_fontconfig_system_ui_family(ui_family, sizeof(ui_family));
+	windows_fontconfig_system_ui_family(ui_family, sizeof(ui_family));
 
 	windows_fontconfig_set_role_families(config, WLF_FONT_ROLE_UI,
 		ui, "Microsoft YaHei UI", "Segoe UI Emoji", NULL);

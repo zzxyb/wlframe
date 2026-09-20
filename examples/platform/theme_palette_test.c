@@ -2,6 +2,7 @@
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/types/wlf_color.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +42,7 @@ static void theme_destroy_notify(struct wlf_listener *listener, void *data) {
 
 static void theme_changed_notify(struct wlf_listener *listener, void *data) {
 	struct wlf_theme *theme = data;
-	(void)listener;
+	WLF_UNUSED(listener);
 
 	wlf_log(WLF_INFO, "theme_changed: appearance=%s",
 		wlf_theme_appearance_name(theme->appearance));
@@ -50,14 +51,14 @@ static void theme_changed_notify(struct wlf_listener *listener, void *data) {
 static void highlight_changed_notify(struct wlf_listener *listener, void *data) {
 	struct wlf_theme *theme = data;
 	struct wlf_color highlight = theme->palette[WLF_THEME_COLOR_HIGHLIGHT];
-	(void)listener;
+	WLF_UNUSED(listener);
 
 	wlf_log(WLF_INFO, "highlight_changed: highlight=#%06X",
 		wlf_color_to_hex_rgb(&highlight));
 }
 
 static void handle_sigint(int signo) {
-	(void)signo;
+	WLF_UNUSED(signo);
 
 	if (active_backend != NULL) {
 		wlf_backend_quit(active_backend);

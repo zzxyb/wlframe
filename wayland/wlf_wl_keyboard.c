@@ -3,6 +3,7 @@
 #include "wlf/types/wlf_keyboard.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_signal.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -16,7 +17,7 @@ static struct wlf_wl_keyboard *keyboard_from_data(void *data) {
 
 static void keyboard_handle_keymap(void *data, struct wl_keyboard *base,
 		uint32_t format, int32_t fd, uint32_t size) {
-	(void)base;
+	WLF_UNUSED(base);
 	struct wlf_wl_keyboard *keyboard = keyboard_from_data(data);
 	struct wlf_keyboard_keymap_event event = {
 		.keyboard = &keyboard->base,
@@ -29,7 +30,7 @@ static void keyboard_handle_keymap(void *data, struct wl_keyboard *base,
 
 static void keyboard_handle_enter(void *data, struct wl_keyboard *base,
 		uint32_t serial, struct wl_surface *surface, struct wl_array *keys) {
-	(void)base;
+	WLF_UNUSED(base);
 	struct wlf_wl_keyboard *keyboard = keyboard_from_data(data);
 	struct wlf_keyboard_enter_event event = {
 		.keyboard = &keyboard->base,
@@ -43,7 +44,7 @@ static void keyboard_handle_enter(void *data, struct wl_keyboard *base,
 
 static void keyboard_handle_leave(void *data, struct wl_keyboard *base,
 		uint32_t serial, struct wl_surface *surface) {
-	(void)base;
+	WLF_UNUSED(base);
 	struct wlf_wl_keyboard *keyboard = keyboard_from_data(data);
 	struct wlf_keyboard_leave_event event = {
 		.keyboard = &keyboard->base,
@@ -55,7 +56,7 @@ static void keyboard_handle_leave(void *data, struct wl_keyboard *base,
 
 static void keyboard_handle_key(void *data, struct wl_keyboard *base,
 		uint32_t serial, uint32_t time, uint32_t key, uint32_t state) {
-	(void)base;
+	WLF_UNUSED(base);
 	struct wlf_wl_keyboard *keyboard = keyboard_from_data(data);
 	struct wlf_keyboard_key_event event = {
 		.keyboard = &keyboard->base,
@@ -70,7 +71,7 @@ static void keyboard_handle_key(void *data, struct wl_keyboard *base,
 static void keyboard_handle_modifiers(void *data, struct wl_keyboard *base,
 		uint32_t serial, uint32_t mods_depressed, uint32_t mods_latched,
 		uint32_t mods_locked, uint32_t group) {
-	(void)base;
+	WLF_UNUSED(base);
 	struct wlf_wl_keyboard *keyboard = keyboard_from_data(data);
 	struct wlf_keyboard_modifiers_event event = {
 		.keyboard = &keyboard->base,
@@ -85,7 +86,7 @@ static void keyboard_handle_modifiers(void *data, struct wl_keyboard *base,
 
 static void keyboard_handle_repeat_info(void *data, struct wl_keyboard *base,
 		int32_t rate, int32_t delay) {
-	(void)base;
+	WLF_UNUSED(base);
 	struct wlf_wl_keyboard *keyboard = keyboard_from_data(data);
 	struct wlf_keyboard_repeat_info_event event = {
 		.keyboard = &keyboard->base,

@@ -1,7 +1,7 @@
 #include "wlf/node/wlf_texture_node.h"
-
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -24,10 +24,10 @@ static void texture_node_get_size(struct wlf_scene_node *node,
 
 static void scene_node_opaque_region(struct wlf_scene_node *node,
 		int x, int y, pixman_region32_t *opaque) {
-	(void)node;
-	(void)x;
-	(void)y;
-	(void)opaque;
+	WLF_UNUSED(node);
+	WLF_UNUSED(x);
+	WLF_UNUSED(y);
+	WLF_UNUSED(opaque);
 }
 
 static void texture_node_visibility(struct wlf_scene_node *node,
@@ -91,7 +91,7 @@ static void texture_node_set_texture_internal(struct wlf_texture_node *node,
 }
 
 static void handle_renderer_destroy(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_texture_node *node =
 		wlf_container_of(listener, node, renderer_destroy);
 	texture_node_set_texture_internal(node, NULL);

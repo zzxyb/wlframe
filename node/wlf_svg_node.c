@@ -1,5 +1,4 @@
 #include "wlf/node/wlf_svg_node.h"
-
 #include "wlf/node/wlf_circle_node.h"
 #include "wlf/node/wlf_ellipse_node.h"
 #include "wlf/node/wlf_line_node.h"
@@ -16,6 +15,7 @@
 #include "wlf/shapes/wlf_text_shape.h"
 #include "wlf/types/wlf_gradient.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <math.h>
@@ -267,7 +267,7 @@ static struct wlf_linked_list *scene_node_get_children(
 }
 
 static bool scene_node_invisible(struct wlf_scene_node *base) {
-	(void)base;
+	WLF_UNUSED(base);
 	return true;
 }
 

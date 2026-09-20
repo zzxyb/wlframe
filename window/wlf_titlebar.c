@@ -12,6 +12,7 @@
 #include "wlf/types/wlf_color.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wlf_window.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <stdlib.h>
 
@@ -173,7 +174,7 @@ static void update_button_hover(struct wlf_titlebar_button *button) {
 
 static void handle_button_pointer_enter(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_titlebar_button *button =
 		wlf_container_of(listener, button, listeners.pointer_enter);
 	button->hovered = true;
@@ -182,7 +183,7 @@ static void handle_button_pointer_enter(struct wlf_listener *listener,
 
 static void handle_button_pointer_leave(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_titlebar_button *button =
 		wlf_container_of(listener, button, listeners.pointer_leave);
 	button->hovered = false;
@@ -262,7 +263,7 @@ static void handle_button_touch_up(struct wlf_listener *listener, void *data) {
 
 static void handle_button_touch_cancel(struct wlf_listener *listener,
 		void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_titlebar_button *button =
 		wlf_container_of(listener, button, listeners.touch_cancel);
 	button->touch_pressed = false;
@@ -432,15 +433,15 @@ static void update_default_button_icons(struct wlf_titlebar *titlebar) {
 	bool dark = theme != NULL &&
 		theme->appearance == WLF_THEME_APPEARANCE_DARK;
 	if (!titlebar->minimize_button.custom_icon) {
-		(void)replace_button_icon(&titlebar->minimize_button, dark ?
+		replace_button_icon(&titlebar->minimize_button, dark ?
 			minimize_icon_source_dark : minimize_icon_source);
 	}
 	if (!titlebar->maximize_button.custom_icon) {
-		(void)replace_button_icon(&titlebar->maximize_button, dark ?
+		replace_button_icon(&titlebar->maximize_button, dark ?
 			maximize_icon_source_dark : maximize_icon_source);
 	}
 	if (!titlebar->close_button.custom_icon) {
-		(void)replace_button_icon(&titlebar->close_button, dark ?
+		replace_button_icon(&titlebar->close_button, dark ?
 			close_icon_source_dark : close_icon_source);
 	}
 }
@@ -667,28 +668,28 @@ struct wlf_scene_tree *wlf_titlebar_get_content_tree(
 }
 
 static void handle_resize(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_titlebar *titlebar =
 		wlf_container_of(listener, titlebar, listeners.resize);
 	wlf_titlebar_arrange(titlebar);
 }
 
 static void handle_focus_in(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_titlebar *titlebar =
 		wlf_container_of(listener, titlebar, listeners.focus_in);
 	wlf_titlebar_set_active(titlebar, true);
 }
 
 static void handle_focus_out(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_titlebar *titlebar =
 		wlf_container_of(listener, titlebar, listeners.focus_out);
 	wlf_titlebar_set_active(titlebar, false);
 }
 
 static void handle_theme_changed(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_titlebar *titlebar =
 		wlf_container_of(listener, titlebar, listeners.theme_changed);
 	update_default_button_icons(titlebar);
@@ -702,7 +703,7 @@ static void handle_titlebar_pointer_button(struct wlf_listener *listener,
 	const struct wlf_pointer_button_event *event = data;
 	if (event->button == WLF_POINTER_BUTTON_LEFT &&
 			event->state == WLF_POINTER_BUTTON_STATE_PRESSED) {
-		(void)wlf_pointer_set_cursor_shape(event->pointer,
+		wlf_pointer_set_cursor_shape(event->pointer,
 			WLF_CURSOR_SHAPE_GRABBING);
 		wlf_window_begin_move(titlebar->window, event->pointer, event->serial);
 	}

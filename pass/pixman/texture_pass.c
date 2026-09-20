@@ -1,8 +1,8 @@
 #include "wlf/pass/pixman/texture_pass.h"
-
 #include "wlf/pass/pixman/render_target_info.h"
 #include "wlf/texture/pixman/texture.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -14,7 +14,7 @@ static void pixman_texture_pass_destroy(struct wlf_texture_pass *pass) {
 static void pixman_texture_pass_render(struct wlf_texture_pass *pass,
 		struct wlf_render_target_info *render_target_info,
 		const struct wlf_render_texture_options *options) {
-	(void)pass;
+	WLF_UNUSED(pass);
 	if (!wlf_render_target_info_is_pixman(render_target_info) ||
 			!wlf_texture_is_pixman(options->texture)) {
 		wlf_log(WLF_ERROR, "pixman texture pass requires pixman target and texture");

@@ -8,6 +8,7 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wayland/xdg_toplevel_window.h"
 #include "wlf/window/wlf_window.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <stdbool.h>
 #include <stdio.h>
@@ -19,7 +20,7 @@ struct test_state {
 };
 
 static void handle_close(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct test_state *state = wlf_container_of(listener, state, close);
 	wlf_backend_quit(state->backend);
 }

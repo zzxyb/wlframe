@@ -6,6 +6,7 @@
 #include "wlf/renderer/vulkan/renderer.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
+#include "wlf/utils/wlf_utils.h"
 #include "wlf/window/wlf_window.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
@@ -284,7 +285,7 @@ static bool swapchain_resize(struct wlf_swapchain *base, int width,
 
 static void swapchain_present(struct wlf_swapchain *base,
 		const pixman_region32_t *damage) {
-	(void)damage;
+	WLF_UNUSED(damage);
 	struct wlf_vk_swapchain *swapchain =
 		wlf_vk_swapchain_from_swapchain(base);
 	struct wlf_vk_renderer *renderer =

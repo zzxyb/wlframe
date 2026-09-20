@@ -1,10 +1,10 @@
 #include "wlf/node/wlf_text_node.h"
-
 #include "wlf/platform/wlf_text.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wlf_window.h"
+#include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
 #include <math.h>
@@ -31,10 +31,10 @@ static void text_node_get_size(struct wlf_scene_node *node,
 
 static void scene_node_opaque_region(struct wlf_scene_node *node,
 		int x, int y, pixman_region32_t *opaque) {
-	(void)node;
-	(void)x;
-	(void)y;
-	(void)opaque;
+	WLF_UNUSED(node);
+	WLF_UNUSED(x);
+	WLF_UNUSED(y);
+	WLF_UNUSED(opaque);
 }
 
 static void text_node_add_bounds(struct wlf_scene_node *node,
@@ -97,7 +97,7 @@ static void text_node_set_texture(struct wlf_text_node *node,
 }
 
 static void handle_renderer_destroy(struct wlf_listener *listener, void *data) {
-	(void)data;
+	WLF_UNUSED(data);
 	struct wlf_text_node *node =
 		wlf_container_of(listener, node, renderer_destroy);
 	wlf_linked_list_remove(&node->renderer_destroy.link);

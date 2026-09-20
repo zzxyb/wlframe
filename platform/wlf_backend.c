@@ -63,7 +63,7 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 #endif
 
 	if (backend != NULL) {
-		(void)wlf_backend_init_theme(backend);
+		wlf_backend_init_theme(backend);
 	}
 	return backend;
 }
