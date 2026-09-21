@@ -28,7 +28,6 @@ jobs:
 
     - name: Install dependencies
       run: |
-        brew update
         brew install \
           meson \
           ninja \
