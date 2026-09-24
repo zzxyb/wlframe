@@ -159,18 +159,39 @@ static void handle_keyboard_leave(struct wlf_listener *listener, void *data) {
 	seat_set_keyboard_window(seat, NULL);
 }
 
-#define FORWARD_KEYBOARD(name) \
-	static void handle_keyboard_##name(struct wlf_listener *listener, void *data) { \
-		struct wlf_wl_seat *seat = SEAT_FROM_LISTENER(listener, keyboard_##name); \
-		if (seat->keyboard_window != NULL) { \
-			wlf_window_keyboard_##name(seat->keyboard_window, data); \
-		} \
+static void handle_keyboard_keymap(struct wlf_listener *listener, void *data) {
+	struct wlf_wl_seat *seat =
+		SEAT_FROM_LISTENER(listener, keyboard_keymap);
+	if (seat->keyboard_window != NULL) {
+		wlf_window_keyboard_keymap(seat->keyboard_window, data);
 	}
+}
 
-FORWARD_KEYBOARD(keymap)
-FORWARD_KEYBOARD(key)
-FORWARD_KEYBOARD(modifiers)
-FORWARD_KEYBOARD(repeat_info)
+static void handle_keyboard_key(struct wlf_listener *listener, void *data) {
+	struct wlf_wl_seat *seat =
+		SEAT_FROM_LISTENER(listener, keyboard_key);
+	if (seat->keyboard_window != NULL) {
+		wlf_window_keyboard_key(seat->keyboard_window, data);
+	}
+}
+
+static void handle_keyboard_modifiers(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_wl_seat *seat =
+		SEAT_FROM_LISTENER(listener, keyboard_modifiers);
+	if (seat->keyboard_window != NULL) {
+		wlf_window_keyboard_modifiers(seat->keyboard_window, data);
+	}
+}
+
+static void handle_keyboard_repeat_info(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_wl_seat *seat =
+		SEAT_FROM_LISTENER(listener, keyboard_repeat_info);
+	if (seat->keyboard_window != NULL) {
+		wlf_window_keyboard_repeat_info(seat->keyboard_window, data);
+	}
+}
 
 static void handle_touch_down(struct wlf_listener *listener, void *data) {
 	struct wlf_wl_seat *seat = SEAT_FROM_LISTENER(listener, touch_down);
@@ -182,20 +203,49 @@ static void handle_touch_down(struct wlf_listener *listener, void *data) {
 	}
 }
 
-#define FORWARD_TOUCH(name) \
-	static void handle_touch_##name(struct wlf_listener *listener, void *data) { \
-		struct wlf_wl_seat *seat = SEAT_FROM_LISTENER(listener, touch_##name); \
-		if (seat->touch_window != NULL) { \
-			wlf_window_touch_##name(seat->touch_window, data); \
-		} \
+static void handle_touch_up(struct wlf_listener *listener, void *data) {
+	struct wlf_wl_seat *seat = SEAT_FROM_LISTENER(listener, touch_up);
+	if (seat->touch_window != NULL) {
+		wlf_window_touch_up(seat->touch_window, data);
 	}
+}
 
-FORWARD_TOUCH(up)
-FORWARD_TOUCH(motion)
-FORWARD_TOUCH(cancel)
-FORWARD_TOUCH(frame)
-FORWARD_TOUCH(shape)
-FORWARD_TOUCH(orientation)
+static void handle_touch_motion(struct wlf_listener *listener, void *data) {
+	struct wlf_wl_seat *seat = SEAT_FROM_LISTENER(listener, touch_motion);
+	if (seat->touch_window != NULL) {
+		wlf_window_touch_motion(seat->touch_window, data);
+	}
+}
+
+static void handle_touch_cancel(struct wlf_listener *listener, void *data) {
+	struct wlf_wl_seat *seat = SEAT_FROM_LISTENER(listener, touch_cancel);
+	if (seat->touch_window != NULL) {
+		wlf_window_touch_cancel(seat->touch_window, data);
+	}
+}
+
+static void handle_touch_frame(struct wlf_listener *listener, void *data) {
+	struct wlf_wl_seat *seat = SEAT_FROM_LISTENER(listener, touch_frame);
+	if (seat->touch_window != NULL) {
+		wlf_window_touch_frame(seat->touch_window, data);
+	}
+}
+
+static void handle_touch_shape(struct wlf_listener *listener, void *data) {
+	struct wlf_wl_seat *seat = SEAT_FROM_LISTENER(listener, touch_shape);
+	if (seat->touch_window != NULL) {
+		wlf_window_touch_shape(seat->touch_window, data);
+	}
+}
+
+static void handle_touch_orientation(struct wlf_listener *listener,
+		void *data) {
+	struct wlf_wl_seat *seat =
+		SEAT_FROM_LISTENER(listener, touch_orientation);
+	if (seat->touch_window != NULL) {
+		wlf_window_touch_orientation(seat->touch_window, data);
+	}
+}
 
 static void seat_destroy_pointer(struct wlf_wl_seat *seat) {
 	if (seat->pointer == NULL) {
