@@ -135,22 +135,26 @@ void wlf_window_init(struct wlf_window *window, enum wlf_window_type type,
 	wlf_signal_init(&window->events.scale);
 	wlf_signal_init(&window->events.show);
 	wlf_signal_init(&window->events.hide);
-	struct wlf_signal *input_signals[] = {
-		&window->events.pointer_enter, &window->events.pointer_leave,
-		&window->events.pointer_motion, &window->events.pointer_button,
-		&window->events.pointer_axis, &window->events.pointer_frame,
-		&window->events.keyboard_enter, &window->events.keyboard_leave,
-		&window->events.keyboard_keymap, &window->events.keyboard_key,
-		&window->events.keyboard_modifiers,
-		&window->events.keyboard_repeat_info, &window->events.tablet,
-		&window->events.touch_down, &window->events.touch_up,
-		&window->events.touch_motion, &window->events.touch_cancel,
-		&window->events.touch_frame, &window->events.touch_shape,
-		&window->events.touch_orientation,
-	};
-	for (size_t i = 0; i < sizeof(input_signals) / sizeof(input_signals[0]); ++i) {
-		wlf_signal_init(input_signals[i]);
-	}
+	wlf_signal_init(&window->events.pointer_enter);
+	wlf_signal_init(&window->events.pointer_leave);
+	wlf_signal_init(&window->events.pointer_motion);
+	wlf_signal_init(&window->events.pointer_button);
+	wlf_signal_init(&window->events.pointer_axis);
+	wlf_signal_init(&window->events.pointer_frame);
+	wlf_signal_init(&window->events.keyboard_enter);
+	wlf_signal_init(&window->events.keyboard_leave);
+	wlf_signal_init(&window->events.keyboard_keymap);
+	wlf_signal_init(&window->events.keyboard_key);
+	wlf_signal_init(&window->events.keyboard_modifiers);
+	wlf_signal_init(&window->events.keyboard_repeat_info);
+	wlf_signal_init(&window->events.tablet);
+	wlf_signal_init(&window->events.touch_down);
+	wlf_signal_init(&window->events.touch_up);
+	wlf_signal_init(&window->events.touch_motion);
+	wlf_signal_init(&window->events.touch_cancel);
+	wlf_signal_init(&window->events.touch_frame);
+	wlf_signal_init(&window->events.touch_shape);
+	wlf_signal_init(&window->events.touch_orientation);
 }
 
 void wlf_window_destroy(struct wlf_window *window) {
