@@ -1,5 +1,5 @@
 /**
- * @file        wlf_zxdg_decoration_manager_v1.h
+ * @file        wlf_zxdg_decoration_v1.h
  * @brief       Wayland zxdg_decoration_manager_v1 protocol wrapper for wlframe.
  * @details     Implements the xdg-decoration-unstable-v1 protocol, which allows
  *              a compositor to offer server-side window decorations (title bar,

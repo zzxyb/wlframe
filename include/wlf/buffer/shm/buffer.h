@@ -1,5 +1,5 @@
 /**
- * @file        wlf_shm_buffer.h
+ * @file        buffer.h
  * @brief       Shared memory buffer implementation.
  * @details     This file provides a buffer implementation backed by POSIX shared memory.
  *              SHM buffers use memory-mapped files for CPU-accessible buffer storage

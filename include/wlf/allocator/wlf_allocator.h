@@ -79,6 +79,7 @@ void wlf_allocator_destroy(struct wlf_allocator *allocator);
  * @param allocator Allocator used to create buffer.
  * @param width Buffer width in pixels.
  * @param height Buffer height in pixels.
+ * @param format Format and attributes for the buffer.
  * @return Newly created buffer, or NULL on failure.
  */
 struct wlf_buffer *wlf_allocator_create_buffer(struct wlf_allocator *allocator,

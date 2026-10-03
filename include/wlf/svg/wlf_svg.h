@@ -237,8 +237,8 @@ struct wlf_svg_image {
 	char view_box[128];            /**< Raw viewBox attribute text from root element. */
 	char preserve_aspect_ratio[64];/**< Raw preserveAspectRatio text from root element. */
 	struct wlf_shape *shapes;      /**< Linked list of shapes parsed from the SVG. */
-	struct wlf_svg_symbol_data *symbols; /**< Parsed <symbol> definitions. */
-	struct wlf_svg_use_data *uses; /**< Parsed <use> elements. */
+	struct wlf_svg_symbol_data *symbols; /**< Parsed &lt;symbol&gt; definitions. */
+	struct wlf_svg_use_data *uses; /**< Parsed &lt;use&gt; elements. */
 	struct wlf_filter *filters;    /**< Owned linked list of parsed filter definitions. */
 };
 
