@@ -12,7 +12,6 @@ PREDEFINED             = WL_EXPORT=              \
                          WL_PRINTF(x,y)=
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = YES
-DOT_MULTI_TARGETS      = YES
 ALIASES                += comment{1}="/* \1 *<!-- -->/"
 OPTIMIZE_OUTPUT_FOR_C  = YES
 EXTRACT_ALL            = YES

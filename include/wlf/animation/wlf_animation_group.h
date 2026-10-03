@@ -87,7 +87,7 @@ struct wlf_animation_group_listener {
 /**
  * @brief Base object embedded in every animation group type.
  *
- * The group owns every animation in @ref children.
+ * The group owns every animation in its child list.
  */
 struct wlf_animation_group {
 	const struct wlf_animation_group_impl *impl; /**< Concrete implementation. */

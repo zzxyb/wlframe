@@ -1,5 +1,5 @@
 /**
- * @file        wlf_shm_allocator.h
+ * @file        allocator.h
  * @brief       Shared memory buffer allocator.
  * @details     This file provides a buffer allocator implementation using Wayland shared memory
  *              (wl_shm). The allocator creates CPU-accessible wl_buffer objects suitable for

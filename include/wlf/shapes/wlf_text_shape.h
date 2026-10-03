@@ -1,7 +1,8 @@
 /**
  * @file        wlf_text_shape.h
  * @brief       Text shape type for wlframe.
- * @details     Defines text geometry and typography attributes inspired by SVG <text>.
+ * @details     Defines text geometry and typography attributes inspired by SVG
+ *              &lt;text&gt; elements.
  * @author      YaoBing Xiao
  * @date        2026-04-08
  * @version     v1.0

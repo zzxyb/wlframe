@@ -1,5 +1,5 @@
 /**
- * @file        wlf_wp_content_type_manager_v1.h
+ * @file        wlf_wp_content_type_v1.h
  * @brief       Wayland wp_content_type_manager_v1 protocol wrapper for wlframe.
  * @details     Implements the staging wp_content_type_v1 protocol, which lets a
  *              client hint to the compositor what kind of content a surface

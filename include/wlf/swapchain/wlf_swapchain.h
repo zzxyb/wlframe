@@ -93,12 +93,10 @@ struct wlf_swapchain {
  * the common swapchain fields.
  *
  * @param swapchain Swapchain to initialize.
+ * @param allocator Allocator to use for creating buffers.
  * @param impl Implementation methods for this swapchain.
- * @param alloc Allocator to use for creating buffers.
  * @param width Width of buffers in pixels.
  * @param height Height of buffers in pixels.
- * @param format Format and attributes for the buffers.
- * @param slot_count Number of buffer slots (typically 2-4 depending on backend capabilities).
  */
 void wlf_swapchain_init(struct wlf_swapchain *swapchain, struct wlf_allocator *allocator,
 	const struct wlf_swapchain_impl *impl, int width, int height);
