@@ -83,13 +83,12 @@ void wlf_zwlr_layer_shell_v1_destroy(struct wlf_zwlr_layer_shell_v1 *shell) {
 	wlf_signal_emit_mutable(&shell->events.destroy, NULL);
 	assert(wlf_linked_list_empty(&shell->events.destroy.listener_list));
 	if (shell->base != NULL) {
+#ifdef ZWLR_LAYER_SHELL_V1_DESTROY_SINCE_VERSION
 		if (shell->version >=
 			ZWLR_LAYER_SHELL_V1_DESTROY_SINCE_VERSION) {
 			zwlr_layer_shell_v1_destroy(shell->base);
-		} else {
-			wl_proxy_destroy((struct wl_proxy *)shell->base);
 		}
-		shell->base = NULL;
+#endif
 	}
 	free(shell);
 }
@@ -178,12 +177,8 @@ void wlf_zwlr_layer_surface_v1_set_margin(
 void wlf_zwlr_layer_surface_v1_set_keyboard_interactivity(
 		struct wlf_zwlr_layer_surface_v1 *surface,
 		enum wlf_zwlr_layer_surface_v1_keyboard_interactivity interactivity) {
-	assert(surface);
-	assert(surface->base);
-
-	if (interactivity ==
-			WLF_ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND &&
-		surface->version <
+#ifdef ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND_SINCE_VERSION
+	if (surface->version <
 			ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND_SINCE_VERSION) {
 		wlf_log(WLF_ERROR,
 			"zwlr_layer_surface_v1 keyboard interactivity "
@@ -193,6 +188,7 @@ void wlf_zwlr_layer_surface_v1_set_keyboard_interactivity(
 	}
 	zwlr_layer_surface_v1_set_keyboard_interactivity(
 		surface->base, (uint32_t)interactivity);
+#endif
 }
 
 void wlf_zwlr_layer_surface_v1_get_popup(
@@ -216,15 +212,14 @@ void wlf_zwlr_layer_surface_v1_ack_configure(
 
 void wlf_zwlr_layer_surface_v1_set_layer(struct wlf_zwlr_layer_surface_v1 *surface,
 		enum wlf_zwlr_layer_v1 layer) {
-	assert(surface);
-	assert(surface->base);
-
+#ifdef ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION
 	if (surface->version < ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION) {
 		wlf_log(WLF_ERROR,
 			"zwlr_layer_surface_v1.set_layer requires version 2");
 		return;
 	}
 	zwlr_layer_surface_v1_set_layer(surface->base, (uint32_t)layer);
+#endif
 }
 
 void wlf_zwlr_layer_surface_v1_set_exclusive_edge(
@@ -233,6 +228,7 @@ void wlf_zwlr_layer_surface_v1_set_exclusive_edge(
 	assert(surface);
 	assert(surface->base);
 
+#ifdef ZWLR_LAYER_SURFACE_V1_SET_EXCLUSIVE_EDGE_SINCE_VERSION
 	if (surface->version <
 		ZWLR_LAYER_SURFACE_V1_SET_EXCLUSIVE_EDGE_SINCE_VERSION) {
 		wlf_log(WLF_ERROR,
@@ -241,6 +237,7 @@ void wlf_zwlr_layer_surface_v1_set_exclusive_edge(
 		return;
 	}
 	zwlr_layer_surface_v1_set_exclusive_edge(surface->base, (uint32_t)edge);
+#endif
 }
 
 void wlf_zwlr_layer_surface_v1_destroy(struct wlf_zwlr_layer_surface_v1 *surface) {

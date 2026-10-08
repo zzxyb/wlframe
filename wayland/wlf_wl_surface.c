@@ -186,6 +186,7 @@ void wlf_wl_surface_damage(struct wlf_wl_surface *surface,
 
 void wlf_wl_surface_damage_buffer(struct wlf_wl_surface *surface,
 		int32_t x, int32_t y, int32_t width, int32_t height) {
+#ifdef WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION
 	if (surface->version < WL_SURFACE_DAMAGE_BUFFER_SINCE_VERSION) {
 		return;
 	}
@@ -193,6 +194,7 @@ void wlf_wl_surface_damage_buffer(struct wlf_wl_surface *surface,
 	assert(surface != NULL);
 
 	wl_surface_damage_buffer(surface->wl_surface, x, y, width, height);
+#endif
 }
 
 struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface) {
@@ -282,6 +284,7 @@ void wlf_wl_surface_set_input_region(struct wlf_wl_surface *surface,
 
 void wlf_wl_surface_set_buffer_transform(struct wlf_wl_surface *surface,
 		int32_t transform) {
+#ifdef WL_SURFACE_SET_BUFFER_TRANSFORM_SINCE_VERSION
 	if (surface->version < WL_SURFACE_SET_BUFFER_TRANSFORM_SINCE_VERSION) {
 		return;
 	}
@@ -289,10 +292,12 @@ void wlf_wl_surface_set_buffer_transform(struct wlf_wl_surface *surface,
 	assert(surface != NULL);
 
 	wl_surface_set_buffer_transform(surface->wl_surface, transform);
+#endif
 }
 
 void wlf_wl_surface_set_buffer_scale(struct wlf_wl_surface *surface,
 		int32_t scale) {
+#ifdef WL_SURFACE_SET_BUFFER_SCALE_SINCE_VERSION
 	if (surface->version < WL_SURFACE_SET_BUFFER_SCALE_SINCE_VERSION) {
 		return;
 	}
@@ -300,10 +305,12 @@ void wlf_wl_surface_set_buffer_scale(struct wlf_wl_surface *surface,
 	assert(surface != NULL);
 
 	wl_surface_set_buffer_scale(surface->wl_surface, scale);
+#endif
 }
 
 void wlf_wl_surface_offset(struct wlf_wl_surface *surface,
 		int32_t x, int32_t y) {
+#ifdef WL_SURFACE_OFFSET_SINCE_VERSION
 	if (surface->version < WL_SURFACE_OFFSET_SINCE_VERSION) {
 		return;
 	}
@@ -311,6 +318,7 @@ void wlf_wl_surface_offset(struct wlf_wl_surface *surface,
 	assert(surface != NULL);
 
 	wl_surface_offset(surface->wl_surface, x, y);
+#endif
 }
 
 void wlf_wl_surface_commit(struct wlf_wl_surface *surface) {

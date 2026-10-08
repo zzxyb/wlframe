@@ -295,37 +295,37 @@ void wlf_xdg_positioner_set_offset(struct wlf_xdg_positioner *positioner,
 }
 
 void wlf_xdg_positioner_set_reactive(struct wlf_xdg_positioner *positioner) {
-	assert(positioner != NULL && positioner->base != NULL);
-
+#ifdef XDG_POSITIONER_SET_REACTIVE_SINCE_VERSION
 	if (positioner->version < XDG_POSITIONER_SET_REACTIVE_SINCE_VERSION) {
 		wlf_log(WLF_ERROR, "xdg_positioner.set_reactive requires version 3");
 		return;
 	}
 	xdg_positioner_set_reactive(positioner->base);
+#endif
 }
 
 void wlf_xdg_positioner_set_parent_size(struct wlf_xdg_positioner *positioner,
 		int32_t parent_width, int32_t parent_height) {
-	assert(positioner != NULL && positioner->base != NULL);
-
+#ifdef XDG_POSITIONER_SET_PARENT_SIZE_SINCE_VERSION
 	if (positioner->version < XDG_POSITIONER_SET_PARENT_SIZE_SINCE_VERSION) {
 		wlf_log(WLF_ERROR, "xdg_positioner.set_parent_size requires version 3");
 		return;
 	}
 	xdg_positioner_set_parent_size(positioner->base,
 		parent_width, parent_height);
+#endif
 }
 
 void wlf_xdg_positioner_set_parent_configure(
 		struct wlf_xdg_positioner *positioner, uint32_t serial) {
-	assert(positioner != NULL && positioner->base != NULL);
-
+#ifdef XDG_POSITIONER_SET_PARENT_CONFIGURE_SINCE_VERSION
 	if (positioner->version < XDG_POSITIONER_SET_PARENT_CONFIGURE_SINCE_VERSION) {
 		wlf_log(WLF_ERROR,
 			"xdg_positioner.set_parent_configure requires version 3");
 		return;
 	}
 	xdg_positioner_set_parent_configure(positioner->base, serial);
+#endif
 }
 
 void wlf_xdg_positioner_destroy(struct wlf_xdg_positioner *positioner) {
@@ -570,14 +570,13 @@ void wlf_xdg_popup_grab(struct wlf_xdg_popup *popup,
 
 void wlf_xdg_popup_reposition(struct wlf_xdg_popup *popup,
 		struct wlf_xdg_positioner *positioner, uint32_t token) {
-	assert(popup != NULL && popup->base != NULL);
-	assert(positioner != NULL && positioner->base != NULL);
-
+#ifdef XDG_POPUP_REPOSITION_SINCE_VERSION
 	if (popup->version < XDG_POPUP_REPOSITION_SINCE_VERSION) {
 		wlf_log(WLF_ERROR, "xdg_popup.reposition requires version 3");
 		return;
 	}
 	xdg_popup_reposition(popup->base, positioner->base, token);
+#endif
 }
 
 void wlf_xdg_popup_destroy(struct wlf_xdg_popup *popup) {
