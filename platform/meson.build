@@ -6,6 +6,7 @@ wlf_files += files(
 )
 
 if is_linux
+	subdir('x11')
 	subdir('linux')
 	subdir('wayland')
 elif is_macos

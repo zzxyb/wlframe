@@ -6,6 +6,7 @@
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/vulkan/renderer.h"
+#include "wlf/platform/x11/backend.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
 #elif WLF_HAS_WINDOWS_PLATFORM
@@ -41,7 +42,8 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		}
 	}
 
-	if ((render == NULL && is_auto) || strcmp(render_name, "vulkan") == 0) {
+	if (!wlf_backend_is_x11(backend) &&
+			((render == NULL && is_auto) || strcmp(render_name, "vulkan") == 0)) {
 		struct wlf_vk_renderer *vulkan =
 			wlf_vk_renderer_create_from_backend(backend);
 		render = vulkan != NULL ? &vulkan->base : NULL;

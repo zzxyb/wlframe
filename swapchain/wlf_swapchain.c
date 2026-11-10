@@ -4,6 +4,8 @@
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/vulkan/renderer.h"
+#include "wlf/platform/x11/backend.h"
+#include "wlf/swapchain/x11/swapchain.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
 #include "wlf/swapchain/egl/swapchain.h"
@@ -37,6 +39,9 @@ struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window, int w
 	struct wlf_swapchain *swapchain = NULL;
 #if WLF_HAS_LINUX_PLATFORM
 	if (wlf_renderer_is_pixman(window->state.renderer)) {
+		if (wlf_backend_is_x11(window->state.backend)) {
+			return wlf_x11_swapchain_create(window, width, height, format);
+		}
 		struct wlf_shm_swapchain *shm =
 			wlf_shm_swapchain_create(window, width, height, format);
 		swapchain = shm != NULL ? &shm->base : NULL;

@@ -7,6 +7,7 @@
 #include "wlf/utils/wlf_signal.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
+#include "wlf/platform/x11/backend.h"
 #elif WLF_HAS_MACOS_PLATFORM
 #include "wlf/platform/macos/backend.h"
 #elif WLF_HAS_WINDOWS_PLATFORM
@@ -38,13 +39,23 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 	struct wlf_backend *backend = NULL;
 
 #if WLF_HAS_LINUX_PLATFORM
-	if (strcmp(wlf_get_env("XDG_SESSION_TYPE"), "wayland") == 0) {
+	const char *requested = wlf_get_env("WLF_BACKEND");
+	const char *wayland_display = wlf_get_env("WAYLAND_DISPLAY");
+	const char *display = wlf_get_env("DISPLAY");
+	if (requested != NULL && strcmp(requested, "wayland") != 0 &&
+			strcmp(requested, "x11") != 0) {
+		wlf_log(WLF_ERROR, "Unknown WLF_BACKEND: %s", requested);
+		return NULL;
+	}
+	if ((requested != NULL && strcmp(requested, "wayland") == 0) ||
+			(requested == NULL && wayland_display != NULL && *wayland_display != '\0')) {
 		struct wlf_wl_backend *wayland = wayland_backend_create();
 		backend = wayland != NULL ? &wayland->base : NULL;
-		if (backend == NULL) {
-			wlf_log(WLF_ERROR, "Failed to create Wayland backend");
-			return NULL;
-		}
+	}
+	if ((requested != NULL && strcmp(requested, "x11") == 0) ||
+			(requested == NULL && backend == NULL && display != NULL && *display != '\0')) {
+		struct wlf_x11_backend *x11 = wlf_x11_backend_create();
+		backend = x11 != NULL ? &x11->base : NULL;
 	}
 #elif WLF_HAS_MACOS_PLATFORM
 	struct wlf_backend_macos *macos = macos_backend_create();
