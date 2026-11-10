@@ -11,6 +11,7 @@
  * @par Copyright(c):
  * @par History:
  *      version: v1.0, YaoBing Xiao, 2026-08-17, initial version\n
+ *      version: v1.0, YaoBing Xiao, 2026-11-10, document XCB support\n
  */
 
 #ifndef BUFFER_EGL_BUFFER_H
@@ -55,6 +56,22 @@ struct wlf_egl_buffer {
  */
 struct wlf_egl_buffer *wlf_egl_buffer_create(struct wlf_egl *egl,
 	struct wl_surface *surface, uint32_t width, uint32_t height,
+	const struct wlf_render_format *format);
+
+/**
+ * @brief Creates an EGL window-surface buffer for an existing XCB window.
+ *
+ * @param egl Borrowed EGL context initialized for the XCB platform.
+ * @param window Nonzero borrowed XCB window ID.
+ * @param width Initial buffer width in pixels, from 1 to INT_MAX.
+ * @param height Initial buffer height in pixels, from 1 to INT_MAX.
+ * @param format Requested render format matching the native visual.
+ * @return New EGL buffer, or NULL for invalid arguments or surface failure.
+ * @note The buffer owns its EGL surface, but not the native window or EGL
+ * context. Release the buffer with wlf_buffer_drop() before either owner.
+ */
+struct wlf_egl_buffer *wlf_egl_buffer_create_x11(struct wlf_egl *egl,
+	uint32_t window, uint32_t width, uint32_t height,
 	const struct wlf_render_format *format);
 
 /**

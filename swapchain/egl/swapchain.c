@@ -9,6 +9,7 @@
 #include "wlf/renderer/gles/egl.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
+#include "wlf/platform/x11/backend.h"
 #endif
 
 #include <assert.h>
@@ -114,21 +115,14 @@ struct wlf_egl_swapchain *wlf_egl_swapchain_create(struct wlf_window *window,
 #if WLF_HAS_LINUX_PLATFORM
 	struct wlf_gles_renderer *gles_renderer =
 		wlf_gles_renderer_from_renderer(window->state.renderer);
-	if (!wlf_backend_is_wayland(window->state.backend)) {
-		wlf_log(WLF_ERROR, "EGL swapchain requires a Wayland backend");
-		free(swapchain);
-		return NULL;
+	struct wlf_egl_allocator *egl_allocator = NULL;
+	if (wlf_backend_is_x11(window->state.backend)) {
+		egl_allocator = wlf_egl_allocator_create_x11(gles_renderer->egl,
+			(uint32_t)(uintptr_t)wlf_window_native_handle(window));
+	} else if (wlf_backend_is_wayland(window->state.backend)) {
+		egl_allocator = wlf_egl_allocator_create(gles_renderer->egl,
+			wlf_window_native_handle(window));
 	}
-
-	struct wl_surface *surface = wlf_window_native_handle(window);
-	if (surface == NULL) {
-		wlf_log(WLF_ERROR, "Wayland EGL swapchain requires wl_surface");
-		free(swapchain);
-		return NULL;
-	}
-
-	struct wlf_egl_allocator *egl_allocator =
-		wlf_egl_allocator_create(gles_renderer->egl, surface);
 	if (egl_allocator == NULL) {
 		free(swapchain);
 		return NULL;

@@ -8,6 +8,7 @@
 
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
+#include "wlf/platform/x11/backend.h"
 #endif
 
 #include <stdlib.h>
@@ -145,6 +146,14 @@ EGLConfig wlf_egl_choose_config(struct wlf_egl *egl,
 				&format_attribs)) {
 			continue;
 		}
+		if (egl->xcb_platform) {
+			EGLint visual;
+			if (eglGetConfigAttrib(egl->display, configs[i], EGL_NATIVE_VISUAL_ID,
+					&visual) && visual == egl->native_visual_id) {
+				return configs[i];
+			}
+			continue;
+		}
 		if (fallback == NULL) {
 			fallback = configs[i];
 		}
@@ -172,6 +181,21 @@ static EGLDisplay get_egl_display(struct wlf_backend *backend,
 	void *native_display = backend->impl->native_display(backend);
 
 #if WLF_HAS_LINUX_PLATFORM
+	if (wlf_backend_is_x11(backend)) {
+		if (!wlf_egl_check_ext(client_exts, "EGL_EXT_platform_base") ||
+				!wlf_egl_check_ext(client_exts, "EGL_EXT_platform_xcb")) {
+			wlf_log(WLF_ERROR, "X11 GLES requires EGL_EXT_platform_xcb");
+			return EGL_NO_DISPLAY;
+		}
+		PFNEGLGETPLATFORMDISPLAYEXTPROC get_platform_display =
+			(PFNEGLGETPLATFORMDISPLAYEXTPROC)eglGetProcAddress("eglGetPlatformDisplayEXT");
+		if (get_platform_display == NULL) {
+			return EGL_NO_DISPLAY;
+		}
+		struct wlf_x11_backend *x11 = wlf_x11_backend_from_backend(backend);
+		const EGLint attrs[] = { EGL_PLATFORM_XCB_SCREEN_EXT, x11->screen_number, EGL_NONE };
+		return get_platform_display(EGL_PLATFORM_XCB_EXT, x11->xcb, attrs);
+	}
 	if (wlf_backend_is_wayland(backend) &&
 			(!wlf_egl_check_ext(client_exts, "EGL_EXT_platform_base") ||
 			!((wlf_egl_check_ext(client_exts, "EGL_EXT_platform_wayland") ||
@@ -391,6 +415,12 @@ struct wlf_egl *wlf_egl_create(struct wlf_backend *backend) {
 		return NULL;
 	}
 	egl->display = egl_display;
+#if WLF_HAS_LINUX_PLATFORM
+	if (wlf_backend_is_x11(backend)) {
+		egl->xcb_platform = true;
+		egl->native_visual_id = wlf_x11_backend_from_backend(backend)->screen->root_visual;
+	}
+#endif
 
 	const char *display_exts = eglQueryString(egl_display, EGL_EXTENSIONS);
 	wlf_log(WLF_INFO, "Supported EGL display extensions: %s",

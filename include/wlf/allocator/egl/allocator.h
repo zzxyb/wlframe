@@ -2,13 +2,14 @@
  * @file        allocator.h
  * @brief       EGL window-surface allocator.
  * @details     Declares the allocator that creates EGL-backed wlframe
- *              buffers for a native Wayland surface.
+ *              buffers for a native Wayland surface or XCB window.
  * @author      YaoBing Xiao
  * @date        2026-08-17
  * @version     v1.0
  * @par Copyright(c):
  * @par History:
  *      version: v1.0, YaoBing Xiao, 2026-08-17, initial version\n
+ *      version: v1.0, YaoBing Xiao, 2026-11-10, document XCB support\n
  */
 
 #ifndef ALLOCATOR_EGL_ALLOCATOR_H
@@ -24,12 +25,13 @@ struct wlf_egl;
 /**
  * @brief Allocator for buffers backed by EGL window surfaces.
  *
- * The EGL context and native Wayland surface are borrowed. Buffers created by
+ * The EGL context and native Wayland surface or XCB window are borrowed. Buffers created by
  * this allocator own their individual EGL surface resources.
  */
 struct wlf_egl_allocator {
 	struct wlf_allocator base; /**< Generic allocator interface. */
 	struct wlf_egl *egl; /**< EGL context owner, borrowed. */
+	uint32_t xcb_window; /**< Borrowed XCB window ID, or zero for Wayland. */
 	struct wl_surface *surface; /**< Native Wayland surface, borrowed. */
 };
 
@@ -41,6 +43,18 @@ struct wlf_egl_allocator {
  */
 struct wlf_egl_allocator *wlf_egl_allocator_create(struct wlf_egl *egl,
 	struct wl_surface *surface);
+
+/**
+ * @brief Creates an EGL allocator for a native XCB window.
+ *
+ * @param egl Borrowed XCB EGL context used for surface creation.
+ * @param window Nonzero borrowed XCB window ID.
+ * @return New allocator, or NULL for invalid arguments or allocation failure.
+ * @note The EGL context and native window must outlive the allocator
+ * and all buffers it creates.
+ */
+struct wlf_egl_allocator *wlf_egl_allocator_create_x11(struct wlf_egl *egl,
+	uint32_t window);
 
 /**
  * @brief Checks whether an allocator is EGL-backed.
