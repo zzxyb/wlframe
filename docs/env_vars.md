@@ -5,7 +5,9 @@ wlframe reads these environment variables
 ## backend
 
 * **`WLF_BACKEND`**
-  Forces the creation of a specified backend.
+  Selects `wayland` or `x11` on Linux. Without an override, wlframe tries
+  `WAYLAND_DISPLAY` first and falls back to `DISPLAY`. An explicit selection
+  fails if that backend cannot connect.
 
 ## renderer
 
@@ -14,8 +16,10 @@ wlframe reads these environment variables
   Available renderers:
 
   * `pixman` — CPU-based 2D rendering
-  * `vulkan` — GPU-accelerated rendering via Vulkan
+  * `vulkan` — GPU-accelerated rendering via Vulkan (Wayland only)
   * `gles`   — GPU-accelerated rendering via OpenGL ES
+
+  Automatic X11 selection tries GLES followed by Pixman.
 
 * **`WLF_RENDER_FORCE_DISCRETE_GPU`**
   When set to `1`, wlframe will attempt to use a **discrete GPU** (dedicated graphics card) for Vulkan rendering.
