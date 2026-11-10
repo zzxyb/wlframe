@@ -64,8 +64,7 @@ The platform and renderer selected by the default build are:
 | macOS | AppKit | Metal |
 | Windows | Win32 | Direct3D 12 |
 
-The graphical window examples are enabled on Linux; `scene_damage_test` also
-supports X11. The
+The graphical window examples support Wayland and X11 on Linux. The
 macOS and Windows backends and renderers are built continuously, but are still
 being developed toward the same end-to-end feature coverage.
 
@@ -120,7 +119,7 @@ The Linux graphical examples can be launched directly from the build tree:
 ./build/examples/window/scene_damage_test
 ```
 
-`window_test` and `svg_node_test` require Wayland. On X11, run:
+On X11, run any of the graphical examples with the X11 backend:
 
 ```sh
 WLF_BACKEND=x11 WLF_RENDERER=gles ./build/examples/window/scene_damage_test
