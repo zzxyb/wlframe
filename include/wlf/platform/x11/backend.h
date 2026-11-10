@@ -15,6 +15,8 @@
 #define PLATFORM_X11_BACKEND_H
 
 #include "wlf/platform/wlf_backend.h"
+#include "wlf/types/wlf_pointer.h"
+#include "wlf/types/wlf_keyboard.h"
 #include <xcb/xcb.h>
 
 /**
@@ -25,6 +27,8 @@
  */
 struct wlf_x11_backend {
 	struct wlf_backend base; /**< Generic backend interface. */
+	struct wlf_pointer pointer; /**< Embedded core pointer owned by the backend. */
+	struct wlf_keyboard keyboard; /**< Embedded core keyboard owned by the backend. */
 	xcb_connection_t *xcb; /**< Owned connection to the X server. */
 	xcb_screen_t *screen; /**< Borrowed screen selected during connection. */
 	int screen_number; /**< Screen index used by the XCB EGL platform. */
