@@ -13,6 +13,8 @@
 static void backend_destroy(struct wlf_backend *base) {
 	struct wlf_x11_backend *backend = wlf_x11_backend_from_backend(base);
 	assert(wlf_linked_list_empty(&backend->windows));
+	wlf_pointer_destroy(&backend->pointer);
+	wlf_keyboard_destroy(&backend->keyboard);
 	xcb_disconnect(backend->xcb);
 	free(backend);
 }
@@ -127,12 +129,31 @@ static const struct wlf_backend_impl backend_impl = {
 	.native_display = backend_native_display,
 };
 
+/* Core input devices are embedded in the backend. */
+static void pointer_destroy(struct wlf_pointer *pointer) {
+}
+
+static void keyboard_destroy(struct wlf_keyboard *keyboard) {
+}
+
+static const struct wlf_pointer_impl pointer_impl = {
+	.name = "X11 pointer",
+	.destroy = pointer_destroy,
+};
+
+static const struct wlf_keyboard_impl keyboard_impl = {
+	.name = "X11 keyboard",
+	.destroy = keyboard_destroy,
+};
+
 struct wlf_x11_backend *wlf_x11_backend_create(void) {
 	struct wlf_x11_backend *backend = calloc(1, sizeof(*backend));
 	if (backend == NULL) {
 		return NULL;
 	}
 	wlf_backend_init(&backend->base, &backend_impl);
+	wlf_pointer_init(&backend->pointer, &pointer_impl);
+	wlf_keyboard_init(&backend->keyboard, &keyboard_impl);
 	wlf_linked_list_init(&backend->windows);
 	backend->xcb = xcb_connect(NULL, &backend->screen_number);
 	if (xcb_connection_has_error(backend->xcb)) {

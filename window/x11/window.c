@@ -279,26 +279,49 @@ void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
 		wlf_window_close(base);
 		break;
 	case XCB_FOCUS_IN:
-	case XCB_FOCUS_OUT:
+	case XCB_FOCUS_OUT: {
+		xcb_focus_in_event_t *ev = (void *)event;
+		if (ev->mode == XCB_NOTIFY_MODE_GRAB || ev->mode == XCB_NOTIFY_MODE_UNGRAB ||
+				ev->detail == XCB_NOTIFY_DETAIL_INFERIOR) {
+			break;
+		}
 		base->state.focused = type == XCB_FOCUS_IN;
-		wlf_signal_emit_mutable(type == XCB_FOCUS_IN ?
-			&base->events.focus_in : &base->events.focus_out, NULL);
+		if (type == XCB_FOCUS_IN) {
+			struct wlf_keyboard_enter_event enter = {
+				.keyboard = &backend->keyboard, .serial = ev->sequence, .window = base,
+			};
+			wlf_window_keyboard_enter(base, &enter);
+		} else {
+			struct wlf_keyboard_leave_event leave = {
+				.keyboard = &backend->keyboard, .serial = ev->sequence, .window = base,
+			};
+			wlf_window_keyboard_leave(base, &leave);
+		}
+		window = find_window(backend, id);
+		if (window != NULL) {
+			wlf_signal_emit_mutable(type == XCB_FOCUS_IN ?
+				&window->base.events.focus_in : &window->base.events.focus_out, NULL);
+		}
 		break;
+	}
 	case XCB_ENTER_NOTIFY: {
 		xcb_enter_notify_event_t *ev = (void *)event;
-		struct wlf_pointer_enter_event enter = { .serial = ev->sequence,
+		struct wlf_pointer_enter_event enter = { .pointer = &backend->pointer, .serial = ev->sequence,
 			.surface = window_native_handle(base), .x = ev->event_x, .y = ev->event_y };
 		wlf_window_pointer_enter(base, &enter);
 		break;
 	}
 	case XCB_LEAVE_NOTIFY: {
-		struct wlf_pointer_leave_event leave = { .surface = window_native_handle(base) };
+		struct wlf_pointer_leave_event leave = {
+			.pointer = &backend->pointer, .surface = window_native_handle(base),
+		};
 		wlf_window_pointer_leave(base, &leave);
 		break;
 	}
 	case XCB_MOTION_NOTIFY: {
 		xcb_motion_notify_event_t *ev = (void *)event;
-		struct wlf_pointer_motion_absolute_event motion = { .time_msec = ev->time,
+		struct wlf_pointer_motion_absolute_event motion = {
+			.pointer = &backend->pointer, .time_msec = ev->time,
 			.surface = window_native_handle(base), .x = ev->event_x, .y = ev->event_y };
 		wlf_window_pointer_motion(base, &motion);
 		break;
@@ -309,7 +332,7 @@ void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
 		if (ev->detail >= 4 && ev->detail <= 7) {
 			if (type == XCB_BUTTON_PRESS) {
 				int sign = (ev->detail == 4 || ev->detail == 6) ? -1 : 1;
-				struct wlf_pointer_axis_event axis = { .time_msec = ev->time,
+				struct wlf_pointer_axis_event axis = { .pointer = &backend->pointer, .time_msec = ev->time,
 					.orientation = ev->detail < 6 ? WLF_POINTER_AXIS_VERTICAL_SCROLL :
 						WLF_POINTER_AXIS_HORIZONTAL_SCROLL,
 					.delta = sign * 15, .delta_discrete = sign * 120 };
@@ -319,7 +342,7 @@ void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
 			uint32_t button = ev->detail == 1 ? WLF_POINTER_BUTTON_LEFT :
 				ev->detail == 2 ? WLF_POINTER_BUTTON_MIDDLE :
 				ev->detail == 3 ? WLF_POINTER_BUTTON_RIGHT : 0x110 + ev->detail - 1;
-			struct wlf_pointer_button_event press = { .time_msec = ev->time,
+			struct wlf_pointer_button_event press = { .pointer = &backend->pointer, .time_msec = ev->time,
 				.serial = ev->sequence, .button = button,
 				.state = type == XCB_BUTTON_PRESS ? WLF_POINTER_BUTTON_STATE_PRESSED :
 					WLF_POINTER_BUTTON_STATE_RELEASED };
@@ -331,7 +354,7 @@ void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
 	case XCB_KEY_RELEASE: {
 		xcb_key_press_event_t *ev = (void *)event;
 		if (ev->detail >= 8) {
-			struct wlf_keyboard_key_event key = { .serial = ev->sequence,
+			struct wlf_keyboard_key_event key = { .keyboard = &backend->keyboard, .serial = ev->sequence,
 				.time_msec = ev->time, .key = ev->detail - 8,
 				.state = type == XCB_KEY_PRESS ? WLF_KEYBOARD_KEY_STATE_PRESSED :
 					WLF_KEYBOARD_KEY_STATE_RELEASED };
@@ -339,5 +362,11 @@ void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
 		}
 		break;
 	}
+	}
+	if (type == XCB_MOTION_NOTIFY || type == XCB_BUTTON_PRESS || type == XCB_BUTTON_RELEASE) {
+		window = find_window(backend, id);
+		if (window != NULL) {
+			wlf_window_pointer_frame(&window->base, &backend->pointer);
+		}
 	}
 }
