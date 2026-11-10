@@ -159,6 +159,8 @@ if is_linux
 	wayland_egl = dependency('wayland-egl', required: true)
 	egl = dependency('egl', version: '>= 1.5', required: true)
 	gio = dependency('gio-2.0', required: true)
+	xcb = dependency('xcb', required: true)
+	xcb_icccm = dependency('xcb-icccm', required: true)
 elif is_macos
 	message('Building for macOS')
 
@@ -260,6 +262,8 @@ elif is_linux
 		wayland_egl,
 		egl,
 		gio,
+		xcb,
+		xcb_icccm,
 		cairo,
 		pangocairo,
 		harfbuzz,

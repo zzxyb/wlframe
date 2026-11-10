@@ -3,6 +3,7 @@ wlf_files += files(
 )
 
 if is_linux
+	subdir('x11')
 	subdir('shm')
 	subdir('egl')
 	subdir('vulkan')

@@ -29,6 +29,8 @@ jobs:
           clang \
           pkg-config \
           wayland \
+          libxcb \
+          xcb-util-wm \
           wayland-protocols \
           libpng \
           libjpeg-turbo	\
