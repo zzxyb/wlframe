@@ -36,7 +36,7 @@ primitives in the same window.
 
 ## What wlframe provides
 
-- **Cross-platform foundations:** Wayland integration on Linux, AppKit event
+- **Cross-platform foundations:** Wayland and X11 integration on Linux, AppKit event
   integration on macOS, and a Win32 event backend on Windows.
 - **Multiple rendering paths:** OpenGL ES, Vulkan, and Pixman on Linux; Metal on
   macOS; and Direct3D 12 on Windows.
@@ -60,10 +60,12 @@ The platform and renderer selected by the default build are:
 | Host | Platform backend | Renderer |
 | --- | --- | --- |
 | Linux | Wayland | OpenGL ES, then Vulkan, then Pixman fallback |
+| Linux | X11 (XCB) | OpenGL ES, then Pixman fallback |
 | macOS | AppKit | Metal |
 | Windows | Win32 | Direct3D 12 |
 
-The graphical window examples are currently enabled on Linux/Wayland. The
+The graphical window examples are enabled on Linux; `scene_damage_test` also
+supports X11. The
 macOS and Windows backends and renderers are built continuously, but are still
 being developed toward the same end-to-end feature coverage.
 
@@ -87,7 +89,7 @@ Install the compiler, build tools, and runtime development dependencies:
 ```sh
 sudo pacman -S --needed \
     base-devel meson ninja gcc pkgconf \
-    wayland wayland-protocols wlr-protocols \
+    wayland wayland-protocols wlr-protocols libxcb xcb-util-wm \
     mesa libdrm vulkan-icd-loader vulkan-headers glslang \
     pixman cairo pango harfbuzz glib2 \
     libpng libjpeg-turbo libwebp giflib
@@ -118,9 +120,28 @@ The Linux graphical examples can be launched directly from the build tree:
 ./build/examples/window/scene_damage_test
 ```
 
-A Wayland session is required. Set `WLF_RENDERER=gles`, `vulkan`, or `pixman` to
-force a renderer; see [Environment variables](docs/env_vars.md) for the full
-list of runtime switches.
+`window_test` and `svg_node_test` require Wayland. On X11, run:
+
+```sh
+WLF_BACKEND=x11 WLF_RENDERER=gles ./build/examples/window/scene_damage_test
+WLF_BACKEND=x11 WLF_RENDERER=pixman ./build/examples/window/scene_damage_test
+```
+
+The backend automatically tries `WAYLAND_DISPLAY`, then `DISPLAY`. Set
+`WLF_BACKEND=wayland` or `x11` to select one explicitly. Create X11 toplevels
+with `wlf_x11_window_create_from_backend()` and pass their `base` to the usual
+window, renderer, and scene APIs. Destroy windows before the renderer and backend.
+
+X11 currently supports opaque toplevel windows, titles, size constraints,
+server-side decorations, fullscreen/maximize requests, core pointer events,
+and raw keyboard keycodes. Pixman requires a 24-bit TrueColor visual with
+32-bit XRGB pixels. GLES requires `EGL_EXT_platform_xcb` and an EGL config
+matching the root visual. Frames use a 16 ms software clock. X11 Vulkan,
+transparent windows, fractional scaling, popups/layer-shell, XKB keymaps,
+and IME integration are not implemented yet.
+
+For software GLES, set `WLF_RENDER_FORCE_SOFTWARE=1`. See
+[Environment variables](docs/env_vars.md) for all runtime switches.
 
 ### macOS
 
