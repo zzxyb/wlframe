@@ -97,6 +97,36 @@ error:
 	return NULL;
 }
 
+struct wlf_egl_buffer *wlf_egl_buffer_create_x11(struct wlf_egl *egl,
+		uint32_t window, uint32_t width, uint32_t height,
+		const struct wlf_render_format *format) {
+	if (egl == NULL || !egl->xcb_platform || window == 0 || format == NULL ||
+			width == 0 || height == 0 || width > INT_MAX || height > INT_MAX ||
+			egl->procs.eglCreatePlatformWindowSurfaceEXT == NULL) {
+		return NULL;
+	}
+	struct wlf_egl_buffer *buffer = calloc(1, sizeof(*buffer));
+	if (buffer == NULL) {
+		return NULL;
+	}
+	wlf_buffer_init(&buffer->base, &egl_buffer_impl, width, height);
+	buffer->egl = egl;
+	buffer->config = wlf_egl_choose_config(egl, format);
+	buffer->surface = EGL_NO_SURFACE;
+	if (buffer->config != NULL) {
+		/* EGL_EXT_platform_xcb takes a pointer to xcb_window_t. */
+		buffer->surface = egl->procs.eglCreatePlatformWindowSurfaceEXT(
+			egl->display, buffer->config, &window, NULL);
+	}
+	if (buffer->surface == EGL_NO_SURFACE) {
+		wlf_log(WLF_ERROR, "Failed to create XCB EGL surface: %s",
+			wlf_egl_error_str(eglGetError()));
+		wlf_buffer_drop(&buffer->base);
+		return NULL;
+	}
+	return buffer;
+}
+
 bool wlf_buffer_is_egl(const struct wlf_buffer *buffer) {
 	return buffer != NULL && buffer->impl == &egl_buffer_impl;
 }
@@ -110,11 +140,14 @@ struct wlf_egl_buffer *wlf_egl_buffer_from_buffer(struct wlf_buffer *buffer) {
 }
 
 bool wlf_egl_buffer_resize(struct wlf_egl_buffer *buffer, uint32_t width, uint32_t height) {
-	if (buffer == NULL || buffer->egl_window == NULL) {
+	if (buffer == NULL || width == 0 || height == 0 || width > INT_MAX || height > INT_MAX ||
+			(buffer->egl_window == NULL && !buffer->egl->xcb_platform)) {
 		return false;
 	}
 
-	wl_egl_window_resize(buffer->egl_window, (int)width, (int)height, 0, 0);
+	if (buffer->egl_window != NULL) {
+		wl_egl_window_resize(buffer->egl_window, (int)width, (int)height, 0, 0);
+	}
 	buffer->base.width = width;
 	buffer->base.height = height;
 	return true;

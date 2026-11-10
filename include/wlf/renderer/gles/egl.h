@@ -4,7 +4,7 @@
  * @details     This file defines the EGL wrapper used by the GLES rendering backend.
  *              It manages the EGL display, context, and framebuffer configuration,
  *              as well as dynamically loaded EGL extension function pointers and
- *              extension availability flags.
+ *              extension availability flags for Wayland and XCB displays.
  *
  *              The EGL context is responsible for making the OpenGL ES context current,
  *              creating and destroying EGL images for DMA-BUF interop, managing
@@ -17,6 +17,7 @@
  * @par Copyright:
  * @par History:
  *      version: v1.0, 2026-05-27, initial version.
+ *      version: v1.0, YaoBing Xiao, 2026-11-10, document XCB support\n
  */
 
 #ifndef GLES_EGL_H
@@ -41,6 +42,8 @@ struct wlf_render_format;
  * needed for DMA-BUF interop, damage tracking, and GPU synchronisation.
  */
 struct wlf_egl {
+	bool xcb_platform; /**< true for XCB display and window surfaces; false for Wayland. */
+	EGLint native_visual_id; /**< Required X11 root visual for config matching, or zero on Wayland. */
 	EGLDisplay display;    /**< EGL display connection handle. */
 	EGLContext context;    /**< EGL rendering context. */
 	EGLConfig  config;     /**< EGL framebuffer configuration selected at creation time. */

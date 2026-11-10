@@ -17,6 +17,11 @@ static struct wlf_buffer *allocator_create_buffer(
 		const struct wlf_render_format *format) {
 	struct wlf_egl_allocator *allocator =
 		wlf_egl_allocator_from_allocator(base);
+	if (allocator->xcb_window != 0) {
+		struct wlf_egl_buffer *buffer = wlf_egl_buffer_create_x11(allocator->egl,
+			allocator->xcb_window, width, height, format);
+		return buffer != NULL ? &buffer->base : NULL;
+	}
 	struct wlf_egl_buffer *buffer = wlf_egl_buffer_create(allocator->egl,
 		allocator->surface,
 		width, height, format);
@@ -44,6 +49,21 @@ struct wlf_egl_allocator *wlf_egl_allocator_create(struct wlf_egl *egl,
 	allocator->surface = surface;
 	wlf_allocator_init(&allocator->base, &allocator_impl);
 
+	return allocator;
+}
+
+struct wlf_egl_allocator *wlf_egl_allocator_create_x11(struct wlf_egl *egl,
+		uint32_t window) {
+	if (egl == NULL || window == 0) {
+		return NULL;
+	}
+	struct wlf_egl_allocator *allocator = calloc(1, sizeof(*allocator));
+	if (allocator == NULL) {
+		return NULL;
+	}
+	allocator->egl = egl;
+	allocator->xcb_window = window;
+	wlf_allocator_init(&allocator->base, &allocator_impl);
 	return allocator;
 }
 
