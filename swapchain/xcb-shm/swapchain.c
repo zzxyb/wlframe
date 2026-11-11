@@ -1,60 +1,11 @@
 #include "wlf/swapchain/xcb-shm/swapchain.h"
 #include "wlf/window/x11/window.h"
-#include "wlf/buffer/wlf_buffer.h"
+#include "wlf/buffer/xcb-shm/buffer.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_utils.h"
 
 #include <assert.h>
-#include <limits.h>
 #include <stdlib.h>
-
-struct x11_buffer {
-	struct wlf_buffer base;
-	void *pixels;
-};
-
-static void buffer_destroy(struct wlf_buffer *base) {
-	struct x11_buffer *buffer = wlf_container_of(base, buffer, base);
-	wlf_buffer_finish(base);
-	free(buffer->pixels);
-	free(buffer);
-}
-
-static bool buffer_begin_access(struct wlf_buffer *base, uint32_t flags,
-		void **data, uint32_t *format, size_t *stride) {
-	struct x11_buffer *buffer = wlf_container_of(base, buffer, base);
-	*data = buffer->pixels;
-	*format = WLF_FORMAT_XRGB8888;
-	*stride = base->width * 4;
-	return true;
-}
-
-static void buffer_end_access(struct wlf_buffer *base) {
-}
-
-static const struct wlf_buffer_impl buffer_impl = {
-	.destroy = buffer_destroy,
-	.begin_data_ptr_access = buffer_begin_access,
-	.end_data_ptr_access = buffer_end_access,
-};
-
-static struct wlf_buffer *create_buffer(int width, int height) {
-	if (width <= 0 || height <= 0 || width > INT16_MAX || height > INT16_MAX ||
-			(size_t)width > SIZE_MAX / 4 / (size_t)height) {
-		return NULL;
-	}
-	struct x11_buffer *buffer = calloc(1, sizeof(*buffer));
-	if (buffer == NULL) {
-		return NULL;
-	}
-	buffer->pixels = calloc(height, (size_t)width * 4);
-	if (buffer->pixels == NULL) {
-		free(buffer);
-		return NULL;
-	}
-	wlf_buffer_init(&buffer->base, &buffer_impl, width, height);
-	return &buffer->base;
-}
 
 static void swapchain_destroy(struct wlf_swapchain *base) {
 	struct wlf_xcb_shm_swapchain *swapchain =
@@ -68,12 +19,14 @@ static void swapchain_destroy(struct wlf_swapchain *base) {
 }
 
 static bool swapchain_resize(struct wlf_swapchain *base, int width, int height) {
-	struct wlf_buffer *buffer = create_buffer(width, height);
+	struct wlf_x11_window *window = wlf_x11_window_from_window(base->window);
+	struct wlf_xcb_shm_buffer *buffer = wlf_xcb_shm_buffer_create(
+		window->backend->xcb, width, height, base->format.format);
 	if (buffer == NULL) {
 		return false;
 	}
 	wlf_buffer_drop(base->back);
-	base->back = buffer;
+	base->back = &buffer->base;
 	base->width = width;
 	base->height = height;
 	return true;
@@ -84,32 +37,24 @@ static void swapchain_present(struct wlf_swapchain *base,
 	struct wlf_xcb_shm_swapchain *swapchain =
 		wlf_xcb_shm_swapchain_from_swapchain(base);
 	struct wlf_x11_window *window = wlf_x11_window_from_window(base->window);
-	struct x11_buffer *buffer = wlf_container_of(base->back, buffer, base);
+	struct wlf_xcb_shm_buffer *buffer = wlf_xcb_shm_buffer_from_buffer(base->back);
+	assert(!base->back->accessing_data_ptr);
 	pixman_region32_t clipped;
 	pixman_region32_init_rect(&clipped, 0, 0, base->width, base->height);
 	if (damage != NULL) {
-		pixman_region32_intersect(&clipped, &clipped, (pixman_region32_t *)damage);
+		pixman_region32_intersect(&clipped, &clipped, damage);
 	}
 	int count;
 	pixman_box32_t *rects = pixman_region32_rectangles(&clipped, &count);
-	/* Reserve request header and BIG-REQUESTS length word. Split rows to
-	 * respect the server's maximum request size even on remote X servers. */
-	uint32_t max_pixels = (xcb_get_maximum_request_length(window->backend->xcb) - 7);
 	for (int i = 0; i < count; i++) {
-		for (int y = rects[i].y1; y < rects[i].y2; y++) {
-			for (int x = rects[i].x1; x < rects[i].x2;) {
-				uint32_t width = rects[i].x2 - x;
-				if (width > max_pixels) {
-					width = max_pixels;
-				}
-				const char *pixels = (const char *)buffer->pixels +
-					((size_t)y * base->width + x) * 4;
-				xcb_put_image(window->backend->xcb, XCB_IMAGE_FORMAT_Z_PIXMAP,
-					window->window, swapchain->gc, width, 1, x, y, 0,
-					window->depth, width * 4, (const uint8_t *)pixels);
-				x += width;
-			}
-		}
+		const pixman_box32_t *r = &rects[i];
+		xcb_shm_put_image(window->backend->xcb, window->window, swapchain->gc,
+			base->width, base->height, r->x1, r->y1,
+			r->x2 - r->x1, r->y2 - r->y1, r->x1, r->y1,
+			window->depth, XCB_IMAGE_FORMAT_Z_PIXMAP, false, buffer->segment, 0);
+	}
+	if (count > 0) {
+		wlf_xcb_shm_buffer_mark_pending(buffer);
 	}
 	pixman_region32_fini(&clipped);
 	xcb_flush(window->backend->xcb);
