@@ -1,5 +1,5 @@
 #include "wlf/allocator/shm/allocator.h"
-#include "wlf/buffer/shm/buffer.h"
+#include "wlf/buffer/wl-shm/buffer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/types/wlf_pixel_format.h"
 
@@ -26,8 +26,8 @@ static struct wlf_buffer *allocator_create_buffer(
 
 	struct wlf_shm_allocator *shm_allocator =
 		wlf_shm_allocator_from_allocator(allocator);
-	struct wlf_shm_buffer *buffer =
-		wlf_shm_buffer_create(shm_allocator, width, height, format->format);
+	struct wlf_wl_shm_buffer *buffer =
+		wlf_wl_shm_buffer_create(shm_allocator, width, height, format->format);
 
 	return buffer != NULL ? &buffer->base : NULL;
 }

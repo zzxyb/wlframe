@@ -1,6 +1,6 @@
 #include "wlf/swapchain/wl-shm/swapchain.h"
 #include "wlf/allocator/wlf_allocator.h"
-#include "wlf/buffer/shm/buffer.h"
+#include "wlf/buffer/wl-shm/buffer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/allocator/shm/allocator.h"
 #include "wlf/window/wlf_window.h"
@@ -33,8 +33,8 @@ static void swapchain_present(struct wlf_swapchain *swapchain,
 		return;
 	}
 
-	struct wlf_shm_buffer *buf =
-		wlf_shm_buffer_from_buffer(wl_shm_swapchain->back);
+	struct wlf_wl_shm_buffer *buf =
+		wlf_wl_shm_buffer_from_buffer(wl_shm_swapchain->back);
 
 	wl_surface_attach(surface, buf->wl_buffer, 0, 0);
 	int nrects = 0;
