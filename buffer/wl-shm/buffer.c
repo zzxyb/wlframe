@@ -1,4 +1,4 @@
-#include "wlf/buffer/shm/buffer.h"
+#include "wlf/buffer/wl-shm/buffer.h"
 #include "wlf/allocator/shm/allocator.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
@@ -44,8 +44,8 @@ static int get_min_stride(uint32_t format, int width) {
 }
 
 static void buffer_destroy(struct wlf_buffer *buffer) {
-	struct wlf_shm_buffer *shm_buffer =
-		wlf_shm_buffer_from_buffer(buffer);
+	struct wlf_wl_shm_buffer *shm_buffer =
+		wlf_wl_shm_buffer_from_buffer(buffer);
 
 	wl_buffer_destroy(shm_buffer->wl_buffer);
 	munmap(shm_buffer->data, shm_buffer->size);
@@ -55,8 +55,8 @@ static void buffer_destroy(struct wlf_buffer *buffer) {
 
 static bool buffer_begin_data_ptr_access(struct wlf_buffer *buffer,
 		uint32_t flags, void **data, uint32_t *format, size_t *stride) {
-	struct wlf_shm_buffer *shm_buffer =
-		wlf_shm_buffer_from_buffer(buffer);
+	struct wlf_wl_shm_buffer *shm_buffer =
+		wlf_wl_shm_buffer_from_buffer(buffer);
 	WLF_UNUSED(flags);
 	*data = shm_buffer->data;
 	*format = shm_buffer->shm.format;
@@ -75,14 +75,14 @@ static const struct wlf_buffer_impl buffer_impl = {
 	.end_data_ptr_access = buffer_end_data_ptr_access,
 };
 
-struct wlf_shm_buffer *wlf_shm_buffer_create(struct wlf_shm_allocator *alloc,
+struct wlf_wl_shm_buffer *wlf_wl_shm_buffer_create(struct wlf_shm_allocator *alloc,
 		int width, int height, uint32_t format) {
 	int stride = get_min_stride(format, width);
 	if (stride < 0) {
 		return NULL;
 	}
 
-	struct wlf_shm_buffer *buffer = calloc(1, sizeof(*buffer));
+	struct wlf_wl_shm_buffer *buffer = calloc(1, sizeof(*buffer));
 	if (buffer == NULL) {
 		return NULL;
 	}
@@ -138,14 +138,14 @@ struct wlf_shm_buffer *wlf_shm_buffer_create(struct wlf_shm_allocator *alloc,
 	return buffer;
 }
 
-bool wlf_buffer_is_shm(struct wlf_buffer *buffer) {
+bool wlf_buffer_is_wl_shm(struct wlf_buffer *buffer) {
 	return buffer->impl == &buffer_impl;
 }
 
-struct wlf_shm_buffer *wlf_shm_buffer_from_buffer(struct wlf_buffer *buffer) {
+struct wlf_wl_shm_buffer *wlf_wl_shm_buffer_from_buffer(struct wlf_buffer *buffer) {
 	assert(buffer->impl == &buffer_impl);
 
-	struct wlf_shm_buffer *shm_buffer =
+	struct wlf_wl_shm_buffer *shm_buffer =
 		wlf_container_of(buffer, shm_buffer, base);
 
 	return shm_buffer;
@@ -161,8 +161,8 @@ static void randname(char *buf) {
 	}
 }
 
-bool wlf_shm_buffer_get_shm(struct wlf_shm_buffer *buffer,
-		struct wlf_shm_attributes *attribs) {
+bool wlf_wl_shm_buffer_get_shm(struct wlf_wl_shm_buffer *buffer,
+		struct wlf_wl_shm_attributes *attribs) {
 	if (buffer == NULL || attribs == NULL) {
 		return false;
 	}

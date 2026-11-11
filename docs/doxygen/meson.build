@@ -157,7 +157,7 @@ if is_linux
 
 			'../../include/wlf/buffer/egl/buffer.h',
 			'../../include/wlf/buffer/pixman/buffer.h',
-			'../../include/wlf/buffer/shm/buffer.h',
+			'../../include/wlf/buffer/wl-shm/buffer.h',
 
 			'../../include/wlf/dmabuf/wlf_dmabuf.h',
 
