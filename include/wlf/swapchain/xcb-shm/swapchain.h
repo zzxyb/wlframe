@@ -1,8 +1,8 @@
 /**
  * @file        swapchain.h
- * @brief       X11 software swapchain for the Pixman renderer.
+ * @brief       X11 MIT-SHM swapchain for the Pixman renderer.
  * @details     This file declares the XRGB8888 software swapchain, which
- *              uploads damaged pixels to an XCB window.
+ *              shares pixel storage with the X server via MIT-SHM.
  * @author      YaoBing Xiao
  * @date        2026-11-10
  * @version     v1.0
@@ -22,11 +22,11 @@
 struct wlf_window;
 
 /**
- * @brief Software swapchain uploading pixels to an XCB window.
+ * @brief Software swapchain presenting MIT-SHM buffers to an XCB window.
  */
 struct wlf_xcb_shm_swapchain {
 	struct wlf_swapchain base; /**< Generic swapchain interface. */
-	xcb_gcontext_t gc;        /**< Graphics context used for pixel uploads. */
+	xcb_gcontext_t gc;        /**< Graphics context used for MIT-SHM presentation. */
 };
 
 /**
@@ -38,7 +38,8 @@ struct wlf_xcb_shm_swapchain {
  * @param format Requested render format; must be WLF_FORMAT_XRGB8888.
  * @return New swapchain, or NULL for unsupported formats or allocation failure.
  * @note Requires a 24-bit TrueColor root visual and 32-bit pixels with
- * matching byte order. Destroy with wlf_swapchain_destroy() before the window.
+ * matching byte order, plus usable MIT-SHM support. Destroy with
+ * wlf_swapchain_destroy() before the window.
  */
 struct wlf_swapchain *wlf_xcb_shm_swapchain_create(struct wlf_window *window,
 	int width, int height, const struct wlf_render_format *format);
