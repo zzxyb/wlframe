@@ -11,11 +11,24 @@
  *      version: v1.0, YaoBing Xiao, 2026-11-10, initial version\n
  */
 
-#ifndef SWAPCHAIN_X11_SWAPCHAIN_H
-#define SWAPCHAIN_X11_SWAPCHAIN_H
+#ifndef XCB_SHM_SWAPCHAIN_H
+#define XCB_SHM_SWAPCHAIN_H
 
 #include "wlf/swapchain/wlf_swapchain.h"
+
+#include <stdbool.h>
+#include <xcb/xcb.h>
+
 struct wlf_window;
+
+/**
+ * @brief Software swapchain uploading pixels to an XCB window.
+ */
+struct wlf_xcb_shm_swapchain {
+	struct wlf_swapchain base; /**< Generic swapchain interface. */
+	xcb_gcontext_t gc;        /**< Graphics context used for pixel uploads. */
+};
+
 /**
  * @brief Creates a software swapchain for an X11 window.
  *
@@ -27,7 +40,23 @@ struct wlf_window;
  * @note Requires a 24-bit TrueColor root visual and 32-bit pixels with
  * matching byte order. Destroy with wlf_swapchain_destroy() before the window.
  */
-struct wlf_swapchain *wlf_x11_swapchain_create(struct wlf_window *window,
+struct wlf_swapchain *wlf_xcb_shm_swapchain_create(struct wlf_window *window,
 	int width, int height, const struct wlf_render_format *format);
 
-#endif // SWAPCHAIN_X11_SWAPCHAIN_H
+/**
+ * @brief Checks whether a swapchain is backed by XCB shared memory.
+ * @param swapchain Generic swapchain to inspect.
+ * @return true when @p swapchain is xcb-shm-backed, false otherwise.
+ */
+bool wlf_swapchain_is_xcb_shm(const struct wlf_swapchain *swapchain);
+
+/**
+ * @brief Casts a generic swapchain to an XCB shared-memory swapchain.
+ * @param swapchain Swapchain known to be xcb-shm-backed.
+ * @return Enclosing xcb-shm swapchain.
+ * @note Asserts that the swapchain has the expected implementation.
+ */
+struct wlf_xcb_shm_swapchain *wlf_xcb_shm_swapchain_from_swapchain(
+	struct wlf_swapchain *swapchain);
+
+#endif // XCB_SHM_SWAPCHAIN_H

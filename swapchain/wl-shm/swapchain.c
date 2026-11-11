@@ -1,4 +1,4 @@
-#include "wlf/swapchain/shm/swapchain.h"
+#include "wlf/swapchain/wl-shm/swapchain.h"
 #include "wlf/allocator/wlf_allocator.h"
 #include "wlf/buffer/shm/buffer.h"
 #include "wlf/utils/wlf_log.h"
@@ -14,27 +14,27 @@
 #include <wayland-client-protocol.h>
 
 static void swapchain_destroy(struct wlf_swapchain *swapchain) {
-	struct wlf_shm_swapchain *shm_swapchain =
-		wlf_shm_swapchain_from_swapchain(swapchain);
-	wlf_buffer_drop(shm_swapchain->front);
-	wlf_buffer_drop(shm_swapchain->back);
-	free(shm_swapchain);
+	struct wlf_wl_shm_swapchain *wl_shm_swapchain =
+		wlf_wl_shm_swapchain_from_swapchain(swapchain);
+	wlf_buffer_drop(wl_shm_swapchain->front);
+	wlf_buffer_drop(wl_shm_swapchain->back);
+	free(wl_shm_swapchain);
 }
 
 static void swapchain_present(struct wlf_swapchain *swapchain,
 		const pixman_region32_t *damage) {
-	struct wlf_shm_swapchain *shm_swapchain =
-		wlf_shm_swapchain_from_swapchain(swapchain);
+	struct wlf_wl_shm_swapchain *wl_shm_swapchain =
+		wlf_wl_shm_swapchain_from_swapchain(swapchain);
 
 	struct wl_surface *surface =
-		wlf_window_native_handle(shm_swapchain->base.window);
+		wlf_window_native_handle(wl_shm_swapchain->base.window);
 	if (surface == NULL) {
 		wlf_log(WLF_ERROR, "Wayland shm swapchain requires wl_surface");
 		return;
 	}
 
 	struct wlf_shm_buffer *buf =
-		wlf_shm_buffer_from_buffer(shm_swapchain->back);
+		wlf_shm_buffer_from_buffer(wl_shm_swapchain->back);
 
 	wl_surface_attach(surface, buf->wl_buffer, 0, 0);
 	int nrects = 0;
@@ -52,10 +52,10 @@ static void swapchain_present(struct wlf_swapchain *swapchain,
 
 	wl_surface_commit(surface);
 
-	struct wlf_buffer *tmp = shm_swapchain->front;
-	shm_swapchain->front = shm_swapchain->back;
-	shm_swapchain->back = tmp;
-	shm_swapchain->base.back = shm_swapchain->back;
+	struct wlf_buffer *tmp = wl_shm_swapchain->front;
+	wl_shm_swapchain->front = wl_shm_swapchain->back;
+	wl_shm_swapchain->back = tmp;
+	wl_shm_swapchain->base.back = wl_shm_swapchain->back;
 }
 
 static bool swapchain_resize(struct wlf_swapchain *swapchain, int width,
@@ -67,8 +67,8 @@ static bool swapchain_resize(struct wlf_swapchain *swapchain, int width,
 		return true;
 	}
 
-	struct wlf_shm_swapchain *shm_swapchain =
-		wlf_shm_swapchain_from_swapchain(swapchain);
+	struct wlf_wl_shm_swapchain *wl_shm_swapchain =
+		wlf_wl_shm_swapchain_from_swapchain(swapchain);
 	struct wlf_buffer *front = wlf_allocator_create_buffer(
 		swapchain->allocator, width, height, &swapchain->format);
 	if (front == NULL) {
@@ -81,11 +81,11 @@ static bool swapchain_resize(struct wlf_swapchain *swapchain, int width,
 		return false;
 	}
 
-	wlf_buffer_drop(shm_swapchain->front);
-	wlf_buffer_drop(shm_swapchain->back);
-	shm_swapchain->front = front;
-	shm_swapchain->back = back;
-	shm_swapchain->base.back = back;
+	wlf_buffer_drop(wl_shm_swapchain->front);
+	wlf_buffer_drop(wl_shm_swapchain->back);
+	wl_shm_swapchain->front = front;
+	wl_shm_swapchain->back = back;
+	wl_shm_swapchain->base.back = back;
 	swapchain->width = width;
 	swapchain->height = height;
 
@@ -98,11 +98,11 @@ static const struct wlf_swapchain_impl swapchain_impl = {
 	.present = swapchain_present,
 };
 
-struct wlf_shm_swapchain *wlf_shm_swapchain_create(struct wlf_window *window,
+struct wlf_wl_shm_swapchain *wlf_wl_shm_swapchain_create(struct wlf_window *window,
 		int width, int height, const struct wlf_render_format *format) {
-	struct wlf_shm_swapchain *swapchain = calloc(1, sizeof(*swapchain));
+	struct wlf_wl_shm_swapchain *swapchain = calloc(1, sizeof(*swapchain));
 	if (swapchain == NULL) {
-		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_shm_swapchain");
+		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_wl_shm_swapchain");
 		return NULL;
 	}
 
@@ -139,16 +139,16 @@ struct wlf_shm_swapchain *wlf_shm_swapchain_create(struct wlf_window *window,
 	return swapchain;
 }
 
-bool wlf_swapchain_is_shm(const struct wlf_swapchain *swapchain) {
-	return swapchain->impl == &swapchain_impl;
+bool wlf_swapchain_is_wl_shm(const struct wlf_swapchain *swapchain) {
+	return swapchain != NULL && swapchain->impl == &swapchain_impl;
 }
 
-struct wlf_shm_swapchain *wlf_shm_swapchain_from_swapchain(
+struct wlf_wl_shm_swapchain *wlf_wl_shm_swapchain_from_swapchain(
 		struct wlf_swapchain *swapchain) {
 	assert(swapchain->impl == &swapchain_impl);
 
-	struct wlf_shm_swapchain *shm_swapchain =
-		wlf_container_of(swapchain, shm_swapchain, base);
+	struct wlf_wl_shm_swapchain *wl_shm_swapchain =
+		wlf_container_of(swapchain, wl_shm_swapchain, base);
 
-	return shm_swapchain;
+	return wl_shm_swapchain;
 }
