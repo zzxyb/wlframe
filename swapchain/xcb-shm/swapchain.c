@@ -1,21 +1,16 @@
-#include "wlf/swapchain/x11/swapchain.h"
+#include "wlf/swapchain/xcb-shm/swapchain.h"
 #include "wlf/window/x11/window.h"
 #include "wlf/buffer/wlf_buffer.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_utils.h"
 
+#include <assert.h>
 #include <limits.h>
 #include <stdlib.h>
-#include <xcb/xcb.h>
 
 struct x11_buffer {
 	struct wlf_buffer base;
 	void *pixels;
-};
-
-struct x11_swapchain {
-	struct wlf_swapchain base;
-	xcb_gcontext_t gc;
 };
 
 static void buffer_destroy(struct wlf_buffer *base) {
@@ -62,7 +57,8 @@ static struct wlf_buffer *create_buffer(int width, int height) {
 }
 
 static void swapchain_destroy(struct wlf_swapchain *base) {
-	struct x11_swapchain *swapchain = wlf_container_of(base, swapchain, base);
+	struct wlf_xcb_shm_swapchain *swapchain =
+		wlf_xcb_shm_swapchain_from_swapchain(base);
 	struct wlf_x11_window *window = wlf_x11_window_from_window(base->window);
 	if (swapchain->gc != XCB_NONE) {
 		xcb_free_gc(window->backend->xcb, swapchain->gc);
@@ -85,7 +81,8 @@ static bool swapchain_resize(struct wlf_swapchain *base, int width, int height) 
 
 static void swapchain_present(struct wlf_swapchain *base,
 		const pixman_region32_t *damage) {
-	struct x11_swapchain *swapchain = wlf_container_of(base, swapchain, base);
+	struct wlf_xcb_shm_swapchain *swapchain =
+		wlf_xcb_shm_swapchain_from_swapchain(base);
 	struct wlf_x11_window *window = wlf_x11_window_from_window(base->window);
 	struct x11_buffer *buffer = wlf_container_of(base->back, buffer, base);
 	pixman_region32_t clipped;
@@ -124,7 +121,7 @@ static const struct wlf_swapchain_impl swapchain_impl = {
 	.present = swapchain_present,
 };
 
-struct wlf_swapchain *wlf_x11_swapchain_create(struct wlf_window *base,
+struct wlf_swapchain *wlf_xcb_shm_swapchain_create(struct wlf_window *base,
 		int width, int height, const struct wlf_render_format *format) {
 	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
 	const xcb_setup_t *setup = xcb_get_setup(window->backend->xcb);
@@ -160,7 +157,7 @@ struct wlf_swapchain *wlf_x11_swapchain_create(struct wlf_window *base,
 	if (!supported) {
 		return NULL;
 	}
-	struct x11_swapchain *swapchain = calloc(1, sizeof(*swapchain));
+	struct wlf_xcb_shm_swapchain *swapchain = calloc(1, sizeof(*swapchain));
 	if (swapchain == NULL) {
 		return NULL;
 	}
@@ -181,4 +178,18 @@ struct wlf_swapchain *wlf_x11_swapchain_create(struct wlf_window *base,
 		return NULL;
 	}
 	return &swapchain->base;
+}
+
+bool wlf_swapchain_is_xcb_shm(const struct wlf_swapchain *swapchain) {
+	return swapchain != NULL && swapchain->impl == &swapchain_impl;
+}
+
+struct wlf_xcb_shm_swapchain *wlf_xcb_shm_swapchain_from_swapchain(
+		struct wlf_swapchain *swapchain) {
+	assert(swapchain->impl == &swapchain_impl);
+
+	struct wlf_xcb_shm_swapchain *xcb_shm_swapchain =
+		wlf_container_of(swapchain, xcb_shm_swapchain, base);
+
+	return xcb_shm_swapchain;
 }

@@ -1,11 +1,11 @@
 #include "wlf/swapchain/wlf_swapchain.h"
-#include "wlf/swapchain/shm/swapchain.h"
+#include "wlf/swapchain/wl-shm/swapchain.h"
 #include "wlf/window/wlf_window.h"
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/vulkan/renderer.h"
 #include "wlf/platform/x11/backend.h"
-#include "wlf/swapchain/x11/swapchain.h"
+#include "wlf/swapchain/xcb-shm/swapchain.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
 #include "wlf/swapchain/egl/swapchain.h"
@@ -40,11 +40,11 @@ struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window, int w
 #if WLF_HAS_LINUX_PLATFORM
 	if (wlf_renderer_is_pixman(window->state.renderer)) {
 		if (wlf_backend_is_x11(window->state.backend)) {
-			return wlf_x11_swapchain_create(window, width, height, format);
+			return wlf_xcb_shm_swapchain_create(window, width, height, format);
 		}
-		struct wlf_shm_swapchain *shm =
-			wlf_shm_swapchain_create(window, width, height, format);
-		swapchain = shm != NULL ? &shm->base : NULL;
+		struct wlf_wl_shm_swapchain *wl_shm =
+			wlf_wl_shm_swapchain_create(window, width, height, format);
+		swapchain = wl_shm != NULL ? &wl_shm->base : NULL;
 	} else if (wlf_renderer_is_gles(window->state.renderer)) {
 		struct wlf_egl_swapchain *egl =
 			wlf_egl_swapchain_create(window, width, height, format);

@@ -3,8 +3,8 @@ wlf_files += files(
 )
 
 if is_linux
-	subdir('x11')
-	subdir('shm')
+	subdir('xcb-shm')
+	subdir('wl-shm')
 	subdir('egl')
 	subdir('vulkan')
 endif

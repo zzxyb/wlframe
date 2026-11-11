@@ -41,7 +41,7 @@ if is_linux
 		'renderer/vulkan',
 		'dmabuf',
 		'renderer/pixman',
-		'swapchain/shm',
+		'swapchain/wl-shm',
 		'swapchain/egl',
 		'swapchain/vulkan',
 	]

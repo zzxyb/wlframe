@@ -183,7 +183,7 @@ if is_linux
 			'../../include/wlf/renderer/vulkan/renderer.h',
 
 			'../../include/wlf/swapchain/egl/swapchain.h',
-			'../../include/wlf/swapchain/shm/swapchain.h',
+			'../../include/wlf/swapchain/wl-shm/swapchain.h',
 			'../../include/wlf/swapchain/vulkan/swapchain.h',
 
 			'../../include/wlf/texture/gles/texture.h',
