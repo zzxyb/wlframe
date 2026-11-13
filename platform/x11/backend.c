@@ -1,5 +1,6 @@
 #include "wlf/platform/x11/backend.h"
 #include "wlf/platform/x11/xresource.h"
+#include "wlf/platform/x11/cursor.h"
 #include "wlf/window/x11/window.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
@@ -14,6 +15,8 @@
 static void backend_destroy(struct wlf_backend *base) {
 	struct wlf_x11_backend *backend = wlf_x11_backend_from_backend(base);
 	assert(wlf_linked_list_empty(&backend->windows));
+	wlf_cursor_destroy(backend->pointer.cursor);
+	backend->pointer.cursor = NULL;
 	wlf_pointer_destroy(&backend->pointer);
 	wlf_keyboard_destroy(&backend->keyboard);
 	wlf_xresource_manager_destroy(backend->resources);
@@ -200,6 +203,10 @@ struct wlf_x11_backend *wlf_x11_backend_create(void) {
 	}
 	backend->resources = wlf_xresource_manager_create(backend->xcb);
 	if (backend->resources == NULL) {
+		goto error;
+	}
+	backend->pointer.cursor = wlf_x11_cursor_create(backend);
+	if (backend->pointer.cursor == NULL) {
 		goto error;
 	}
 	backend->base.features.server_side_decorations = true;

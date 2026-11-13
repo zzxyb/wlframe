@@ -1,4 +1,5 @@
 #include "wlf/window/x11/window.h"
+#include "wlf/platform/x11/cursor.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
@@ -22,6 +23,7 @@ static struct wlf_x11_window *find_window(struct wlf_x11_backend *backend,
 
 static void window_destroy(struct wlf_window *base) {
 	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	wlf_x11_cursor_forget_window(window->backend->pointer.cursor, window->window);
 	wlf_linked_list_remove(&window->link);
 	if (window->window != XCB_WINDOW_NONE) {
 		xcb_destroy_window(window->backend->xcb, window->window);
@@ -42,6 +44,7 @@ static void window_show(struct wlf_window *base) {
 
 static void window_hide(struct wlf_window *base) {
 	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	wlf_x11_cursor_forget_window(window->backend->pointer.cursor, window->window);
 	xcb_unmap_window(window->backend->xcb, window->window);
 	xcb_flush(window->backend->xcb);
 }
@@ -275,6 +278,7 @@ void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
 		break;
 	}
 	case XCB_DESTROY_NOTIFY:
+		wlf_x11_cursor_forget_window(backend->pointer.cursor, window->window);
 		window->window = XCB_WINDOW_NONE;
 		wlf_window_close(base);
 		break;
@@ -308,6 +312,8 @@ void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
 		xcb_enter_notify_event_t *ev = (void *)event;
 		struct wlf_pointer_enter_event enter = { .pointer = &backend->pointer, .serial = ev->sequence,
 			.surface = window_native_handle(base), .x = ev->event_x, .y = ev->event_y };
+		backend->pointer.cursor_serial = ev->sequence != 0 ? ev->sequence : 1;
+		wlf_x11_cursor_set_window(backend->pointer.cursor, window->window);
 		wlf_window_pointer_enter(base, &enter);
 		break;
 	}
@@ -315,6 +321,7 @@ void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
 		struct wlf_pointer_leave_event leave = {
 			.pointer = &backend->pointer, .surface = window_native_handle(base),
 		};
+		wlf_x11_cursor_forget_window(backend->pointer.cursor, window->window);
 		wlf_window_pointer_leave(base, &leave);
 		break;
 	}

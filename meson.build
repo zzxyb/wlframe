@@ -163,6 +163,8 @@ if is_linux
 	gio = dependency('gio-2.0', required: true)
 	xcb = dependency('xcb', required: true)
 	xcb_xrm = dependency('xcb-xrm', required: true)
+	xcb_render = dependency('xcb-render', required: true)
+	xcursor = dependency('xcursor', required: true)
 	xcb_shm = dependency('xcb-shm', required: true)
 	xcb_icccm = dependency('xcb-icccm', required: true)
 elif is_macos
@@ -268,6 +270,8 @@ elif is_linux
 		gio,
 		xcb,
 		xcb_xrm,
+		xcb_render,
+		xcursor,
 		xcb_shm,
 		xcb_icccm,
 		cairo,

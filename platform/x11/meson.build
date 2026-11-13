@@ -1,1 +1,1 @@
-wlf_files += files('backend.c', 'xresource.c')
+wlf_files += files('backend.c', 'xresource.c', 'cursor.c')
