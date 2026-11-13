@@ -16,3 +16,7 @@ foreach example, info : platform_examples
 		dependencies: [wlframe] + info.get('dep', []),
 	)
 endforeach
+
+if is_linux
+	executable('xresource_info', 'xresource_info.c', dependencies: wlframe)
+endif

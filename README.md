@@ -88,9 +88,9 @@ Install the compiler, build tools, and runtime development dependencies:
 ```sh
 sudo pacman -S --needed \
     base-devel meson ninja gcc pkgconf \
-    wayland wayland-protocols wlr-protocols libxcb xcb-util-wm \
+    wayland wayland-protocols wlr-protocols libxcb xcb-util-wm xcb-util-xrm libxcursor \
     mesa libdrm vulkan-icd-loader vulkan-headers glslang \
-    pixman cairo pango harfbuzz glib2 \
+    pixman cairo pango fontconfig harfbuzz glib2 \
     libpng libjpeg-turbo libwebp giflib
 ```
 
@@ -141,6 +141,59 @@ and IME integration are not implemented yet.
 
 For software GLES, set `WLF_RENDER_FORCE_SOFTWARE=1`. See
 [Environment variables](docs/env_vars.md) for all runtime switches.
+
+### X11 font and cursor resources
+
+The X11 backend owns an independent Xresource manager declared in
+`include/wlf/platform/x11/xresource.h` and implemented in
+`platform/x11/xresource.c`. It uses xcb-util-xrm for instance/class matching,
+wildcards, includes, escapes, and database precedence. Resources are loaded
+from screen zero's `RESOURCE_MANAGER`; when absent, `~/.Xresources` then
+`~/.Xdefaults` are tried. `XENVIRONMENT`, or `~/.Xdefaults-hostname` when it is
+unset, is merged with override enabled. This is Xresource support; XSettings
+properties such as `Gtk/FontName` are not interpreted as Xresources.
+
+Supported fields are `Xft.dpi`, `Xft.antialias`, `Xft.hinting`, `Xft.hintstyle`,
+`Xft.rgba`, `Xft.lcdfilter`, `Xcursor.theme`, `Xcursor.size`, and
+`Xcursor.theme_core`. Invalid values fall back safely. Missing Xft values leave
+fontconfig preferences intact. An explicit `Xft.dpi` scales logical text sizes
+relative to 96 DPI, independently of window geometry and raster scale. Hinting,
+antialiasing, subpixel order, and LCD filters apply to the Cairo/Pango text path
+used by text scene nodes, with separate font maps per text object.
+
+Cursor themes are loaded through libXcursor, including inheritance and animated
+images. XCB Render installs them; missing themes or unsupported Render fall back
+to standard core cursor glyphs. `Xcursor.theme_core: false` selects core glyphs.
+`XCURSOR_THEME` and a valid `XCURSOR_SIZE` override their resource counterparts.
+The default cursor size is 24 pixels scaled by Xft DPI. Accepted sizes are 1–1024
+and DPI values must be finite, positive, and at most 1000.
+
+`RESOURCE_MANAGER` replacement or deletion reloads settings automatically, then
+refreshes text nodes and cursor caches. File/environment changes need an explicit
+`wlf_xresource_manager_reload(backend->resources)` call. Direct text API callers
+can pass their backend through `wlf_text_options.backend`; NULL uses defaults.
+The manager also exposes generic string queries and a `changed` signal.
+
+Inspect effective settings or watch future server resource changes:
+
+```sh
+./build/examples/platform/xresource_info
+./build/examples/platform/xresource_info --watch
+```
+
+For example, these lines can be merged using the usual `xrdb` workflow:
+
+```xresources
+Xft.dpi: 144
+Xft.antialias: true
+Xft.hinting: true
+Xft.hintstyle: hintslight
+Xft.rgba: rgb
+Xft.lcdfilter: lcddefault
+Xcursor.theme: Adwaita
+Xcursor.size: 32
+Xcursor.theme_core: true
+```
 
 ### macOS
 

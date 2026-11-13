@@ -48,3 +48,18 @@ wlframe reads these environment variables
   * `rerender` — redraw and submit the whole window whenever a frame is damaged
   * `highlight` — overlay damaged pixels in red and fade them out over 250 ms
 
+
+## X11 cursor resources
+
+* **`XCURSOR_THEME`**
+  A nonempty value overrides `Xcursor.theme` for the X11 backend.
+
+* **`XCURSOR_SIZE`**
+  A decimal integer from 1 to 1024 overrides `Xcursor.size`. Invalid values are
+  ignored. Without a resource or valid override, the size is 24 scaled by
+  `Xft.dpi / 96`.
+
+* **`XENVIRONMENT`**
+  An optional Xresource file merged after `RESOURCE_MANAGER` or the user's
+  fallback resource file. This follows xcb-util-xrm's default database rules.
+  File/environment changes take effect after an explicit resource-manager reload.
