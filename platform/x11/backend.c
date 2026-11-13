@@ -1,4 +1,5 @@
 #include "wlf/platform/x11/backend.h"
+#include "wlf/platform/x11/xresource.h"
 #include "wlf/window/x11/window.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
@@ -15,6 +16,7 @@ static void backend_destroy(struct wlf_backend *base) {
 	assert(wlf_linked_list_empty(&backend->windows));
 	wlf_pointer_destroy(&backend->pointer);
 	wlf_keyboard_destroy(&backend->keyboard);
+	wlf_xresource_manager_destroy(backend->resources);
 	xcb_disconnect(backend->xcb);
 	free(backend);
 }
@@ -36,7 +38,9 @@ static void backend_exe(struct wlf_backend *base) {
 	while (base->running && !xcb_connection_has_error(backend->xcb)) {
 		xcb_generic_event_t *event;
 		while (base->running && (event = xcb_poll_for_event(backend->xcb)) != NULL) {
-			wlf_x11_window_handle_event(backend, event);
+			if (!wlf_xresource_manager_handle_event(backend->resources, event)) {
+				wlf_x11_window_handle_event(backend, event);
+			}
 			free(event);
 		}
 		if (!base->running || xcb_connection_has_error(backend->xcb)) {
@@ -193,6 +197,10 @@ struct wlf_x11_backend *wlf_x11_backend_create(void) {
 		}
 		*atoms[i].atom = reply->atom;
 		free(reply);
+	}
+	backend->resources = wlf_xresource_manager_create(backend->xcb);
+	if (backend->resources == NULL) {
+		goto error;
 	}
 	backend->base.features.server_side_decorations = true;
 	return backend;

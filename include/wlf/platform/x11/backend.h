@@ -19,6 +19,8 @@
 #include "wlf/types/wlf_keyboard.h"
 #include <xcb/xcb.h>
 
+struct wlf_xresource_manager;
+
 /**
  * @brief X11 backend and its owned XCB connection.
  *
@@ -27,6 +29,7 @@
  */
 struct wlf_x11_backend {
 	struct wlf_backend base; /**< Generic backend interface. */
+	struct wlf_xresource_manager *resources; /**< Owned Xft/Xcursor resource manager. */
 	struct wlf_pointer pointer; /**< Embedded core pointer owned by the backend. */
 	struct wlf_keyboard keyboard; /**< Embedded core keyboard owned by the backend. */
 	xcb_connection_t *xcb; /**< Owned connection to the X server. */

@@ -31,6 +31,7 @@ jobs:
           wayland \
           libxcb \
           xcb-util-wm \
+          xcb-util-xrm \
           wayland-protocols \
           libpng \
           libjpeg-turbo	\

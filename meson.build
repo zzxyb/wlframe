@@ -160,6 +160,7 @@ if is_linux
 	egl = dependency('egl', version: '>= 1.5', required: true)
 	gio = dependency('gio-2.0', required: true)
 	xcb = dependency('xcb', required: true)
+	xcb_xrm = dependency('xcb-xrm', required: true)
 	xcb_shm = dependency('xcb-shm', required: true)
 	xcb_icccm = dependency('xcb-icccm', required: true)
 elif is_macos
@@ -264,6 +265,7 @@ elif is_linux
 		egl,
 		gio,
 		xcb,
+		xcb_xrm,
 		xcb_shm,
 		xcb_icccm,
 		cairo,
