@@ -6,6 +6,12 @@
 #include "wlf/window/wlf_window.h"
 #include "wlf/utils/wlf_utils.h"
 
+#include "wlf/config.h"
+#if WLF_HAS_LINUX_PLATFORM
+#include "wlf/platform/x11/backend.h"
+#include "wlf/platform/x11/xresource.h"
+#endif
+
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
@@ -120,6 +126,16 @@ static void handle_window_scale(struct wlf_listener *listener, void *data) {
 	}
 }
 
+#if WLF_HAS_LINUX_PLATFORM
+static void handle_xresources_changed(struct wlf_listener *listener, void *data) {
+	struct wlf_text_node *node =
+		wlf_container_of(listener, node, xresources_changed);
+	if (!text_node_rasterize(node)) {
+		wlf_log(WLF_ERROR, "Failed to rerasterize text after Xft resource change");
+	}
+}
+#endif
+
 static bool text_node_rasterize(struct wlf_text_node *node) {
 	struct wlf_renderer *renderer = node->renderer;
 	if (renderer == NULL || renderer->impl->texture_from_buffer == NULL ||
@@ -130,6 +146,7 @@ static bool text_node_rasterize(struct wlf_text_node *node) {
 	struct wlf_text_raster raster = {0};
 	if (!wlf_text_rasterize(node->text_context,
 			&(struct wlf_text_options){
+				.backend = node->base.window->state.backend,
 				.text = node->text,
 				.font_family = node->font_family,
 				.font_size = node->font_size,
@@ -179,6 +196,7 @@ static void text_node_destroy(struct wlf_scene_node *base) {
 	struct wlf_text_node *node = wlf_text_node_from_node(base);
 	wlf_linked_list_remove(&node->renderer_destroy.link);
 	wlf_linked_list_remove(&node->window_scale.link);
+	wlf_linked_list_remove(&node->xresources_changed.link);
 	text_node_set_texture(node, NULL);
 	wlf_text_destroy(node->text_context);
 	free(node->font_family);
@@ -243,6 +261,15 @@ struct wlf_text_node *wlf_text_node_create(struct wlf_scene_node *parent,
 	node->renderer = parent->window->state.renderer;
 	node->renderer_destroy.notify = handle_renderer_destroy;
 	wlf_signal_add(&node->renderer->events.destroy, &node->renderer_destroy);
+	wlf_linked_list_init(&node->xresources_changed.link);
+#if WLF_HAS_LINUX_PLATFORM
+	struct wlf_backend *backend = parent->window->state.backend;
+	if (wlf_backend_is_x11(backend)) {
+		struct wlf_x11_backend *x11 = wlf_x11_backend_from_backend(backend);
+		node->xresources_changed.notify = handle_xresources_changed;
+		wlf_signal_add(&x11->resources->events.changed, &node->xresources_changed);
+	}
+#endif
 	node->window_scale.notify = handle_window_scale;
 	wlf_signal_add(&parent->window->events.scale, &node->window_scale);
 	if (!text_node_rasterize(node)) {

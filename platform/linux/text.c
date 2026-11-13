@@ -1,4 +1,6 @@
 #include "wlf/platform/linux/text.h"
+#include "wlf/platform/x11/backend.h"
+#include "wlf/platform/x11/xresource.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 
@@ -6,6 +8,7 @@
 #include <limits.h>
 #include <math.h>
 #include <pango/pangocairo.h>
+#include <pango/pangofc-fontmap.h>
 #include <stdlib.h>
 
 static PangoStyle to_pango_style(enum wlf_text_font_slant slant) {
@@ -25,9 +28,120 @@ static PangoWeight to_pango_weight(enum wlf_text_font_weight weight) {
 		PANGO_WEIGHT_BOLD : PANGO_WEIGHT_NORMAL;
 }
 
-static PangoLayout *create_layout(cairo_t *cr,
+static void substitute_xft(FcPattern *pattern, gpointer data) {
+	const struct wlf_xft_settings *xft = data;
+	static const int rgba[] = { FC_RGBA_NONE, FC_RGBA_RGB, FC_RGBA_BGR,
+		FC_RGBA_VRGB, FC_RGBA_VBGR };
+	if (xft->present & WLF_XFT_DPI) {
+		FcPatternDel(pattern, FC_DPI);
+		FcPatternAddDouble(pattern, FC_DPI, xft->dpi);
+	}
+	if (xft->present & WLF_XFT_ANTIALIAS) {
+		FcPatternDel(pattern, FC_ANTIALIAS);
+		FcPatternAddBool(pattern, FC_ANTIALIAS, xft->antialias);
+	}
+	if (xft->present & WLF_XFT_HINTING) {
+		FcPatternDel(pattern, FC_HINTING);
+		FcPatternAddBool(pattern, FC_HINTING, xft->hinting);
+	}
+	if (xft->present & WLF_XFT_HINTSTYLE) {
+		FcPatternDel(pattern, FC_HINT_STYLE);
+		FcPatternAddInteger(pattern, FC_HINT_STYLE, xft->hintstyle);
+	}
+	if (xft->present & WLF_XFT_RGBA) {
+		FcPatternDel(pattern, FC_RGBA);
+		FcPatternAddInteger(pattern, FC_RGBA, rgba[xft->rgba]);
+	}
+	if (xft->present & WLF_XFT_LCDFILTER) {
+		FcPatternDel(pattern, FC_LCD_FILTER);
+		FcPatternAddInteger(pattern, FC_LCD_FILTER, xft->lcdfilter);
+	}
+}
+
+static void apply_xft(cairo_t *cr, const struct wlf_xft_settings *xft) {
+	if (xft == NULL) {
+		return;
+	}
+	cairo_font_options_t *font = cairo_font_options_create();
+	cairo_get_font_options(cr, font);
+	if (xft->present & WLF_XFT_ANTIALIAS) {
+		cairo_font_options_set_antialias(font, xft->antialias ?
+			CAIRO_ANTIALIAS_GRAY : CAIRO_ANTIALIAS_NONE);
+	}
+	if ((xft->present & WLF_XFT_RGBA) &&
+			(!(xft->present & WLF_XFT_ANTIALIAS) || xft->antialias)) {
+		static const cairo_subpixel_order_t orders[] = {
+			CAIRO_SUBPIXEL_ORDER_DEFAULT, CAIRO_SUBPIXEL_ORDER_RGB,
+			CAIRO_SUBPIXEL_ORDER_BGR, CAIRO_SUBPIXEL_ORDER_VRGB,
+			CAIRO_SUBPIXEL_ORDER_VBGR,
+		};
+		cairo_font_options_set_subpixel_order(font, orders[xft->rgba]);
+		cairo_font_options_set_antialias(font, xft->rgba == WLF_XFT_RGBA_NONE ?
+			CAIRO_ANTIALIAS_GRAY : CAIRO_ANTIALIAS_SUBPIXEL);
+	}
+	if (xft->present & WLF_XFT_HINTSTYLE) {
+		static const cairo_hint_style_t hints[] = { CAIRO_HINT_STYLE_NONE,
+			CAIRO_HINT_STYLE_SLIGHT, CAIRO_HINT_STYLE_MEDIUM, CAIRO_HINT_STYLE_FULL };
+		cairo_font_options_set_hint_style(font, hints[xft->hintstyle]);
+	}
+	if ((xft->present & WLF_XFT_HINTING) && !xft->hinting) {
+		cairo_font_options_set_hint_style(font, CAIRO_HINT_STYLE_NONE);
+	}
+	cairo_set_font_options(cr, font);
+	cairo_font_options_destroy(font);
+}
+
+static bool update_fontmap(struct wlf_linux_text *text,
 		const struct wlf_text_options *options) {
-	PangoLayout *layout = pango_cairo_create_layout(cr);
+	const struct wlf_xft_settings *settings = NULL;
+	if (options->backend != NULL && wlf_backend_is_x11(options->backend)) {
+		settings = &wlf_x11_backend_from_backend(options->backend)->resources->xft;
+	}
+	struct wlf_xft_settings empty = {0};
+	if (settings == NULL) {
+		settings = &empty;
+	}
+	struct wlf_xft_settings *previous = text->xft;
+	if (previous != NULL && previous->present == settings->present &&
+			previous->dpi == settings->dpi && previous->antialias == settings->antialias &&
+			previous->hinting == settings->hinting && previous->hintstyle == settings->hintstyle &&
+			previous->rgba == settings->rgba && previous->lcdfilter == settings->lcdfilter) {
+		return true;
+	}
+	struct wlf_xft_settings *copy = malloc(sizeof(*copy));
+	PangoFontMap *map = pango_cairo_font_map_new_for_font_type(CAIRO_FONT_TYPE_FT);
+	if (copy == NULL || map == NULL) {
+		free(copy);
+		if (map != NULL) {
+			g_object_unref(map);
+		}
+		return false;
+	}
+	*copy = *settings;
+	pango_fc_font_map_set_default_substitute(PANGO_FC_FONT_MAP(map),
+		substitute_xft, copy, free);
+	if (text->fontmap != NULL) {
+		g_object_unref(text->fontmap);
+	}
+	text->fontmap = map;
+	text->xft = copy;
+	return true;
+}
+
+static PangoLayout *create_layout(cairo_t *cr,
+		const struct wlf_text_options *options, struct wlf_linux_text *text) {
+	if (!update_fontmap(text, options)) {
+		return NULL;
+	}
+	const struct wlf_xft_settings *xft = text->xft;
+	apply_xft(cr, xft);
+	PangoContext *context = pango_font_map_create_context(text->fontmap);
+	pango_cairo_update_context(cr, context);
+	if (xft->present & WLF_XFT_DPI) {
+		pango_cairo_context_set_resolution(context, xft->dpi);
+	}
+	PangoLayout *layout = pango_layout_new(context);
+	g_object_unref(context);
 	if (layout == NULL) {
 		return NULL;
 	}
@@ -39,6 +153,9 @@ static PangoLayout *create_layout(cairo_t *cr,
 	}
 
 	double pixel_size = options->font_size * options->raster_scale;
+	if (xft->present & WLF_XFT_DPI) {
+		pixel_size *= xft->dpi / 96;
+	}
 	if (!isfinite(pixel_size) || pixel_size <= 0 ||
 			pixel_size > INT_MAX / (double)PANGO_SCALE) {
 		pango_font_description_free(font);
@@ -101,7 +218,8 @@ static bool linux_text_rasterize(struct wlf_text *text,
 		return false;
 	}
 	cairo_t *measure = cairo_create(measure_surface);
-	PangoLayout *layout = create_layout(measure, options);
+	struct wlf_linux_text *linux_text = wlf_container_of(text, linux_text, base);
+	PangoLayout *layout = create_layout(measure, options, linux_text);
 	struct wlf_text_metrics metrics = {0};
 	if (layout != NULL) {
 		measure_layout(layout, &metrics);
@@ -153,6 +271,7 @@ static bool linux_text_rasterize(struct wlf_text *text,
 	}
 
 	cairo_t *cr = cairo_create(surface);
+	apply_xft(cr, linux_text->xft);
 	cairo_set_operator(cr, CAIRO_OPERATOR_CLEAR);
 	cairo_paint(cr);
 	cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
@@ -180,6 +299,10 @@ static bool linux_text_rasterize(struct wlf_text *text,
 }
 
 static void linux_text_destroy(struct wlf_text *text) {
+	struct wlf_linux_text *linux_text = wlf_container_of(text, linux_text, base);
+	if (linux_text->fontmap != NULL) {
+		g_object_unref(linux_text->fontmap);
+	}
 	free(text);
 }
 

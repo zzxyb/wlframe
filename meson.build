@@ -151,7 +151,9 @@ if is_linux
 	libwebpdemux = dependency('libwebpdemux', required: true)
 	libwebpmux = dependency('libwebpmux', required: true)
 	cairo = dependency('cairo', version: '>=1.16', required: true)
-	pangocairo = dependency('pangocairo', version: '>=1.44', required: true)
+	pangocairo = dependency('pangocairo', version: '>=1.48', required: true)
+	pangoft2 = dependency('pangoft2', version: '>=1.48', required: true)
+	fontconfig = dependency('fontconfig', required: true)
 	harfbuzz = dependency('harfbuzz', version: '>=2.6', required: true)
 	wlr_protos =  dependency('wlr-protocols')
 	giflib = cc.find_library('gif', required: true)
@@ -270,6 +272,8 @@ elif is_linux
 		xcb_icccm,
 		cairo,
 		pangocairo,
+		pangoft2,
+		fontconfig,
 		harfbuzz,
 	]
 elif is_windows

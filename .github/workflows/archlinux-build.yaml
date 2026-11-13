@@ -49,6 +49,7 @@ jobs:
           pixman \
           cairo \
           pango \
+          fontconfig \
           harfbuzz \
           libwebp \
           wlr-protocols \

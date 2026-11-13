@@ -21,6 +21,8 @@
  */
 struct wlf_linux_text {
 	struct wlf_text base; /**< Platform-independent text object. */
+	void *fontmap; /**< Owned Pango font map with per-object Xft substitution. */
+	void *xft; /**< Owned snapshot of Xft preferences used by fontmap. */
 };
 
 /**

@@ -37,6 +37,8 @@ enum wlf_text_font_weight {
 	WLF_TEXT_FONT_WEIGHT_BOLD, /**< Bold weight. */
 };
 
+struct wlf_backend;
+
 /**
  * @brief Text shaping and rasterization options.
  *
@@ -44,9 +46,10 @@ enum wlf_text_font_weight {
  * zero also disables clipping and is kept as a convenient public API value.
  */
 struct wlf_text_options {
+	struct wlf_backend *backend; /**< Borrowed backend for host font preferences; NULL uses defaults. */
 	const char *text; /**< UTF-8 text to shape. */
 	const char *font_family; /**< Requested family, or NULL for sans-serif. */
-	double font_size; /**< Font size in logical units. */
+	double font_size; /**< Logical size at 96 DPI; X11 applies explicit Xft.dpi/96. */
 	double raster_scale; /**< Device scale used for rasterization. */
 	struct wlf_color color; /**< Text color. */
 	int max_width; /**< Maximum logical width, or a non-positive value for none. */

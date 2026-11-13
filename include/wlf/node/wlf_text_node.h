@@ -42,6 +42,7 @@ struct wlf_text_node {
 	struct wlf_renderer *renderer;
 	struct wlf_texture *texture;
 	struct wlf_listener renderer_destroy;
+	struct wlf_listener xresources_changed; /**< Rerasterizes on X11 resource reload; self-linked elsewhere. */
 	struct wlf_listener window_scale;
 };
 
