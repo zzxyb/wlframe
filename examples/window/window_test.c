@@ -15,7 +15,7 @@
 #include "wlf/image/wlf_image.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wayland/xdg_toplevel_window.h"
-#include "wlf/platform/x11/backend.h"
+#include "wlf/platform/xcb/backend.h"
 #include "wlf/window/x11/window.h"
 #include "wlf/window/wlf_window.h"
 #include "wlf/utils/wlf_utils.h"
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	struct wlf_window *window;
-	if (wlf_backend_is_x11(backend)) {
+	if (wlf_backend_is_xcb(backend)) {
 		struct wlf_x11_window *x11 =
 			wlf_x11_window_create_from_backend(backend, 760, 500);
 		window = x11 != NULL ? &x11->base : NULL;

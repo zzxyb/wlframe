@@ -1,4 +1,4 @@
-#include "wlf/platform/x11/backend.h"
+#include "wlf/platform/xcb/backend.h"
 #include "wlf/window/x11/window.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
@@ -11,7 +11,7 @@
 #include <time.h>
 
 static void backend_destroy(struct wlf_backend *base) {
-	struct wlf_x11_backend *backend = wlf_x11_backend_from_backend(base);
+	struct wlf_xcb_backend *backend = wlf_xcb_backend_from_backend(base);
 	assert(wlf_linked_list_empty(&backend->windows));
 	wlf_pointer_destroy(&backend->pointer);
 	wlf_keyboard_destroy(&backend->keyboard);
@@ -20,7 +20,7 @@ static void backend_destroy(struct wlf_backend *base) {
 }
 
 static void *backend_native_display(struct wlf_backend *base) {
-	return wlf_x11_backend_from_backend(base)->xcb;
+	return wlf_xcb_backend_from_backend(base)->xcb;
 }
 
 static int64_t monotonic_msec(void) {
@@ -30,7 +30,7 @@ static int64_t monotonic_msec(void) {
 }
 
 static void backend_exe(struct wlf_backend *base) {
-	struct wlf_x11_backend *backend = wlf_x11_backend_from_backend(base);
+	struct wlf_xcb_backend *backend = wlf_xcb_backend_from_backend(base);
 	int64_t next_frame = monotonic_msec() + 16;
 	base->running = true;
 	while (base->running && !xcb_connection_has_error(backend->xcb)) {
@@ -82,7 +82,7 @@ static void backend_exe(struct wlf_backend *base) {
 		int64_t delay = next_frame - monotonic_msec();
 		int ret = poll(fds, source_count + 1, count > 0 ? (delay > 0 ? delay : 0) : -1);
 		if (ret < 0 && errno != EINTR) {
-			wlf_log_errno(WLF_ERROR, "poll failed in X11 event loop");
+			wlf_log_errno(WLF_ERROR, "poll failed in XCB event loop");
 			base->running = false;
 		}
 		/* Only deliver sources still registered after previous callbacks. */
@@ -123,7 +123,7 @@ static void backend_exe(struct wlf_backend *base) {
 }
 
 static const struct wlf_backend_impl backend_impl = {
-	.name = "X11",
+	.name = "XCB",
 	.destroy = backend_destroy,
 	.exe = backend_exe,
 	.native_display = backend_native_display,
@@ -137,17 +137,17 @@ static void keyboard_destroy(struct wlf_keyboard *keyboard) {
 }
 
 static const struct wlf_pointer_impl pointer_impl = {
-	.name = "X11 pointer",
+	.name = "XCB pointer",
 	.destroy = pointer_destroy,
 };
 
 static const struct wlf_keyboard_impl keyboard_impl = {
-	.name = "X11 keyboard",
+	.name = "XCB keyboard",
 	.destroy = keyboard_destroy,
 };
 
-struct wlf_x11_backend *wlf_x11_backend_create(void) {
-	struct wlf_x11_backend *backend = calloc(1, sizeof(*backend));
+struct wlf_xcb_backend *wlf_xcb_backend_create(void) {
+	struct wlf_xcb_backend *backend = calloc(1, sizeof(*backend));
 	if (backend == NULL) {
 		return NULL;
 	}
@@ -201,12 +201,12 @@ error:
 	return NULL;
 }
 
-bool wlf_backend_is_x11(const struct wlf_backend *backend) {
+bool wlf_backend_is_xcb(const struct wlf_backend *backend) {
 	return backend != NULL && backend->impl == &backend_impl;
 }
 
-struct wlf_x11_backend *wlf_x11_backend_from_backend(struct wlf_backend *base) {
-	assert(wlf_backend_is_x11(base));
-	struct wlf_x11_backend *backend = wlf_container_of(base, backend, base);
+struct wlf_xcb_backend *wlf_xcb_backend_from_backend(struct wlf_backend *base) {
+	assert(wlf_backend_is_xcb(base));
+	struct wlf_xcb_backend *backend = wlf_container_of(base, backend, base);
 	return backend;
 }

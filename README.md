@@ -119,15 +119,15 @@ The Linux graphical examples can be launched directly from the build tree:
 ./build/examples/window/scene_damage_test
 ```
 
-On X11, run any of the graphical examples with the X11 backend:
+On X11, run any of the graphical examples with the XCB backend:
 
 ```sh
-WLF_BACKEND=x11 WLF_RENDERER=gles ./build/examples/window/scene_damage_test
-WLF_BACKEND=x11 WLF_RENDERER=pixman ./build/examples/window/scene_damage_test
+WLF_BACKEND=xcb WLF_RENDERER=gles ./build/examples/window/scene_damage_test
+WLF_BACKEND=xcb WLF_RENDERER=pixman ./build/examples/window/scene_damage_test
 ```
 
 The backend automatically tries `WAYLAND_DISPLAY`, then `DISPLAY`. Set
-`WLF_BACKEND=wayland` or `x11` to select one explicitly. Create X11 toplevels
+`WLF_BACKEND=wayland` or `xcb` to select one explicitly. Create X11 toplevels
 with `wlf_x11_window_create_from_backend()` and pass their `base` to the usual
 window, renderer, and scene APIs. Destroy windows before the renderer and backend.
 

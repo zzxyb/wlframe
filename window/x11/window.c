@@ -9,7 +9,7 @@
 #include <string.h>
 #include <xcb/xcb_icccm.h>
 
-static struct wlf_x11_window *find_window(struct wlf_x11_backend *backend,
+static struct wlf_x11_window *find_window(struct wlf_xcb_backend *backend,
 		xcb_window_t id) {
 	struct wlf_x11_window *window;
 	wlf_linked_list_for_each(window, &backend->windows, link) {
@@ -173,11 +173,11 @@ static const struct wlf_window_impl window_impl = {
 
 struct wlf_x11_window *wlf_x11_window_create_from_backend(
 		struct wlf_backend *base, uint32_t width, uint32_t height) {
-	if (!wlf_backend_is_x11(base) || width == 0 || height == 0 ||
+	if (!wlf_backend_is_xcb(base) || width == 0 || height == 0 ||
 			width > INT16_MAX || height > INT16_MAX) {
 		return NULL;
 	}
-	struct wlf_x11_backend *backend = wlf_x11_backend_from_backend(base);
+	struct wlf_xcb_backend *backend = wlf_xcb_backend_from_backend(base);
 	struct wlf_x11_window *window = calloc(1, sizeof(*window));
 	if (window == NULL) {
 		return NULL;
@@ -221,7 +221,7 @@ struct wlf_x11_window *wlf_x11_window_from_window(struct wlf_window *base) {
 	return window;
 }
 
-void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
+void wlf_x11_window_handle_event(struct wlf_xcb_backend *backend,
 		xcb_generic_event_t *event) {
 	uint8_t type = event->response_type & 0x7f;
 	xcb_window_t id;

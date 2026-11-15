@@ -6,7 +6,7 @@
 #include "wlf/config.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/vulkan/renderer.h"
-#include "wlf/platform/x11/backend.h"
+#include "wlf/platform/xcb/backend.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
 #elif WLF_HAS_WINDOWS_PLATFORM
@@ -33,8 +33,8 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 	const char *render_name = render_options[wlf_env_parse_switch("WLF_RENDERER",
 		render_options)];
 	bool is_auto = strcmp(render_name, "auto") == 0;
-	if (wlf_backend_is_x11(backend) && strcmp(render_name, "vulkan") == 0) {
-		wlf_log(WLF_ERROR, "Vulkan presentation is not supported on X11");
+	if (wlf_backend_is_xcb(backend) && strcmp(render_name, "vulkan") == 0) {
+		wlf_log(WLF_ERROR, "Vulkan presentation is not supported on the XCB backend");
 		return NULL;
 	}
 	if (is_auto || strcmp(render_name, "gles") == 0) {
@@ -43,11 +43,11 @@ struct wlf_renderer *wlf_renderer_autocreate(struct wlf_backend *backend) {
 		render = gles != NULL ? &gles->base : NULL;
 		if (render == NULL && is_auto) {
 			wlf_log(WLF_INFO, "GLES renderer unavailable, falling back to %s",
-				wlf_backend_is_x11(backend) ? "Pixman" : "Vulkan");
+				wlf_backend_is_xcb(backend) ? "Pixman" : "Vulkan");
 		}
 	}
 
-	if (!wlf_backend_is_x11(backend) &&
+	if (!wlf_backend_is_xcb(backend) &&
 			((render == NULL && is_auto) || strcmp(render_name, "vulkan") == 0)) {
 		struct wlf_vk_renderer *vulkan =
 			wlf_vk_renderer_create_from_backend(backend);
