@@ -26,7 +26,7 @@ static const struct wlf_buffer_impl egl_buffer_impl = {
 };
 
 struct wlf_xcb_egl_buffer *wlf_xcb_egl_buffer_create(struct wlf_egl *egl,
-		uint32_t window, uint32_t width, uint32_t height,
+		xcb_window_t window, uint32_t width, uint32_t height,
 		const struct wlf_render_format *format) {
 	if (egl == NULL || !egl->xcb_platform || window == 0 || format == NULL ||
 			width == 0 || height == 0 || width > INT_MAX || height > INT_MAX ||

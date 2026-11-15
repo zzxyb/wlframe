@@ -1,5 +1,5 @@
 #include "wlf/swapchain/wl-egl/swapchain.h"
-#include "wlf/allocator/egl/allocator.h"
+#include "wlf/allocator/wl-egl/allocator.h"
 #include "wlf/buffer/wl-egl/buffer.h"
 #include "wlf/window/wlf_window.h"
 #include "wlf/utils/wlf_log.h"
@@ -117,7 +117,7 @@ struct wlf_wl_egl_swapchain *wlf_wl_egl_swapchain_create(struct wlf_window *wind
 
 	struct wlf_gles_renderer *gles_renderer =
 		wlf_gles_renderer_from_renderer(window->state.renderer);
-	struct wlf_egl_allocator *egl_allocator = wlf_egl_allocator_create(gles_renderer->egl,
+	struct wlf_wl_egl_allocator *egl_allocator = wlf_wl_egl_allocator_create(gles_renderer->egl,
 		wlf_window_native_handle(window));
 	if (egl_allocator == NULL) {
 		free(swapchain);
