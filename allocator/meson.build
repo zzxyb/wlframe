@@ -4,5 +4,6 @@ wlf_files += files(
 
 if is_linux
 	subdir('shm')
-	subdir('egl')
+	subdir('wl-egl')
+	subdir('xcb-egl')
 endif

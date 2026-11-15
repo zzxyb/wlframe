@@ -20,6 +20,8 @@
 
 #include <EGL/egl.h>
 
+#include <xcb/xcb.h>
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -53,7 +55,7 @@ struct wlf_xcb_egl_buffer {
  * context. Release the buffer with wlf_buffer_drop() before either owner.
  */
 struct wlf_xcb_egl_buffer *wlf_xcb_egl_buffer_create(struct wlf_egl *egl,
-	uint32_t window, uint32_t width, uint32_t height,
+	xcb_window_t window, uint32_t width, uint32_t height,
 	const struct wlf_render_format *format);
 
 /**

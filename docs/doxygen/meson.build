@@ -152,7 +152,8 @@ src_files = files([
 
 if is_linux
 	src_files += files([
-			'../../include/wlf/allocator/egl/allocator.h',
+			'../../include/wlf/allocator/wl-egl/allocator.h',
+			'../../include/wlf/allocator/xcb-egl/allocator.h',
 			'../../include/wlf/allocator/shm/allocator.h',
 
 			'../../include/wlf/buffer/wl-egl/buffer.h',
