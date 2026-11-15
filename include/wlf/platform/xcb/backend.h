@@ -32,7 +32,7 @@ struct wlf_xcb_backend {
 	xcb_connection_t *xcb; /**< Owned connection to the X server. */
 	xcb_screen_t *screen; /**< Borrowed screen selected during connection. */
 	int screen_number; /**< Screen index used by the XCB EGL platform. */
-	struct wlf_linked_list windows; /**< Managed wlf_x11_window list linked by link. */
+	struct wlf_linked_list windows; /**< Managed wlf_xcb_window list linked by link. */
 	/** Atoms used for window titles, state, decorations, and close requests. */
 	struct {
 		xcb_atom_t wm_protocols, wm_delete_window; /**< ICCCM protocol and close-request atoms. */

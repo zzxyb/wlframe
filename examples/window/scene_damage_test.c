@@ -6,7 +6,7 @@
 #include "wlf/utils/wlf_log.h"
 #include "wlf/window/wayland/xdg_toplevel_window.h"
 #include "wlf/platform/xcb/backend.h"
-#include "wlf/window/x11/window.h"
+#include "wlf/window/xcb/window.h"
 #include "wlf/window/wlf_window.h"
 #include "wlf/utils/wlf_utils.h"
 
@@ -51,8 +51,8 @@ int main(void) {
 	struct wlf_renderer *renderer = wlf_renderer_autocreate(backend);
 	struct wlf_window *window;
 	if (wlf_backend_is_xcb(backend)) {
-		struct wlf_x11_window *x11 = wlf_x11_window_create_from_backend(backend, 640, 360);
-		window = x11 != NULL ? &x11->base : NULL;
+		struct wlf_xcb_window *xcb = wlf_xcb_window_create_from_backend(backend, 640, 360);
+		window = xcb != NULL ? &xcb->base : NULL;
 	} else {
 		struct wlf_xdg_toplevel_window *toplevel =
 			wlf_xdg_toplevel_window_create_from_backend(backend, 640, 360);

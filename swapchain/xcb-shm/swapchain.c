@@ -1,5 +1,5 @@
 #include "wlf/swapchain/xcb-shm/swapchain.h"
-#include "wlf/window/x11/window.h"
+#include "wlf/window/xcb/window.h"
 #include "wlf/buffer/xcb-shm/buffer.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_utils.h"
@@ -10,7 +10,7 @@
 static void swapchain_destroy(struct wlf_swapchain *base) {
 	struct wlf_xcb_shm_swapchain *swapchain =
 		wlf_xcb_shm_swapchain_from_swapchain(base);
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base->window);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base->window);
 	if (swapchain->gc != XCB_NONE) {
 		xcb_free_gc(window->backend->xcb, swapchain->gc);
 	}
@@ -19,7 +19,7 @@ static void swapchain_destroy(struct wlf_swapchain *base) {
 }
 
 static bool swapchain_resize(struct wlf_swapchain *base, int width, int height) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base->window);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base->window);
 	struct wlf_xcb_shm_buffer *buffer = wlf_xcb_shm_buffer_create(
 		window->backend->xcb, width, height, base->format.format);
 	if (buffer == NULL) {
@@ -36,7 +36,7 @@ static void swapchain_present(struct wlf_swapchain *base,
 		const pixman_region32_t *damage) {
 	struct wlf_xcb_shm_swapchain *swapchain =
 		wlf_xcb_shm_swapchain_from_swapchain(base);
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base->window);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base->window);
 	struct wlf_xcb_shm_buffer *buffer = wlf_xcb_shm_buffer_from_buffer(base->back);
 	assert(!base->back->accessing_data_ptr);
 	pixman_region32_t clipped;
@@ -68,7 +68,7 @@ static const struct wlf_swapchain_impl swapchain_impl = {
 
 struct wlf_swapchain *wlf_xcb_shm_swapchain_create(struct wlf_window *base,
 		int width, int height, const struct wlf_render_format *format) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	const xcb_setup_t *setup = xcb_get_setup(window->backend->xcb);
 	/* XRGB8888 is supported only with a matching native TrueColor visual. */
 	if (format->format != WLF_FORMAT_XRGB8888 || window->depth != 24 ||

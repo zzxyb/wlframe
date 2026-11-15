@@ -1,4 +1,4 @@
-#include "wlf/window/x11/window.h"
+#include "wlf/window/xcb/window.h"
 #include "wlf/scene/wlf_scene.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
@@ -9,9 +9,9 @@
 #include <string.h>
 #include <xcb/xcb_icccm.h>
 
-static struct wlf_x11_window *find_window(struct wlf_xcb_backend *backend,
+static struct wlf_xcb_window *find_window(struct wlf_xcb_backend *backend,
 		xcb_window_t id) {
-	struct wlf_x11_window *window;
+	struct wlf_xcb_window *window;
 	wlf_linked_list_for_each(window, &backend->windows, link) {
 		if (window->window == id) {
 			return window;
@@ -21,7 +21,7 @@ static struct wlf_x11_window *find_window(struct wlf_xcb_backend *backend,
 }
 
 static void window_destroy(struct wlf_window *base) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	wlf_linked_list_remove(&window->link);
 	if (window->window != XCB_WINDOW_NONE) {
 		xcb_destroy_window(window->backend->xcb, window->window);
@@ -34,20 +34,20 @@ static void window_destroy(struct wlf_window *base) {
 }
 
 static void window_show(struct wlf_window *base) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	xcb_map_window(window->backend->xcb, window->window);
 	window->frame_pending = true;
 	xcb_flush(window->backend->xcb);
 }
 
 static void window_hide(struct wlf_window *base) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	xcb_unmap_window(window->backend->xcb, window->window);
 	xcb_flush(window->backend->xcb);
 }
 
 static void window_set_title(struct wlf_window *base, const char *title) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	xcb_change_property(window->backend->xcb, XCB_PROP_MODE_REPLACE,
 		window->window, window->backend->atoms.net_wm_name,
 		window->backend->atoms.utf8_string, 8, strlen(title), title);
@@ -59,14 +59,14 @@ static void window_set_size(struct wlf_window *base, int width, int height) {
 	if (width <= 0 || height <= 0 || width > UINT16_MAX || height > UINT16_MAX) {
 		return;
 	}
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	uint32_t values[] = { width, height };
 	xcb_configure_window(window->backend->xcb, window->window,
 		XCB_CONFIG_WINDOW_WIDTH | XCB_CONFIG_WINDOW_HEIGHT, values);
 }
 
 static void window_set_position(struct wlf_window *base, int x, int y) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	uint32_t values[] = { x, y };
 	xcb_configure_window(window->backend->xcb, window->window,
 		XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, values);
@@ -78,7 +78,7 @@ static void window_set_geometry(struct wlf_window *base, const struct wlf_rect *
 }
 
 static void update_size_hints(struct wlf_window *base, int width, int height) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	xcb_size_hints_t hints = {0};
 	if (base->state.min_size.width > 0 && base->state.min_size.height > 0) {
 		xcb_icccm_size_hints_set_min_size(&hints,
@@ -98,7 +98,7 @@ static void update_size_hints(struct wlf_window *base, int width, int height) {
 }
 
 static void window_set_flags(struct wlf_window *base, uint32_t flags) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	uint32_t hints[] = { 2, 0, !!(flags & WLF_WINDOW_FLAG_DECORATED), 0, 0 };
 	xcb_change_property(window->backend->xcb, XCB_PROP_MODE_REPLACE,
 		window->window, window->backend->atoms.motif_wm_hints,
@@ -107,7 +107,7 @@ static void window_set_flags(struct wlf_window *base, uint32_t flags) {
 	update_size_hints(base, 0, 0);
 }
 
-static void send_state(struct wlf_x11_window *window, bool enabled,
+static void send_state(struct wlf_xcb_window *window, bool enabled,
 		xcb_atom_t first, xcb_atom_t second) {
 	xcb_client_message_event_t event = {
 		.response_type = XCB_CLIENT_MESSAGE,
@@ -122,7 +122,7 @@ static void send_state(struct wlf_x11_window *window, bool enabled,
 }
 
 static void window_set_state(struct wlf_window *base, enum wlf_window_state_flags state) {
-	struct wlf_x11_window *window = wlf_x11_window_from_window(base);
+	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	if (!base->state.visible) {
 		xcb_atom_t atoms[3];
 		size_t count = 0;
@@ -146,11 +146,11 @@ static void window_set_state(struct wlf_window *base, enum wlf_window_state_flag
 }
 
 static void *window_native_handle(struct wlf_window *base) {
-	return (void *)(uintptr_t)wlf_x11_window_from_window(base)->window;
+	return (void *)(uintptr_t)wlf_xcb_window_from_window(base)->window;
 }
 
 static void window_schedule_frame(struct wlf_window *base) {
-	wlf_x11_window_from_window(base)->frame_pending = true;
+	wlf_xcb_window_from_window(base)->frame_pending = true;
 }
 
 static const struct wlf_window_impl window_impl = {
@@ -171,14 +171,14 @@ static const struct wlf_window_impl window_impl = {
 	.schedule_frame = window_schedule_frame,
 };
 
-struct wlf_x11_window *wlf_x11_window_create_from_backend(
+struct wlf_xcb_window *wlf_xcb_window_create_from_backend(
 		struct wlf_backend *base, uint32_t width, uint32_t height) {
 	if (!wlf_backend_is_xcb(base) || width == 0 || height == 0 ||
 			width > INT16_MAX || height > INT16_MAX) {
 		return NULL;
 	}
 	struct wlf_xcb_backend *backend = wlf_xcb_backend_from_backend(base);
-	struct wlf_x11_window *window = calloc(1, sizeof(*window));
+	struct wlf_xcb_window *window = calloc(1, sizeof(*window));
 	if (window == NULL) {
 		return NULL;
 	}
@@ -211,17 +211,17 @@ struct wlf_x11_window *wlf_x11_window_create_from_backend(
 	return window;
 }
 
-bool wlf_window_is_x11(const struct wlf_window *window) {
+bool wlf_window_is_xcb(const struct wlf_window *window) {
 	return window != NULL && window->impl == &window_impl;
 }
 
-struct wlf_x11_window *wlf_x11_window_from_window(struct wlf_window *base) {
-	assert(wlf_window_is_x11(base));
-	struct wlf_x11_window *window = wlf_container_of(base, window, base);
+struct wlf_xcb_window *wlf_xcb_window_from_window(struct wlf_window *base) {
+	assert(wlf_window_is_xcb(base));
+	struct wlf_xcb_window *window = wlf_container_of(base, window, base);
 	return window;
 }
 
-void wlf_x11_window_handle_event(struct wlf_xcb_backend *backend,
+void wlf_xcb_window_handle_event(struct wlf_xcb_backend *backend,
 		xcb_generic_event_t *event) {
 	uint8_t type = event->response_type & 0x7f;
 	xcb_window_t id;
@@ -244,7 +244,7 @@ void wlf_x11_window_handle_event(struct wlf_xcb_backend *backend,
 		return;
 	default: return;
 	}
-	struct wlf_x11_window *window = find_window(backend, id);
+	struct wlf_xcb_window *window = find_window(backend, id);
 	if (window == NULL) {
 		return;
 	}

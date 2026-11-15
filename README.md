@@ -128,7 +128,7 @@ WLF_BACKEND=xcb WLF_RENDERER=pixman ./build/examples/window/scene_damage_test
 
 The backend automatically tries `WAYLAND_DISPLAY`, then `DISPLAY`. Set
 `WLF_BACKEND=wayland` or `xcb` to select one explicitly. Create X11 toplevels
-with `wlf_x11_window_create_from_backend()` and pass their `base` to the usual
+with `wlf_xcb_window_create_from_backend()` and pass their `base` to the usual
 window, renderer, and scene APIs. Destroy windows before the renderer and backend.
 
 X11 currently supports opaque toplevel windows, titles, size constraints,
