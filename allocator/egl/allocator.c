@@ -1,6 +1,7 @@
 #include "wlf/allocator/egl/allocator.h"
 
-#include "wlf/buffer/egl/buffer.h"
+#include "wlf/buffer/wl-egl/buffer.h"
+#include "wlf/buffer/xcb-egl/buffer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 
@@ -18,11 +19,11 @@ static struct wlf_buffer *allocator_create_buffer(
 	struct wlf_egl_allocator *allocator =
 		wlf_egl_allocator_from_allocator(base);
 	if (allocator->xcb_window != 0) {
-		struct wlf_egl_buffer *buffer = wlf_egl_buffer_create_x11(allocator->egl,
+		struct wlf_xcb_egl_buffer *buffer = wlf_xcb_egl_buffer_create(allocator->egl,
 			allocator->xcb_window, width, height, format);
 		return buffer != NULL ? &buffer->base : NULL;
 	}
-	struct wlf_egl_buffer *buffer = wlf_egl_buffer_create(allocator->egl,
+	struct wlf_wl_egl_buffer *buffer = wlf_wl_egl_buffer_create(allocator->egl,
 		allocator->surface,
 		width, height, format);
 	return buffer != NULL ? &buffer->base : NULL;

@@ -1,21 +1,19 @@
 /**
  * @file        buffer.h
- * @brief       EGL-backed wlframe buffer.
+ * @brief       Wayland EGL-backed wlframe buffer.
  * @details     Declares the buffer wrapper used for EGL window surfaces.
- *              The EGL surface and its native window wrapper are owned by the
- *              buffer, while the EGL display and context remain owned by the
- *              GLES renderer.
+ *              The buffer owns its EGL surface, while the EGL display and
+ *              context remain owned by the GLES renderer.
  * @author      YaoBing Xiao
  * @date        2026-08-17
  * @version     v1.0
  * @par Copyright(c):
  * @par History:
  *      version: v1.0, YaoBing Xiao, 2026-08-17, initial version\n
- *      version: v1.0, YaoBing Xiao, 2026-11-10, document XCB support\n
  */
 
-#ifndef BUFFER_EGL_BUFFER_H
-#define BUFFER_EGL_BUFFER_H
+#ifndef BUFFER_WL_EGL_BUFFER_H
+#define BUFFER_WL_EGL_BUFFER_H
 
 #include "wlf/buffer/wlf_buffer.h"
 #include "wlf/types/wlf_format_set.h"
@@ -30,12 +28,12 @@ struct wl_egl_window;
 struct wlf_egl;
 
 /**
- * @brief Buffer backed by an EGL window surface.
+ * @brief Buffer backed by a Wayland EGL window surface.
  *
- * The EGL display is borrowed from the GLES renderer. The EGL surface and,
- * on Wayland, the wl_egl_window wrapper are owned by this buffer.
+ * The EGL display is borrowed from the GLES renderer. The buffer owns its
+ * EGL surface and wl_egl_window wrapper.
  */
-struct wlf_egl_buffer {
+struct wlf_wl_egl_buffer {
 	struct wlf_buffer base; /**< Generic buffer interface. */
 
 	struct wlf_egl *egl; /**< EGL context owner, borrowed. */
@@ -54,39 +52,24 @@ struct wlf_egl_buffer {
  * @param format Requested EGL render format.
  * @return Newly allocated EGL buffer, or NULL on failure.
  */
-struct wlf_egl_buffer *wlf_egl_buffer_create(struct wlf_egl *egl,
+struct wlf_wl_egl_buffer *wlf_wl_egl_buffer_create(struct wlf_egl *egl,
 	struct wl_surface *surface, uint32_t width, uint32_t height,
 	const struct wlf_render_format *format);
 
 /**
- * @brief Creates an EGL window-surface buffer for an existing XCB window.
- *
- * @param egl Borrowed EGL context initialized for the XCB platform.
- * @param window Nonzero borrowed XCB window ID.
- * @param width Initial buffer width in pixels, from 1 to INT_MAX.
- * @param height Initial buffer height in pixels, from 1 to INT_MAX.
- * @param format Requested render format matching the native visual.
- * @return New EGL buffer, or NULL for invalid arguments or surface failure.
- * @note The buffer owns its EGL surface, but not the native window or EGL
- * context. Release the buffer with wlf_buffer_drop() before either owner.
- */
-struct wlf_egl_buffer *wlf_egl_buffer_create_x11(struct wlf_egl *egl,
-	uint32_t window, uint32_t width, uint32_t height,
-	const struct wlf_render_format *format);
-
-/**
- * @brief Checks whether a generic buffer is EGL-backed.
+ * @brief Checks whether a generic buffer uses the Wayland EGL implementation.
  * @param buffer Buffer to inspect.
- * @return true when @p buffer is an EGL buffer, false otherwise.
+ * @return true when @p buffer is a Wayland EGL buffer, false otherwise.
  */
-bool wlf_buffer_is_egl(const struct wlf_buffer *buffer);
+bool wlf_buffer_is_wl_egl(const struct wlf_buffer *buffer);
 
 /**
  * @brief Casts a generic buffer to an EGL buffer.
- * @param buffer Buffer known to be EGL-backed.
- * @return Enclosing EGL buffer, or NULL when the type does not match.
+ * @param buffer Buffer known to use the Wayland EGL implementation.
+ * @return Enclosing EGL buffer.
+ * @note Asserts that the buffer uses this implementation.
  */
-struct wlf_egl_buffer *wlf_egl_buffer_from_buffer(struct wlf_buffer *buffer);
+struct wlf_wl_egl_buffer *wlf_wl_egl_buffer_from_buffer(struct wlf_buffer *buffer);
 
 /**
  * @brief Resizes the native EGL window represented by a buffer.
@@ -95,27 +78,27 @@ struct wlf_egl_buffer *wlf_egl_buffer_from_buffer(struct wlf_buffer *buffer);
  * @param height New height in pixels.
  * @return true on success, false for invalid dimensions or a missing window.
  */
-bool wlf_egl_buffer_resize(struct wlf_egl_buffer *buffer, uint32_t width, uint32_t height);
+bool wlf_wl_egl_buffer_resize(struct wlf_wl_egl_buffer *buffer, uint32_t width, uint32_t height);
 
 /**
  * @brief Returns the EGL context wrapper associated with a buffer.
  * @param buffer EGL buffer to inspect.
  * @return Borrowed EGL context wrapper, or NULL for a NULL buffer.
  */
-struct wlf_egl *wlf_egl_buffer_get_egl(const struct wlf_egl_buffer *buffer);
+struct wlf_egl *wlf_wl_egl_buffer_get_egl(const struct wlf_wl_egl_buffer *buffer);
 
 /**
  * @brief Returns the EGL presentation surface owned by a buffer.
  * @param buffer EGL buffer to inspect.
  * @return EGL surface, or EGL_NO_SURFACE for a NULL buffer.
  */
-EGLSurface wlf_egl_buffer_get_surface(const struct wlf_egl_buffer *buffer);
+EGLSurface wlf_wl_egl_buffer_get_surface(const struct wlf_wl_egl_buffer *buffer);
 
 /**
  * @brief Configures the non-blocking EGL swap interval for a buffer.
  * @param buffer EGL buffer whose surface is current or will be used for swap.
  * @return true on success, false when EGL rejects the interval.
  */
-bool wlf_egl_buffer_configure_swap_interval(struct wlf_egl_buffer *buffer);
+bool wlf_wl_egl_buffer_configure_swap_interval(struct wlf_wl_egl_buffer *buffer);
 
-#endif // BUFFER_EGL_BUFFER_H
+#endif // BUFFER_WL_EGL_BUFFER_H

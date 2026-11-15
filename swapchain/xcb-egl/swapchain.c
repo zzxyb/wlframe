@@ -1,6 +1,6 @@
 #include "wlf/swapchain/xcb-egl/swapchain.h"
 #include "wlf/allocator/egl/allocator.h"
-#include "wlf/buffer/egl/buffer.h"
+#include "wlf/buffer/xcb-egl/buffer.h"
 #include "wlf/window/wlf_window.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/renderer/gles/renderer.h"
@@ -24,16 +24,16 @@ static void swapchain_present(struct wlf_swapchain *swapchain,
 	const pixman_region32_t *damage) {
 	struct wlf_xcb_egl_swapchain *egl_swapchain =
 		wlf_xcb_egl_swapchain_from_swapchain(swapchain);
-	struct wlf_egl_buffer *egl_buffer =
-		wlf_egl_buffer_from_buffer(egl_swapchain->back);
+	struct wlf_xcb_egl_buffer *egl_buffer =
+		wlf_xcb_egl_buffer_from_buffer(egl_swapchain->back);
 	struct wlf_gles_renderer *gles_renderer =
 		wlf_gles_renderer_from_renderer(swapchain->window->state.renderer);
 	if (egl_buffer == NULL) {
 		wlf_log(WLF_ERROR, "XCB EGL swapchain has no EGL-backed buffer");
 		return;
 	}
-	struct wlf_egl *egl = wlf_egl_buffer_get_egl(egl_buffer);
-	EGLSurface surface = wlf_egl_buffer_get_surface(egl_buffer);
+	struct wlf_egl *egl = wlf_xcb_egl_buffer_get_egl(egl_buffer);
+	EGLSurface surface = wlf_xcb_egl_buffer_get_surface(egl_buffer);
 
 	/* Request the next frame from the XCB backend software clock. */
 	wlf_window_arm_frame(swapchain->window);
@@ -82,9 +82,9 @@ static bool swapchain_resize(struct wlf_swapchain *swapchain, int width,
 		int height) {
 	struct wlf_xcb_egl_swapchain *egl_swapchain =
 		wlf_xcb_egl_swapchain_from_swapchain(swapchain);
-	struct wlf_egl_buffer *egl_buffer =
-		wlf_egl_buffer_from_buffer(egl_swapchain->back);
-	if (egl_buffer == NULL || !wlf_egl_buffer_resize(egl_buffer, width, height)) {
+	struct wlf_xcb_egl_buffer *egl_buffer =
+		wlf_xcb_egl_buffer_from_buffer(egl_swapchain->back);
+	if (egl_buffer == NULL || !wlf_xcb_egl_buffer_resize(egl_buffer, width, height)) {
 		return false;
 	}
 
