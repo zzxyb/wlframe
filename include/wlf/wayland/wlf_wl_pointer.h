@@ -85,11 +85,19 @@ bool wlf_pointer_is_wayland(const struct wlf_pointer *pointer);
 /**
  * @brief Converts a generic wlf_pointer to a wlf_wl_pointer.
  * @param pointer The generic pointer.
- * @return Wayland-specific struct, or NULL if not Wayland-backed.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_wl_pointer *wlf_wl_pointer_from_pointer(struct wlf_pointer *pointer);
 
-/** Recreates the pointer cursor controller from the currently bound globals. */
+/**
+ * @brief Recreates the pointer cursor controller from the currently bound globals.
+ *
+ * @param pointer Pointer whose cursor is configured.
+ * @param shape_manager Borrowed cursor-shape manager, or NULL to use themed cursors.
+ * @param compositor Borrowed compositor used to create cursor surfaces.
+ * @param shm Borrowed shared memory global used to load themed cursors.
+ */
 void wlf_wl_pointer_configure_cursor(struct wlf_wl_pointer *pointer,
 	struct wp_cursor_shape_manager_v1 *shape_manager,
 	struct wl_compositor *compositor, struct wl_shm *shm);

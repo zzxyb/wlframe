@@ -46,7 +46,8 @@ bool wlf_animation_group_is_parallel(
  * @brief Convert a base group to a parallel animation group.
  *
  * @param group Animation group to convert.
- * @return Parallel group, or NULL if @p group has a different type.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_parallel_animation_group *
 wlf_parallel_animation_group_from_group(

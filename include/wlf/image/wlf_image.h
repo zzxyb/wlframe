@@ -35,7 +35,7 @@ struct wlf_image;
  * image's format-specific destroy implementation runs.
  */
 struct wlf_image_listener {
-	void (*destroy)(void *data, struct wlf_image *image);
+	void (*destroy)(void *data, struct wlf_image *image); /**< Releases implementation-specific resources. */
 };
 
 /**
@@ -56,17 +56,17 @@ enum wlf_image_type {
  * @brief Mapping between image type enum and string name.
  */
 struct wlf_image_type_map {
-	enum wlf_image_type type;
-	const char *name;
+	enum wlf_image_type type; /**< Image encoding handled by this implementation. */
+	const char *name; /**< Name used for lookup. */
 };
 
 /**
  * @brief Image implementation interface for format-specific operations.
  */
 struct wlf_image_impl {
-	bool (*save)(struct wlf_image *image, const char *filename);
-	bool (*load)(struct wlf_image *image, const char *filename, bool enable_16_bit);
-	void (*destroy)(struct wlf_image *image);
+	bool (*save)(struct wlf_image *image, const char *filename); /**< Saves the image to a file and reports success. */
+	bool (*load)(struct wlf_image *image, const char *filename, bool enable_16_bit); /**< Loads image data from a file and reports success. */
+	void (*destroy)(struct wlf_image *image); /**< Releases implementation-specific resources. */
 };
 
 /**

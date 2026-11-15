@@ -35,10 +35,10 @@ struct wlf_xcb_backend {
 	struct wlf_linked_list windows; /**< Managed wlf_xcb_window list linked by link. */
 	/** Atoms used for window titles, state, decorations, and close requests. */
 	struct {
-		xcb_atom_t wm_protocols, wm_delete_window; /**< ICCCM protocol and close-request atoms. */
-		xcb_atom_t utf8_string, net_wm_name; /**< UTF-8 title property type and name. */
-		xcb_atom_t net_wm_state, net_wm_state_fullscreen; /**< EWMH state property and fullscreen atom. */
-		xcb_atom_t net_wm_state_maximized_vert, net_wm_state_maximized_horz; /**< EWMH vertical and horizontal maximize atoms. */
+		xcb_atom_t wm_protocols, /**< X11 atom for WM_PROTOCOLS. */ wm_delete_window; /**< ICCCM protocol and close-request atoms. */
+		xcb_atom_t utf8_string, /**< X11 atom for UTF8_STRING. */ net_wm_name; /**< UTF-8 title property type and name. */
+		xcb_atom_t net_wm_state, /**< X11 atom for NET_WM_STATE. */ net_wm_state_fullscreen; /**< EWMH state property and fullscreen atom. */
+		xcb_atom_t net_wm_state_maximized_vert, /**< X11 atom for NET_WM_STATE_MAXIMIZED_VERT. */ net_wm_state_maximized_horz; /**< EWMH vertical and horizontal maximize atoms. */
 		xcb_atom_t motif_wm_hints; /**< Motif decoration hints property. */
 	} atoms; /**< Window-manager atoms interned on this connection. */
 };
@@ -50,6 +50,7 @@ struct wlf_xcb_backend {
  * @note Destroy the returned base with wlf_backend_destroy().
  */
 struct wlf_xcb_backend *wlf_xcb_backend_create(void);
+
 /**
  * @brief Checks whether a backend uses the XCB implementation.
  *
@@ -57,6 +58,7 @@ struct wlf_xcb_backend *wlf_xcb_backend_create(void);
  * @return true for an XCB backend, false otherwise.
  */
 bool wlf_backend_is_xcb(const struct wlf_backend *backend);
+
 /**
  * @brief Gets the XCB backend containing a generic backend.
  *

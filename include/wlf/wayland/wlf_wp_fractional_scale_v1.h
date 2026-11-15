@@ -33,6 +33,9 @@ struct wl_surface;
 struct wp_fractional_scale_manager_v1;
 struct wp_fractional_scale_v1;
 
+/**
+ * @brief Denominator used to convert fractional-scale-v1 protocol values to scale factors.
+ */
 #define WLF_WP_FRACTIONAL_SCALE_V1_DENOMINATOR 120
 
 /**

@@ -46,8 +46,8 @@ struct wlf_render_target_info_impl {
  */
 struct wlf_render_target_info {
 	const struct wlf_render_target_info_impl *impl; /**< Implementation vtable */
-	int logical_width, logical_height; /**< Target size in logical coordinates. */
-	int buffer_width, buffer_height;   /**< Target size in physical pixels. */
+	int logical_width, /**< Render target width in logical pixels. */ logical_height; /**< Target size in logical coordinates. */
+	int buffer_width, /**< Render buffer width in pixels. */ buffer_height;   /**< Target size in physical pixels. */
 	double scale;                      /**< Logical-to-buffer pixel scale. */
 	struct {
 		struct wlf_signal destroy; /**< Emitted before target info is destroyed */
@@ -72,7 +72,13 @@ void wlf_render_target_info_init(struct wlf_render_target_info *render_target,
  */
 void wlf_render_target_info_destroy(struct wlf_render_target_info *render_target);
 
-/** Converts a logical region into a covering buffer-pixel region. */
+/**
+ * @brief Converts a logical region into a covering buffer-pixel region.
+ *
+ * @param render_target Render target to inspect or convert.
+ * @param logical Source region in logical coordinates.
+ * @param buffer Destination region in buffer-pixel coordinates.
+ */
 void wlf_render_target_info_scale_region(
 	const struct wlf_render_target_info *render_target,
 	const pixman_region32_t *logical, pixman_region32_t *buffer);

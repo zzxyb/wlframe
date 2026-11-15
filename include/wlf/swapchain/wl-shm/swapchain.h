@@ -51,7 +51,8 @@ bool wlf_swapchain_is_wl_shm(const struct wlf_swapchain *swapchain);
 /**
  * @brief Casts a generic swapchain to a Wayland shared-memory swapchain.
  * @param swapchain Swapchain known to be wl_shm-backed.
- * @return Enclosing wl_shm swapchain, or NULL when the type does not match.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_wl_shm_swapchain *wlf_wl_shm_swapchain_from_swapchain(struct wlf_swapchain *swapchain);
 

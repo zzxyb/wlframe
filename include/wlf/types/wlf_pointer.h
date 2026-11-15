@@ -22,13 +22,18 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+/**
+ * @brief Maximum number of simultaneously tracked pointer buttons.
+ */
 #define WLF_POINTER_BUTTONS_CAP 16
 
-/** Common evdev button codes delivered by Wayland wl_pointer.button. */
+/**
+ * @brief Common evdev button codes delivered by Wayland wl_pointer.button.
+ */
 enum wlf_pointer_button_code {
-	WLF_POINTER_BUTTON_LEFT = 0x110,
-	WLF_POINTER_BUTTON_RIGHT = 0x111,
-	WLF_POINTER_BUTTON_MIDDLE = 0x112,
+	WLF_POINTER_BUTTON_LEFT = 0x110, /**< Pointer button: left. */
+	WLF_POINTER_BUTTON_RIGHT = 0x111, /**< Pointer button: right. */
+	WLF_POINTER_BUTTON_MIDDLE = 0x112, /**< Pointer button: middle. */
 };
 
 struct wlf_pointer;
@@ -120,23 +125,33 @@ struct wlf_pointer {
 	void *data; /**< User-defined data pointer. */
 };
 
-/** Sets this pointer's cursor using its latest valid enter serial. */
+/**
+ * @brief Sets this pointer's cursor using its latest valid enter serial.
+ *
+ * @param pointer Pointer whose cursor is configured.
+ * @param shape Cursor shape to apply.
+ * @return true if the shape was applied, false without a valid cursor or enter serial.
+ */
 bool wlf_pointer_set_cursor_shape(struct wlf_pointer *pointer,
 	enum wlf_cursor_shape shape);
 
-/** Pointer entered a native surface. Coordinates are surface-local. */
+/**
+ * @brief Pointer entered a native surface. Coordinates are surface-local.
+ */
 struct wlf_pointer_enter_event {
-	struct wlf_pointer *pointer;
-	uint32_t serial;
-	void *surface;
-	double x, y;
+	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
+	uint32_t serial; /**< Serial associated with the input event. */
+	void *surface; /**< Native platform surface handle. */
+	double x, /**< X coordinate in surface-local coordinates. */ y; /**< Y coordinate in surface-local coordinates. */
 };
 
-/** Pointer left a native surface. */
+/**
+ * @brief Pointer left a native surface.
+ */
 struct wlf_pointer_leave_event {
-	struct wlf_pointer *pointer;
-	uint32_t serial;
-	void *surface;
+	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
+	uint32_t serial; /**< Serial associated with the input event. */
+	void *surface; /**< Native platform surface handle. */
 };
 
 /**
@@ -145,8 +160,8 @@ struct wlf_pointer_leave_event {
 struct wlf_pointer_motion_event {
 	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
 	uint32_t time_msec; /**< Timestamp in milliseconds. */
-	double delta_x, delta_y; /**< Accelerated relative motion delta. */
-	double unaccel_dx, unaccel_dy; /**< Unaccelerated relative motion delta. */
+	double delta_x, /**< Relative horizontal motion. */ delta_y; /**< Accelerated relative motion delta. */
+	double unaccel_dx, /**< Horizontal motion before pointer acceleration. */ unaccel_dy; /**< Unaccelerated relative motion delta. */
 };
 
 /**
@@ -156,7 +171,7 @@ struct wlf_pointer_motion_absolute_event {
 	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
 	void *surface; /**< Currently focused native surface, when available. */
 	uint32_t time_msec; /**< Timestamp in milliseconds. */
-	double x, y; /**< Backend coordinates; surface-local for Wayland. */
+	double x, /**< X coordinate. */ y; /**< Backend coordinates; surface-local for Wayland. */
 };
 
 /**
@@ -199,7 +214,7 @@ struct wlf_pointer_swipe_update_event {
 	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
 	uint32_t time_msec; /**< Timestamp in milliseconds. */
 	uint32_t fingers; /**< Number of fingers in gesture. */
-	double dx, dy; /**< Relative gesture center movement. */
+	double dx, /**< Horizontal gesture displacement. */ dy; /**< Relative gesture center movement. */
 };
 
 /**
@@ -227,7 +242,7 @@ struct wlf_pointer_pinch_update_event {
 	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
 	uint32_t time_msec; /**< Timestamp in milliseconds. */
 	uint32_t fingers; /**< Number of fingers in gesture. */
-	double dx, dy; /**< Relative gesture center movement. */
+	double dx, /**< Horizontal gesture displacement. */ dy; /**< Relative gesture center movement. */
 	double scale; /**< Absolute scale factor from begin event. */
 	double rotation; /**< Relative clockwise rotation in degrees. */
 };

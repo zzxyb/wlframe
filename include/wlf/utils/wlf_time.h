@@ -19,11 +19,16 @@
 #include <stdint.h>
 #include <time.h>
 
+/**
+ * @brief Reads the monotonic clock into a timespec.
+ *
+ * @param ts Output time in seconds and nanoseconds from the monotonic clock.
+ */
 void wlf_get_monotonic_time(struct timespec *ts);
 
 /**
  * @brief Gets the current time in milliseconds.
- * @return The current time in milliseconds since the epoch.
+ * @return Milliseconds from the monotonic clock, with an unspecified origin.
  */
 int64_t get_current_time_msec(void);
 

@@ -18,10 +18,25 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Forward declaration of a GLib D-Bus proxy.
+ */
 typedef struct _GDBusProxy GDBusProxy;
+/**
+ * @brief Forward declaration of a GLib main context.
+ */
 typedef struct _GMainContext GMainContext;
+/**
+ * @brief Forward declaration of a GLib main loop.
+ */
 typedef struct _GMainLoop GMainLoop;
+/**
+ * @brief Forward declaration of a GLib thread.
+ */
 typedef struct _GThread GThread;
+/**
+ * @brief GLib unsigned long type used for signal handler identifiers.
+ */
 typedef unsigned long gulong;
 
 /**
@@ -72,7 +87,8 @@ bool wlf_theme_is_linux(const struct wlf_theme *theme);
  * @brief Casts a generic theme to a Linux theme.
  *
  * @param theme Pointer to the generic theme.
- * @return Pointer to the Linux theme, or NULL if the theme is not Linux-backed.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_linux_theme *wlf_linux_theme_from_theme(struct wlf_theme *theme);
 

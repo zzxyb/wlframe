@@ -50,57 +50,61 @@ struct xdg_popup;
 struct wlf_xdg_positioner;
 struct wlf_xdg_surface;
 
-/** Anchor edge/corner for xdg_positioner (mirrors xdg_positioner.anchor). */
+/**
+ * @brief Anchor edge/corner for xdg_positioner (mirrors xdg_positioner.anchor).
+ */
 enum wlf_xdg_positioner_anchor {
-	WLF_XDG_POSITIONER_ANCHOR_NONE         = 0,
-	WLF_XDG_POSITIONER_ANCHOR_TOP          = 1,
-	WLF_XDG_POSITIONER_ANCHOR_BOTTOM       = 2,
-	WLF_XDG_POSITIONER_ANCHOR_LEFT         = 3,
-	WLF_XDG_POSITIONER_ANCHOR_RIGHT        = 4,
-	WLF_XDG_POSITIONER_ANCHOR_TOP_LEFT     = 5,
-	WLF_XDG_POSITIONER_ANCHOR_BOTTOM_LEFT  = 6,
-	WLF_XDG_POSITIONER_ANCHOR_TOP_RIGHT    = 7,
-	WLF_XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT = 8,
-};
-
-/** Gravity direction for xdg_positioner (mirrors xdg_positioner.gravity). */
-enum wlf_xdg_positioner_gravity {
-	WLF_XDG_POSITIONER_GRAVITY_NONE         = 0,
-	WLF_XDG_POSITIONER_GRAVITY_TOP          = 1,
-	WLF_XDG_POSITIONER_GRAVITY_BOTTOM       = 2,
-	WLF_XDG_POSITIONER_GRAVITY_LEFT         = 3,
-	WLF_XDG_POSITIONER_GRAVITY_RIGHT        = 4,
-	WLF_XDG_POSITIONER_GRAVITY_TOP_LEFT     = 5,
-	WLF_XDG_POSITIONER_GRAVITY_BOTTOM_LEFT  = 6,
-	WLF_XDG_POSITIONER_GRAVITY_TOP_RIGHT    = 7,
-	WLF_XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT = 8,
+	WLF_XDG_POSITIONER_ANCHOR_NONE         = 0, /**< Anchor position: none. */
+	WLF_XDG_POSITIONER_ANCHOR_TOP          = 1, /**< Anchor position: top. */
+	WLF_XDG_POSITIONER_ANCHOR_BOTTOM       = 2, /**< Anchor position: bottom. */
+	WLF_XDG_POSITIONER_ANCHOR_LEFT         = 3, /**< Anchor position: left. */
+	WLF_XDG_POSITIONER_ANCHOR_RIGHT        = 4, /**< Anchor position: right. */
+	WLF_XDG_POSITIONER_ANCHOR_TOP_LEFT     = 5, /**< Anchor position: top left. */
+	WLF_XDG_POSITIONER_ANCHOR_BOTTOM_LEFT  = 6, /**< Anchor position: bottom left. */
+	WLF_XDG_POSITIONER_ANCHOR_TOP_RIGHT    = 7, /**< Anchor position: top right. */
+	WLF_XDG_POSITIONER_ANCHOR_BOTTOM_RIGHT = 8, /**< Anchor position: bottom right. */
 };
 
 /**
- * Constraint adjustment bits for xdg_positioner
+ * @brief Gravity direction for xdg_positioner (mirrors xdg_positioner.gravity).
+ */
+enum wlf_xdg_positioner_gravity {
+	WLF_XDG_POSITIONER_GRAVITY_NONE         = 0, /**< Gravity direction: none. */
+	WLF_XDG_POSITIONER_GRAVITY_TOP          = 1, /**< Gravity direction: top. */
+	WLF_XDG_POSITIONER_GRAVITY_BOTTOM       = 2, /**< Gravity direction: bottom. */
+	WLF_XDG_POSITIONER_GRAVITY_LEFT         = 3, /**< Gravity direction: left. */
+	WLF_XDG_POSITIONER_GRAVITY_RIGHT        = 4, /**< Gravity direction: right. */
+	WLF_XDG_POSITIONER_GRAVITY_TOP_LEFT     = 5, /**< Gravity direction: top left. */
+	WLF_XDG_POSITIONER_GRAVITY_BOTTOM_LEFT  = 6, /**< Gravity direction: bottom left. */
+	WLF_XDG_POSITIONER_GRAVITY_TOP_RIGHT    = 7, /**< Gravity direction: top right. */
+	WLF_XDG_POSITIONER_GRAVITY_BOTTOM_RIGHT = 8, /**< Gravity direction: bottom right. */
+};
+
+/**
+ * @brief Constraint adjustment bits for xdg_positioner
  * (mirrors xdg_positioner.constraint_adjustment).
  */
 enum wlf_xdg_positioner_constraint_adjustment {
-	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE     = 0,
-	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X  = 1,
-	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y  = 2,
-	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X   = 4,
-	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y   = 8,
-	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X = 16,
-	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y = 32,
+	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_NONE     = 0, /**< Permitted constraint adjustment: none. */
+	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_X  = 1, /**< Permitted constraint adjustment: slide x. */
+	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_SLIDE_Y  = 2, /**< Permitted constraint adjustment: slide y. */
+	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_X   = 4, /**< Permitted constraint adjustment: flip x. */
+	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_FLIP_Y   = 8, /**< Permitted constraint adjustment: flip y. */
+	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_X = 16, /**< Permitted constraint adjustment: resize x. */
+	WLF_XDG_POSITIONER_CONSTRAINT_ADJUSTMENT_RESIZE_Y = 32, /**< Permitted constraint adjustment: resize y. */
 };
 
 /**
- * xdg_toplevel window state bits.
+ * @brief xdg_toplevel window state bits.
  *
  * The states field in wlf_xdg_toplevel is a bitmask; use
  * (1u << WLF_XDG_TOPLEVEL_STATE_*) to test individual bits.
  */
 enum wlf_xdg_toplevel_state {
-	WLF_XDG_TOPLEVEL_STATE_MAXIMIZED      = 1,
-	WLF_XDG_TOPLEVEL_STATE_FULLSCREEN     = 2,
-	WLF_XDG_TOPLEVEL_STATE_RESIZING       = 3,
-	WLF_XDG_TOPLEVEL_STATE_ACTIVATED      = 4,
+	WLF_XDG_TOPLEVEL_STATE_MAXIMIZED      = 1, /**< Toplevel state: maximized. */
+	WLF_XDG_TOPLEVEL_STATE_FULLSCREEN     = 2, /**< Toplevel state: fullscreen. */
+	WLF_XDG_TOPLEVEL_STATE_RESIZING       = 3, /**< Toplevel state: resizing. */
+	WLF_XDG_TOPLEVEL_STATE_ACTIVATED      = 4, /**< Toplevel state: activated. */
 	WLF_XDG_TOPLEVEL_STATE_TILED_LEFT     = 5, /**< since v2 */
 	WLF_XDG_TOPLEVEL_STATE_TILED_RIGHT    = 6, /**< since v2 */
 	WLF_XDG_TOPLEVEL_STATE_TILED_TOP      = 7, /**< since v2 */
@@ -109,27 +113,29 @@ enum wlf_xdg_toplevel_state {
 };
 
 /**
- * Compositor capability bits reported via wm_capabilities (since v5).
+ * @brief Compositor capability bits reported via wm_capabilities (since v5).
  * Use (1u << WLF_XDG_TOPLEVEL_WM_CAPABILITIES_*) to test.
  */
 enum wlf_xdg_toplevel_wm_capabilities {
-	WLF_XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU = 1,
-	WLF_XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE    = 2,
-	WLF_XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN  = 3,
-	WLF_XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE    = 4,
+	WLF_XDG_TOPLEVEL_WM_CAPABILITIES_WINDOW_MENU = 1, /**< Compositor capability: window menu. */
+	WLF_XDG_TOPLEVEL_WM_CAPABILITIES_MAXIMIZE    = 2, /**< Compositor capability: maximize. */
+	WLF_XDG_TOPLEVEL_WM_CAPABILITIES_FULLSCREEN  = 3, /**< Compositor capability: fullscreen. */
+	WLF_XDG_TOPLEVEL_WM_CAPABILITIES_MINIMIZE    = 4, /**< Compositor capability: minimize. */
 };
 
-/** Resize edge hint for wlf_xdg_toplevel_resize(). */
+/**
+ * @brief Resize edge hint for wlf_xdg_toplevel_resize().
+ */
 enum wlf_xdg_toplevel_resize_edge {
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_NONE         = 0,
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_TOP          = 1,
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM       = 2,
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_LEFT         = 4,
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT     = 5,
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT  = 6,
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_RIGHT        = 8,
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT    = 9,
-	WLF_XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT = 10,
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_NONE         = 0, /**< Interactive resize edge: none. */
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_TOP          = 1, /**< Interactive resize edge: top. */
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM       = 2, /**< Interactive resize edge: bottom. */
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_LEFT         = 4, /**< Interactive resize edge: left. */
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_TOP_LEFT     = 5, /**< Interactive resize edge: top left. */
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_LEFT  = 6, /**< Interactive resize edge: bottom left. */
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_RIGHT        = 8, /**< Interactive resize edge: right. */
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_TOP_RIGHT    = 9, /**< Interactive resize edge: top right. */
+	WLF_XDG_TOPLEVEL_RESIZE_EDGE_BOTTOM_RIGHT = 10, /**< Interactive resize edge: bottom right. */
 };
 
 /**
@@ -210,13 +216,13 @@ struct wlf_xdg_toplevel {
 	uint32_t version;          /**< Protocol object version. */
 
 	/* Latest configure values (valid inside configure listener) */
-	int32_t  configure_width;
-	int32_t  configure_height;
+	int32_t  configure_width; /**< Width from the latest configure event. */
+	int32_t  configure_height; /**< Height from the latest configure event. */
 	uint32_t configure_states;   /**< Bitmask: (1u << wlf_xdg_toplevel_state) */
 
 	/* configure_bounds (since v4): 0 = not set */
-	int32_t bounds_width;
-	int32_t bounds_height;
+	int32_t bounds_width; /**< Compositor-recommended width bound. */
+	int32_t bounds_height; /**< Compositor-recommended height bound. */
 
 	/** Compositor capabilities bitmask (since v5): (1u << wlf_xdg_toplevel_wm_capabilities) */
 	uint32_t wm_capabilities;
@@ -245,10 +251,10 @@ struct wlf_xdg_popup {
 	uint32_t version;       /**< Protocol object version. */
 
 	/* Latest configure values */
-	int32_t configure_x;
-	int32_t configure_y;
-	int32_t configure_width;
-	int32_t configure_height;
+	int32_t configure_x; /**< X position from the latest popup configure event. */
+	int32_t configure_y; /**< Y position from the latest popup configure event. */
+	int32_t configure_width; /**< Width from the latest configure event. */
+	int32_t configure_height; /**< Height from the latest configure event. */
 	/** Latest token received from a repositioned event (since v3). */
 	uint32_t repositioned_token;
 

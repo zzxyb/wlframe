@@ -24,6 +24,9 @@
 #include <stdlib.h>
 #include <assert.h>
 
+/**
+ * @brief Size in bytes of a generated token buffer, including the terminating NUL.
+ */
 #define TOKEN_SIZE 33
 
 /**

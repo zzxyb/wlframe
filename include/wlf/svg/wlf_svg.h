@@ -28,167 +28,224 @@
 #include "wlf/effect/wlf_filter.h"
 #include "wlf/types/wlf_gradient.h"
 
+/**
+ * @brief Kinds of SVG paint supported by the parser.
+ */
 enum wlf_svg_paint_type {
-	WLF_SVG_PAINT_UNDEF = -1,
-	WLF_SVG_PAINT_NONE = 0,
-	WLF_SVG_PAINT_COLOR = 1,
-	WLF_SVG_PAINT_LINEAR_GRADIENT = 2,
-	WLF_SVG_PAINT_RADIAL_GRADIENT = 3
+	WLF_SVG_PAINT_UNDEF = -1, /**< Paint has not been specified. */
+	WLF_SVG_PAINT_NONE = 0, /**< No paint. */
+	WLF_SVG_PAINT_COLOR = 1, /**< Solid color paint. */
+	WLF_SVG_PAINT_LINEAR_GRADIENT = 2, /**< Linear gradient paint. */
+	WLF_SVG_PAINT_RADIAL_GRADIENT = 3 /**< Radial gradient paint. */
 };
 
+/**
+ * @brief Gradient behavior outside the defined stop range.
+ */
 enum wlf_svg_spread_type {
-	WLF_SVG_SPREAD_PAD = 0,
-	WLF_SVG_SPREAD_REFLECT = 1,
-	WLF_SVG_SPREAD_REPEAT = 2
+	WLF_SVG_SPREAD_PAD = 0, /**< Extend the endpoint stop colors. */
+	WLF_SVG_SPREAD_REFLECT = 1, /**< Mirror the gradient on alternate repetitions. */
+	WLF_SVG_SPREAD_REPEAT = 2 /**< Repeat the gradient. */
 };
 
+/**
+ * @brief Styles used to join adjacent stroke segments.
+ */
 enum wlf_svg_line_join {
-	WLF_SVG_JOIN_MITER = 0,
-	WLF_SVG_JOIN_ROUND = 1,
-	WLF_SVG_JOIN_BEVEL = 2
+	WLF_SVG_JOIN_MITER = 0, /**< Stroke join: miter. */
+	WLF_SVG_JOIN_ROUND = 1, /**< Stroke join: round. */
+	WLF_SVG_JOIN_BEVEL = 2 /**< Stroke join: bevel. */
 };
 
+/**
+ * @brief Styles used at the ends of open stroked paths.
+ */
 enum wlf_svg_line_cap {
-	WLF_SVG_CAP_BUTT = 0,
-	WLF_SVG_CAP_ROUND = 1,
-	WLF_SVG_CAP_SQUARE = 2
+	WLF_SVG_CAP_BUTT = 0, /**< Stroke endpoint cap: butt. */
+	WLF_SVG_CAP_ROUND = 1, /**< Stroke endpoint cap: round. */
+	WLF_SVG_CAP_SQUARE = 2 /**< Stroke endpoint cap: square. */
 };
 
+/**
+ * @brief Rules for determining the interior of a path.
+ */
 enum wlf_svg_fill_rule {
-	WLF_SVG_FILL_RULE_NONZERO = 0,
-	WLF_SVG_FILL_RULE_EVENODD = 1
+	WLF_SVG_FILL_RULE_NONZERO = 0, /**< Use the nonzero winding rule. */
+	WLF_SVG_FILL_RULE_EVENODD = 1 /**< Use the even-odd crossing rule. */
 };
 
+/**
+ * @brief Visibility and origin flags for parsed SVG shapes.
+ */
 enum wlf_svg_flags {
-	WLF_SVG_FLAGS_VISIBLE = 0x01,
-	WLF_SVG_FLAGS_FROM_USE = 0x02
+	WLF_SVG_FLAGS_VISIBLE = 0x01, /**< Shape participates in rendering. */
+	WLF_SVG_FLAGS_FROM_USE = 0x02 /**< Shape was instantiated from a use reference. */
 };
 
+/**
+ * @brief Paint operation identifiers encoded in an SVG paint order.
+ */
 enum wlf_svg_paint_order {
-	WLF_SVG_PAINT_FILL = 0x00,
-	WLF_SVG_PAINT_MARKERS = 0x01,
-	WLF_SVG_PAINT_STROKE = 0x02,
+	WLF_SVG_PAINT_FILL = 0x00, /**< Paint operation: fill. */
+	WLF_SVG_PAINT_MARKERS = 0x01, /**< Paint operation: markers. */
+	WLF_SVG_PAINT_STROKE = 0x02, /**< Paint operation: stroke. */
 };
 
 
+/**
+ * @brief SVG presentation attribute identifiers recognized by the parser.
+ */
 enum wlf_svg_attr_name {
-	WLF_SVG_ATTR_UNKNOWN = 0,
-	WLF_SVG_ATTR_STYLE,
-	WLF_SVG_ATTR_DISPLAY,
-	WLF_SVG_ATTR_FILL,
-	WLF_SVG_ATTR_OPACITY,
-	WLF_SVG_ATTR_FILL_OPACITY,
-	WLF_SVG_ATTR_STROKE,
-	WLF_SVG_ATTR_STROKE_WIDTH,
-	WLF_SVG_ATTR_STROKE_DASHARRAY,
-	WLF_SVG_ATTR_STROKE_DASHOFFSET,
-	WLF_SVG_ATTR_STROKE_OPACITY,
-	WLF_SVG_ATTR_STROKE_LINECAP,
-	WLF_SVG_ATTR_STROKE_LINEJOIN,
-	WLF_SVG_ATTR_STROKE_MITERLIMIT,
-	WLF_SVG_ATTR_FILL_RULE,
-	WLF_SVG_ATTR_FONT_SIZE,
-	WLF_SVG_ATTR_TRANSFORM,
-	WLF_SVG_ATTR_STOP_COLOR,
-	WLF_SVG_ATTR_STOP_OPACITY,
-	WLF_SVG_ATTR_OFFSET,
-	WLF_SVG_ATTR_PAINT_ORDER,
-	WLF_SVG_ATTR_FILTER,
-	WLF_SVG_ATTR_ID,
+	WLF_SVG_ATTR_UNKNOWN = 0, /**< SVG presentation attribute: unknown. */
+	WLF_SVG_ATTR_STYLE, /**< SVG presentation attribute: style. */
+	WLF_SVG_ATTR_DISPLAY, /**< SVG presentation attribute: display. */
+	WLF_SVG_ATTR_FILL, /**< SVG presentation attribute: fill. */
+	WLF_SVG_ATTR_OPACITY, /**< SVG presentation attribute: opacity. */
+	WLF_SVG_ATTR_FILL_OPACITY, /**< SVG presentation attribute: fill-opacity. */
+	WLF_SVG_ATTR_STROKE, /**< SVG presentation attribute: stroke. */
+	WLF_SVG_ATTR_STROKE_WIDTH, /**< SVG presentation attribute: stroke-width. */
+	WLF_SVG_ATTR_STROKE_DASHARRAY, /**< SVG presentation attribute: stroke-dasharray. */
+	WLF_SVG_ATTR_STROKE_DASHOFFSET, /**< SVG presentation attribute: stroke-dashoffset. */
+	WLF_SVG_ATTR_STROKE_OPACITY, /**< SVG presentation attribute: stroke-opacity. */
+	WLF_SVG_ATTR_STROKE_LINECAP, /**< SVG presentation attribute: stroke-linecap. */
+	WLF_SVG_ATTR_STROKE_LINEJOIN, /**< SVG presentation attribute: stroke-linejoin. */
+	WLF_SVG_ATTR_STROKE_MITERLIMIT, /**< SVG presentation attribute: stroke-miterlimit. */
+	WLF_SVG_ATTR_FILL_RULE, /**< SVG presentation attribute: fill-rule. */
+	WLF_SVG_ATTR_FONT_SIZE, /**< SVG presentation attribute: font-size. */
+	WLF_SVG_ATTR_TRANSFORM, /**< SVG presentation attribute: transform. */
+	WLF_SVG_ATTR_STOP_COLOR, /**< SVG presentation attribute: stop-color. */
+	WLF_SVG_ATTR_STOP_OPACITY, /**< SVG presentation attribute: stop-opacity. */
+	WLF_SVG_ATTR_OFFSET, /**< SVG presentation attribute: offset. */
+	WLF_SVG_ATTR_PAINT_ORDER, /**< SVG presentation attribute: paint-order. */
+	WLF_SVG_ATTR_FILTER, /**< SVG presentation attribute: filter. */
+	WLF_SVG_ATTR_ID, /**< SVG presentation attribute: id. */
 };
 
+/**
+ * @brief SVG element identifiers recognized by the parser.
+ */
 enum wlf_svg_element_name {
-	WLF_SVG_EL_UNKNOWN = 0,
-	WLF_SVG_EL_G,
-	WLF_SVG_EL_PATH,
-	WLF_SVG_EL_RECT,
-	WLF_SVG_EL_CIRCLE,
-	WLF_SVG_EL_ELLIPSE,
-	WLF_SVG_EL_LINE,
-	WLF_SVG_EL_POLYLINE,
-	WLF_SVG_EL_POLYGON,
-	WLF_SVG_EL_LINEAR_GRADIENT,
-	WLF_SVG_EL_RADIAL_GRADIENT,
-	WLF_SVG_EL_STOP,
-	WLF_SVG_EL_DEFS,
-	WLF_SVG_EL_SVG,
-	WLF_SVG_EL_SYMBOL,
-	WLF_SVG_EL_USE,
-	WLF_SVG_EL_TEXT,
-	WLF_SVG_EL_FILTER,
-	WLF_SVG_EL_GAUSSIAN_BLUR,
-	WLF_SVG_EL_DROP_SHADOW,
+	WLF_SVG_EL_UNKNOWN = 0, /**< SVG element: unknown. */
+	WLF_SVG_EL_G, /**< SVG group element (g). */
+	WLF_SVG_EL_PATH, /**< SVG element: path. */
+	WLF_SVG_EL_RECT, /**< SVG element: rect. */
+	WLF_SVG_EL_CIRCLE, /**< SVG element: circle. */
+	WLF_SVG_EL_ELLIPSE, /**< SVG element: ellipse. */
+	WLF_SVG_EL_LINE, /**< SVG element: line. */
+	WLF_SVG_EL_POLYLINE, /**< SVG element: polyline. */
+	WLF_SVG_EL_POLYGON, /**< SVG element: polygon. */
+	WLF_SVG_EL_LINEAR_GRADIENT, /**< SVG element: linearGradient. */
+	WLF_SVG_EL_RADIAL_GRADIENT, /**< SVG element: radialGradient. */
+	WLF_SVG_EL_STOP, /**< SVG element: stop. */
+	WLF_SVG_EL_DEFS, /**< SVG element: defs. */
+	WLF_SVG_EL_SVG, /**< SVG element: svg. */
+	WLF_SVG_EL_SYMBOL, /**< SVG element: symbol. */
+	WLF_SVG_EL_USE, /**< SVG element: use. */
+	WLF_SVG_EL_TEXT, /**< SVG element: text. */
+	WLF_SVG_EL_FILTER, /**< SVG element: filter. */
+	WLF_SVG_EL_GAUSSIAN_BLUR, /**< SVG element: feGaussianBlur. */
+	WLF_SVG_EL_DROP_SHADOW, /**< SVG element: feDropShadow. */
 };
 
+/**
+ * @brief SVG gradient attribute identifiers recognized by the parser.
+ */
 enum wlf_svg_gradient_attr_name {
-	WLF_SVG_GRADIENT_ATTR_UNKNOWN = 0,
-	WLF_SVG_GRADIENT_ATTR_ID,
-	WLF_SVG_GRADIENT_ATTR_GRADIENT_UNITS,
-	WLF_SVG_GRADIENT_ATTR_GRADIENT_TRANSFORM,
-	WLF_SVG_GRADIENT_ATTR_CX,
-	WLF_SVG_GRADIENT_ATTR_CY,
-	WLF_SVG_GRADIENT_ATTR_R,
-	WLF_SVG_GRADIENT_ATTR_FX,
-	WLF_SVG_GRADIENT_ATTR_FY,
-	WLF_SVG_GRADIENT_ATTR_X1,
-	WLF_SVG_GRADIENT_ATTR_Y1,
-	WLF_SVG_GRADIENT_ATTR_X2,
-	WLF_SVG_GRADIENT_ATTR_Y2,
-	WLF_SVG_GRADIENT_ATTR_SPREAD_METHOD,
-	WLF_SVG_GRADIENT_ATTR_XLINK_HREF,
+	WLF_SVG_GRADIENT_ATTR_UNKNOWN = 0, /**< SVG gradient attribute: unknown. */
+	WLF_SVG_GRADIENT_ATTR_ID, /**< SVG gradient attribute: id. */
+	WLF_SVG_GRADIENT_ATTR_GRADIENT_UNITS, /**< SVG gradient attribute: gradientUnits. */
+	WLF_SVG_GRADIENT_ATTR_GRADIENT_TRANSFORM, /**< SVG gradient attribute: gradientTransform. */
+	WLF_SVG_GRADIENT_ATTR_CX, /**< SVG gradient attribute: cx. */
+	WLF_SVG_GRADIENT_ATTR_CY, /**< SVG gradient attribute: cy. */
+	WLF_SVG_GRADIENT_ATTR_R, /**< SVG gradient attribute: r. */
+	WLF_SVG_GRADIENT_ATTR_FX, /**< SVG gradient attribute: fx. */
+	WLF_SVG_GRADIENT_ATTR_FY, /**< SVG gradient attribute: fy. */
+	WLF_SVG_GRADIENT_ATTR_X1, /**< SVG gradient attribute: x1. */
+	WLF_SVG_GRADIENT_ATTR_Y1, /**< SVG gradient attribute: y1. */
+	WLF_SVG_GRADIENT_ATTR_X2, /**< SVG gradient attribute: x2. */
+	WLF_SVG_GRADIENT_ATTR_Y2, /**< SVG gradient attribute: y2. */
+	WLF_SVG_GRADIENT_ATTR_SPREAD_METHOD, /**< SVG gradient attribute: spreadMethod. */
+	WLF_SVG_GRADIENT_ATTR_XLINK_HREF, /**< SVG gradient attribute: xlink:href. */
 };
 
+/**
+ * @brief Root SVG attribute identifiers recognized by the parser.
+ */
 enum wlf_svg_root_attr_name {
-	WLF_SVG_ROOT_ATTR_UNKNOWN = 0,
-	WLF_SVG_ROOT_ATTR_WIDTH,
-	WLF_SVG_ROOT_ATTR_HEIGHT,
-	WLF_SVG_ROOT_ATTR_VIEWBOX,
-	WLF_SVG_ROOT_ATTR_PRESERVE_ASPECT_RATIO,
+	WLF_SVG_ROOT_ATTR_UNKNOWN = 0, /**< Root SVG attribute: unknown. */
+	WLF_SVG_ROOT_ATTR_WIDTH, /**< Root SVG attribute: width. */
+	WLF_SVG_ROOT_ATTR_HEIGHT, /**< Root SVG attribute: height. */
+	WLF_SVG_ROOT_ATTR_VIEWBOX, /**< Root SVG attribute: viewBox. */
+	WLF_SVG_ROOT_ATTR_PRESERVE_ASPECT_RATIO, /**< Root SVG attribute: preserveAspectRatio. */
 };
 
+/**
+ * @brief Coordinate spaces used by SVG gradients.
+ */
 enum wlf_svg_gradient_units {
 	WLF_SVG_USER_SPACE   = 0, /**< Gradient coords in user (document) space. */
 	WLF_SVG_OBJECT_SPACE = 1, /**< Gradient coords relative to the object bounding box. */
 };
 
+/**
+ * @brief Units associated with parsed SVG lengths.
+ */
 enum wlf_svg_units {
-	WLF_SVG_UNITS_USER,
-	WLF_SVG_UNITS_PX,
-	WLF_SVG_UNITS_PT,
-	WLF_SVG_UNITS_PC,
-	WLF_SVG_UNITS_MM,
-	WLF_SVG_UNITS_CM,
-	WLF_SVG_UNITS_IN,
-	WLF_SVG_UNITS_PERCENT,
-	WLF_SVG_UNITS_EM,
-	WLF_SVG_UNITS_EX,
+	WLF_SVG_UNITS_USER, /**< Unitless user coordinates. */
+	WLF_SVG_UNITS_PX, /**< CSS pixels. */
+	WLF_SVG_UNITS_PT, /**< Points (1/72 inch). */
+	WLF_SVG_UNITS_PC, /**< Picas (12 points). */
+	WLF_SVG_UNITS_MM, /**< Millimeters. */
+	WLF_SVG_UNITS_CM, /**< Centimeters. */
+	WLF_SVG_UNITS_IN, /**< Inches. */
+	WLF_SVG_UNITS_PERCENT, /**< Percentage of the applicable reference dimension. */
+	WLF_SVG_UNITS_EM, /**< Current font size. */
+	WLF_SVG_UNITS_EX, /**< Current font x-height. */
 };
 
+/**
+ * @brief Mapping from an SVG color name to its packed color.
+ */
 struct wlf_svg_named_color {
-	const char* name;
-	unsigned int color;
+	const char* name; /**< Name used for lookup. */
+	unsigned int color; /**< Packed SVG color value. */
 };
 
+/**
+ * @brief Mapping from an SVG name to an integer identifier.
+ */
 struct wlf_svg_name_map {
-	const char* name;
-	int value;
+	const char* name; /**< Name used for lookup. */
+	int value; /**< Value associated with the lookup name. */
 };
 
+/**
+ * @brief Mapping from an SVG name to a signed character value.
+ */
 struct wlf_svg_char_name_map {
-	const char* name;
-	char value;
+	const char* name; /**< Name used for lookup. */
+	char value; /**< Value associated with the lookup name. */
 };
 
+/**
+ * @brief Mapping from an SVG name to an unsigned character value.
+ */
 struct wlf_svg_uchar_name_map {
-	const char* name;
-	unsigned char value;
+	const char* name; /**< Name used for lookup. */
+	unsigned char value; /**< Value associated with the lookup name. */
 };
 
+/**
+ * @brief Color and offset of an SVG gradient stop.
+ */
 struct wlf_svg_gradient_stop {
-	unsigned int color;
-	float offset;
+	unsigned int color; /**< Packed SVG color value. */
+	float offset; /**< Gradient stop position. */
 };
 
+/**
+ * @brief Parsed SVG shape with geometry and paint attributes.
+ */
 struct wlf_svg_shape {
 	struct wlf_shape base;         /**< Base shape for SVG-specific payloads. */
 	char id[64];                   /**< Optional 'id' attribute of the shape or its group. */
@@ -218,13 +275,19 @@ struct wlf_svg_shape {
 	struct wlf_svg_shape *next;    /**< Next shape in the linked list, or NULL. */
 };
 
+/**
+ * @brief Unresolved SVG use reference and position.
+ */
 struct wlf_svg_use_data {
-	char href[64];
-	float x;
-	float y;
-	struct wlf_svg_use_data *next;
+	char href[64]; /**< Identifier referenced by the SVG use element. */
+	float x; /**< X coordinate in SVG user space. */
+	float y; /**< Y coordinate in SVG user space. */
+	struct wlf_svg_use_data *next; /**< Next definition in the linked list, or NULL. */
 };
 
+/**
+ * @brief Parsed SVG document and its owned definitions.
+ */
 struct wlf_svg_image {
 	float width;                   /**< SVG canvas width in pixel units. */
 	float height;                  /**< SVG canvas height in pixel units. */
@@ -279,20 +342,26 @@ struct wlf_svg_shape *wlf_svg_shape_from_shape(struct wlf_shape *shape);
 /** Maximum number of entries in a stroke dash array. */
 #define WLF_SVG_MAX_DASHES 8
 
-/** A length / coordinate value together with its unit. */
+/**
+ * @brief A length / coordinate value together with its unit.
+ */
 struct wlf_svg_coordinate {
 	float value; /**< Numeric magnitude. */
 	int units; /**< Unit type (enum wlf_svg_units). */
 };
 
-/** Endpoint coordinates for a linear gradient. */
+/**
+ * @brief Endpoint coordinates for a linear gradient.
+ */
 struct wlf_svg_linear_data {
-	struct wlf_svg_coordinate x1, y1, x2, y2;
+	struct wlf_svg_coordinate x1, /**< First endpoint X coordinate and unit. */ y1, /**< First endpoint Y coordinate and unit. */ x2, /**< Second endpoint X coordinate and unit. */ y2; /**< Second endpoint Y coordinate and unit. */
 };
 
-/** Center / radius / focal-point coordinates for a radial gradient. */
+/**
+ * @brief Center / radius / focal-point coordinates for a radial gradient.
+ */
 struct wlf_svg_radial_data {
-	struct wlf_svg_coordinate cx, cy, r, fx, fy;
+	struct wlf_svg_coordinate cx, /**< Gradient center X coordinate and unit. */ cy, /**< Gradient center Y coordinate and unit. */ r, /**< Gradient radius and unit. */ fx, /**< Gradient focal point X coordinate and unit. */ fy; /**< Gradient focal point Y coordinate and unit. */
 };
 
 /**
@@ -307,15 +376,15 @@ struct wlf_svg_gradient_data {
 	char ref[64];                  /**< xlink:href reference to another gradient definition. */
 	signed char type;              /**< Gradient type (wlf_svg_paint_type). */
 	union {
-		struct wlf_svg_linear_data linear;
-		struct wlf_svg_radial_data radial;
+		struct wlf_svg_linear_data linear; /**< Linear gradient endpoint coordinates. */
+		struct wlf_svg_radial_data radial; /**< Radial gradient coordinates. */
 	};
 	char                           spread; /**< Spread method (wlf_svg_spread_type). */
 	char                           units;  /**< Coordinate space (wlf_svg_gradient_units). */
-	float                          xform[6];
-	int                            nstops;
-	struct wlf_svg_gradient_stop  *stops;
-	struct wlf_svg_gradient_data  *next;
+	float                          xform[6]; /**< Affine transform coefficients [a, b, c, d, e, f]. */
+	int                            nstops; /**< Number of gradient stops. */
+	struct wlf_svg_gradient_stop  *stops; /**< Array of gradient stops. */
+	struct wlf_svg_gradient_data  *next; /**< Next definition in the linked list, or NULL. */
 };
 
 /**
@@ -325,71 +394,75 @@ struct wlf_svg_gradient_data {
  * nested groups can inherit and override presentation attributes.
  */
 struct wlf_svg_attrib {
-	char         id[64];
-	float        xform[6];
-	unsigned int fillColor;
-	unsigned int strokeColor;
-	float        opacity;
-	float        fillOpacity;
-	float        strokeOpacity;
-	char         fillGradient[64];
-	char         strokeGradient[64];
-	char         filter[64];
-	float        strokeWidth;
-	float        strokeDashOffset;
-	float        strokeDashArray[WLF_SVG_MAX_DASHES];
-	int          strokeDashCount;
-	char         strokeLineJoin;
-	char         strokeLineCap;
-	float        miterLimit;
-	char         fillRule;
-	float        fontSize;
-	unsigned int stopColor;
-	float        stopOpacity;
-	float        stopOffset;
-	char         hasFill;
-	char         hasStroke;
-	char         visible;
-	unsigned char paintOrder;
+	char         id[64]; /**< SVG element identifier. */
+	float        xform[6]; /**< Affine transform coefficients [a, b, c, d, e, f]. */
+	unsigned int fillColor; /**< Packed fill color. */
+	unsigned int strokeColor; /**< Packed stroke color. */
+	float        opacity; /**< Overall opacity in the range [0, 1]. */
+	float        fillOpacity; /**< Fill opacity in the range [0, 1]. */
+	float        strokeOpacity; /**< Stroke opacity in the range [0, 1]. */
+	char         fillGradient[64]; /**< Identifier of the referenced fill gradient. */
+	char         strokeGradient[64]; /**< Identifier of the referenced stroke gradient. */
+	char         filter[64]; /**< Identifier of the referenced SVG filter. */
+	float        strokeWidth; /**< Stroke width in the current SVG coordinate space. */
+	float        strokeDashOffset; /**< Offset into the stroke dash pattern. */
+	float        strokeDashArray[WLF_SVG_MAX_DASHES]; /**< Stroke dash and gap lengths. */
+	int          strokeDashCount; /**< Number of valid stroke dash entries. */
+	char         strokeLineJoin; /**< Stroke join style from enum wlf_svg_line_join. */
+	char         strokeLineCap; /**< Stroke cap style from enum wlf_svg_line_cap. */
+	float        miterLimit; /**< Limit on the length of miter joins. */
+	char         fillRule; /**< Interior fill rule from enum wlf_svg_fill_rule. */
+	float        fontSize; /**< Inherited SVG font size. */
+	unsigned int stopColor; /**< Packed gradient stop color. */
+	float        stopOpacity; /**< Gradient stop opacity in the range [0, 1]. */
+	float        stopOffset; /**< Gradient stop position. */
+	char         hasFill; /**< Whether a fill paint has been specified. */
+	char         hasStroke; /**< Whether a stroke paint has been specified. */
+	char         visible; /**< Whether the current SVG element is visible. */
+	unsigned char paintOrder; /**< Encoded ordering of fill, stroke and marker painting. */
 };
 
-/** Shapes collected while parsing a \<symbol\> element. */
+/**
+ * @brief Shapes collected while parsing a symbol element.
+ */
 struct wlf_svg_symbol_data {
-	char                       id[64];
+	char                       id[64]; /**< SVG element identifier. */
 	struct wlf_shape          *shapes;      /**< Head of the shape linked list. */
 	struct wlf_shape          *shapes_tail; /**< Tail pointer for O(1) append. */
 	struct wlf_svg_symbol_data *next;       /**< Next symbol definition. */
 };
 
-/** Full parser state. Allocated and freed by wlf_svg_parse_from_file() / wlf_svg_parse(). */
+/**
+ * @brief Full parser state. Allocated and freed by wlf_svg_parse_from_file() / wlf_svg_parse().
+ */
 struct wlf_svg_parser {
-	struct wlf_svg_attrib              attr[WLF_SVG_MAX_ATTR];
-	int                         attrHead;
-	float                      *pts;
-	int                         npts;
-	int                         cpts;
-	struct wlf_path *plist;
-	struct wlf_svg_image       *image;
-	struct wlf_svg_gradient_data *gradients;
-	struct wlf_shape           *shapesTail;
-	struct wlf_shape           *shape_geometry;
+	struct wlf_svg_attrib              attr[WLF_SVG_MAX_ATTR]; /**< Stack of inherited SVG presentation attributes. */
+	int                         attrHead; /**< Index of the active attribute stack entry. */
+	float                      *pts; /**< Temporary path coordinate storage. */
+	int                         npts; /**< Number of points in temporary path storage. */
+	int                         cpts; /**< Allocated point capacity. */
+	struct wlf_path *plist; /**< Paths collected for the current SVG shape. */
+	struct wlf_svg_image       *image; /**< SVG image owned by this object. */
+	struct wlf_svg_gradient_data *gradients; /**< Unresolved gradient definitions. */
+	struct wlf_shape           *shapesTail; /**< Tail of the parsed shape list. */
+	struct wlf_shape           *shape_geometry; /**< Geometry for the SVG shape currently being parsed. */
 	struct wlf_svg_symbol_data *symbols;        /**< All parsed \<symbol\> definitions. */
 	struct wlf_svg_symbol_data *current_symbol; /**< Non-NULL while inside \<symbol\>. */
 	struct wlf_svg_use_data    *uses;           /**< All parsed \<use\> elements. */
 	struct wlf_filter          *filters_tail;   /**< Tail of image->filters. */
 	struct wlf_filter          *current_filter; /**< Filter currently collecting primitives. */
-	float viewMinx, viewMiny, viewWidth, viewHeight;
-	int   alignX, alignY, alignType;
-	float dpi;
-	char  pathFlag;
-	char  defsFlag;
-	char  textFlag;
-	float textX;
-	float textY;
-	float textFontSize;
-	int   textAnchor;
-	char  textFontFamily[64];
-	char  textContent[256];
+	float viewMinx, /**< Minimum viewBox X coordinate. */ viewMiny, /**< Minimum viewBox Y coordinate. */ viewWidth, /**< ViewBox width. */ viewHeight; /**< ViewBox height. */
+	int   alignX, /**< Horizontal preserveAspectRatio alignment. */ alignY, /**< Vertical preserveAspectRatio alignment. */ alignType; /**< PreserveAspectRatio meet or slice policy. */
+	float dpi; /**< Resolution used to convert physical SVG units. */
+	char  pathFlag; /**< Whether path element parsing is active. */
+	char  defsFlag; /**< Whether definition-only SVG content is being parsed. */
+	char  textFlag; /**< Whether a text element is being parsed. */
+	float textX; /**< Current text X coordinate. */
+	float textY; /**< Current text Y coordinate. */
+	float textFontSize; /**< Current text font size. */
+	int   textAnchor; /**< Current text alignment anchor. */
+	char  textFontFamily[64]; /**< Current text font family. */
+	char  textContent[256]; /**< Accumulated text element content. */
 };
 
 /**

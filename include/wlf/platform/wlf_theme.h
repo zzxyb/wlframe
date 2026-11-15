@@ -25,8 +25,8 @@
  * Controls whether the theme palette is generated for a light or dark UI.
  */
 enum wlf_theme_appearance {
-	WLF_THEME_APPEARANCE_LIGHT = 0,
-	WLF_THEME_APPEARANCE_DARK,
+	WLF_THEME_APPEARANCE_LIGHT = 0, /**< Light application appearance. */
+	WLF_THEME_APPEARANCE_DARK, /**< Dark application appearance. */
 };
 
 /**
@@ -98,7 +98,12 @@ struct wlf_theme {
 void wlf_theme_init(struct wlf_theme *theme,
 	const struct wlf_theme_impl *impl);
 
-/** Fills all semantic roles with the built-in light or dark palette. */
+/**
+ * @brief Fills all semantic roles with the built-in light or dark palette.
+ *
+ * @param palette Palette to populate.
+ * @param appearance Light or dark appearance used for the default colors.
+ */
 void wlf_theme_fill_default_palette(
 	struct wlf_color palette[WLF_THEME_COLOR_COUNT],
 	enum wlf_theme_appearance appearance);

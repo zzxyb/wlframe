@@ -49,7 +49,8 @@ bool wlf_animation_group_is_sequential(
  * @brief Convert a base group to a sequential animation group.
  *
  * @param group Animation group to convert.
- * @return Sequential group, or NULL if @p group has a different type.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_sequential_animation_group *
 wlf_sequential_animation_group_from_group(

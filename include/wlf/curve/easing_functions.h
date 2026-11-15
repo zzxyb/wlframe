@@ -29,6 +29,9 @@
 #endif
 
 #ifndef WLF_PI_F
+/**
+ * @brief Single-precision value of pi.
+ */
 #define WLF_PI_F 3.14159265358979323846f
 #endif
 

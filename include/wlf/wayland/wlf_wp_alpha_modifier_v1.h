@@ -48,7 +48,7 @@ struct wp_alpha_modifier_surface_v1;
  */
 struct wlf_wp_alpha_modifier_v1 {
 	struct wp_alpha_modifier_v1 *base; /**< Underlying protocol object. */
-	uint32_t version;
+	uint32_t version; /**< Bound Wayland protocol version. */
 
 	struct {
 		struct wlf_signal destroy; /**< Emitted just before object is freed. */
@@ -65,7 +65,7 @@ struct wlf_wp_alpha_modifier_v1 {
  */
 struct wlf_wp_alpha_modifier_surface_v1 {
 	struct wp_alpha_modifier_surface_v1 *base; /**< Underlying protocol object. */
-	uint32_t version;
+	uint32_t version; /**< Bound Wayland protocol version. */
 	uint32_t multiplier; /**< Cached protocol multiplier value. */
 
 	struct {

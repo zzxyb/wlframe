@@ -81,11 +81,21 @@ struct wlf_wl_surface {
  */
 struct wlf_wl_surface *wlf_wl_surface_create(struct wlf_wl_compositor *compositor);
 
-/** Associates the native surface with its owning wlframe window. */
+/**
+ * @brief Associates the native surface with its owning wlframe window.
+ *
+ * @param surface Wayland surface to inspect or configure.
+ * @param window Window to inspect or associate with the object.
+ */
 void wlf_wl_surface_set_window(struct wlf_wl_surface *surface,
 	struct wlf_window *window);
 
-/** Resolves a wlframe window from a native Wayland surface. */
+/**
+ * @brief Resolves a wlframe window from a native Wayland surface.
+ *
+ * @param surface Wayland surface to inspect or configure.
+ * @return Associated wlframe window, or NULL if the surface has no association.
+ */
 struct wlf_window *wlf_wl_surface_get_window(struct wl_surface *surface);
 
 /**
@@ -136,11 +146,23 @@ void wlf_wl_surface_damage_buffer(struct wlf_wl_surface *surface,
  */
 struct wl_callback *wlf_wl_surface_frame(struct wlf_wl_surface *surface);
 
-/** Arms one compositor-paced expose event without committing the surface. */
+/**
+ * @brief Arms one compositor-paced expose event without committing the surface.
+ *
+ * @param surface Wayland surface to inspect or configure.
+ * @param window Window to notify when the frame callback completes.
+ * @return true if a frame callback is armed or already pending, false on invalid input or failure.
+ */
 bool wlf_wl_surface_arm_frame(struct wlf_wl_surface *surface,
 	struct wlf_window *window);
 
-/** Schedules one compositor-paced expose event, committing when newly armed. */
+/**
+ * @brief Schedules one compositor-paced expose event, committing when newly armed.
+ *
+ * @param surface Wayland surface to inspect or configure.
+ * @param window Window to notify when the frame callback completes.
+ * @return true if a frame callback is scheduled or already pending, false on invalid input or failure.
+ */
 bool wlf_wl_surface_schedule_frame(struct wlf_wl_surface *surface,
 	struct wlf_window *window);
 

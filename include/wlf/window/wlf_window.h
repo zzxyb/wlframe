@@ -90,15 +90,15 @@ enum wlf_window_flags {
  * Values may be combined to identify a corner, for example top-left.
  */
 enum wlf_window_resize_edge {
-	WLF_WINDOW_RESIZE_EDGE_NONE = 0,
-	WLF_WINDOW_RESIZE_EDGE_TOP = 1,
-	WLF_WINDOW_RESIZE_EDGE_BOTTOM = 2,
-	WLF_WINDOW_RESIZE_EDGE_LEFT = 4,
-	WLF_WINDOW_RESIZE_EDGE_TOP_LEFT = 5,
-	WLF_WINDOW_RESIZE_EDGE_BOTTOM_LEFT = 6,
-	WLF_WINDOW_RESIZE_EDGE_RIGHT = 8,
-	WLF_WINDOW_RESIZE_EDGE_TOP_RIGHT = 9,
-	WLF_WINDOW_RESIZE_EDGE_BOTTOM_RIGHT = 10,
+	WLF_WINDOW_RESIZE_EDGE_NONE = 0, /**< Interactive resize edge: none. */
+	WLF_WINDOW_RESIZE_EDGE_TOP = 1, /**< Interactive resize edge: top. */
+	WLF_WINDOW_RESIZE_EDGE_BOTTOM = 2, /**< Interactive resize edge: bottom. */
+	WLF_WINDOW_RESIZE_EDGE_LEFT = 4, /**< Interactive resize edge: left. */
+	WLF_WINDOW_RESIZE_EDGE_TOP_LEFT = 5, /**< Interactive resize edge: top left. */
+	WLF_WINDOW_RESIZE_EDGE_BOTTOM_LEFT = 6, /**< Interactive resize edge: bottom left. */
+	WLF_WINDOW_RESIZE_EDGE_RIGHT = 8, /**< Interactive resize edge: right. */
+	WLF_WINDOW_RESIZE_EDGE_TOP_RIGHT = 9, /**< Interactive resize edge: top right. */
+	WLF_WINDOW_RESIZE_EDGE_BOTTOM_RIGHT = 10, /**< Interactive resize edge: bottom right. */
 };
 
 /**
@@ -115,8 +115,23 @@ struct wlf_window_impl {
 	void (*set_min_size)(struct wlf_window *window, int width, int height);                  /**< Set the minimum window size */
 	void (*set_max_size)(struct wlf_window *window, int width, int height);                  /**< Set the maximum window size */
 	void (*set_position)(struct wlf_window *window, int x, int y);                          /**< Set the window position */
+	/**
+	 * @brief Begins interactive window movement.
+	 *
+	 * @param window Window to move.
+	 * @param pointer Pointer initiating the operation.
+	 * @param serial Serial of the initiating pointer event.
+	 */
 	void (*begin_move)(struct wlf_window *window, struct wlf_pointer *pointer,
-		uint32_t serial); /**< Begin compositor/native interactive move. */
+		uint32_t serial);
+	/**
+	 * @brief Begins interactive window resizing.
+	 *
+	 * @param window Window to resize.
+	 * @param pointer Pointer initiating the operation.
+	 * @param serial Serial of the initiating pointer event.
+	 * @param edge Edge or corner to resize.
+	 */
 	void (*begin_resize)(struct wlf_window *window, struct wlf_pointer *pointer,
 		uint32_t serial, enum wlf_window_resize_edge edge);
 	void (*set_state)(struct wlf_window *window, enum wlf_window_state_flags state);        /**< Set the window state */
@@ -126,19 +141,22 @@ struct wlf_window_impl {
 	void (*set_opacity)(struct wlf_window *window, float opacity);                           /**< Set the window opacity */
 	void (*set_mask)(struct wlf_window *window, const pixman_region32_t *mask);              /**< Set the shape mask */
 	void (*set_background_color)(struct wlf_window *window, const struct wlf_color *color);  /**< Set the background color */
-	void *(*native_handle)(struct wlf_window *window);
+	void *(*native_handle)(struct wlf_window *window); /**< Returns the borrowed native window handle. */
 	void (*arm_frame)(struct wlf_window *window);                                             /**< Request a frame callback without committing */
 	void (*schedule_frame)(struct wlf_window *window);                                        /**< Schedule a window frame */
 };
 
+/**
+ * @brief Rendering resources and presentation state of a window.
+ */
 struct wlf_window_state {
-	struct wlf_renderer *renderer;
-	struct wlf_backend *backend;
-	struct wlf_swapchain *swapchain;
+	struct wlf_renderer *renderer; /**< Renderer used by this object. */
+	struct wlf_backend *backend; /**< Backend associated with this object. */
+	struct wlf_swapchain *swapchain; /**< Swapchain used to present window frames. */
 
 	char *title;                        /**< Window title */
 
-	struct wlf_render_format format;
+	struct wlf_render_format format; /**< Render format selected for the window. */
 	struct wlf_color background_color;  /**< Background color (RGBA doubles) */
 	struct wlf_rect geometry;           /**< Window geometry (position and size) */
 	struct wlf_size min_size;           /**< Minimum window size */
@@ -164,7 +182,7 @@ struct wlf_window {
 	struct wlf_scene_tree *tree;        /**< root node */
 	void *data;                    /**< User data pointer */
 
-	struct wlf_window_state state;
+	struct wlf_window_state state; /**< Current window state. */
 	struct wlf_listener theme_changed; /**< Internal system-theme subscription. */
 	bool theme_listener_attached; /**< Whether the theme listener is registered. */
 	bool uses_theme_background; /**< Whether the background follows the theme. */
@@ -172,7 +190,7 @@ struct wlf_window {
 	struct wlf_event_node *pointer_grab_event_node; /**< Node captured by the current button press. */
 	struct wlf_event_node *keyboard_event_node; /**< Event node receiving keyboard focus. */
 	struct wlf_window_touch_point *touch_points; /**< Active touch-point state. */
-	double pointer_x, pointer_y; /**< Latest pointer coordinates in window space. */
+	double pointer_x, /**< Pointer X coordinate in window space. */ pointer_y; /**< Latest pointer coordinates in window space. */
 	struct {
 		bool enable_set_position;          /**< Whether set_position is supported */
 		bool enable_set_min_size;          /**< Whether set_min_size is supported */
@@ -202,12 +220,12 @@ struct wlf_window {
 		struct wlf_signal keyboard_key; /**< Payload: wlf_keyboard_key_event. */
 		struct wlf_signal keyboard_modifiers; /**< Payload: wlf_keyboard_modifiers_event. */
 		struct wlf_signal keyboard_repeat_info; /**< Payload: wlf_keyboard_repeat_info_event. */
-		struct wlf_signal tablet;
+		struct wlf_signal tablet; /**< Emitted for tablet events. */
 		struct wlf_signal touch_down; /**< Payload: wlf_touch_down_event. */
 		struct wlf_signal touch_up; /**< Payload: wlf_touch_up_event. */
 		struct wlf_signal touch_motion; /**< Payload: wlf_touch_motion_event. */
 		struct wlf_signal touch_cancel; /**< Payload: wlf_touch_cancel_event. */
-		struct wlf_signal touch_frame;
+		struct wlf_signal touch_frame; /**< Emitted for touch frame events. */
 		struct wlf_signal touch_shape; /**< Payload: wlf_touch_shape_event. */
 		struct wlf_signal touch_orientation; /**< Payload: wlf_touch_orientation_event. */
 	} events;

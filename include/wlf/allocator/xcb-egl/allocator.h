@@ -4,11 +4,11 @@
  * @details     Declares the allocator that creates EGL-backed wlframe
  *              buffers for a native XCB window.
  * @author      YaoBing Xiao
- * @date        2026-08-17
+ * @date        2026-11-15
  * @version     v1.0
  * @par Copyright(c):
  * @par History:
- *      version: v1.0, YaoBing Xiao, 2026-08-17, initial version\n
+ *      version: v1.0, YaoBing Xiao, 2026-11-15, initial version\n
  */
 
 #ifndef ALLOCATOR_XCB_EGL_ALLOCATOR_H

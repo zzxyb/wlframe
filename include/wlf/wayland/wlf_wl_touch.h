@@ -56,7 +56,8 @@ bool wlf_touch_is_wayland(const struct wlf_touch *touch);
 /**
  * @brief Converts a generic wlf_touch to a wlf_wl_touch.
  * @param touch The generic touch.
- * @return Wayland-specific struct, or NULL if not Wayland-backed.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_wl_touch *wlf_wl_touch_from_touch(struct wlf_touch *touch);
 

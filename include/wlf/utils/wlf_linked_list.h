@@ -18,8 +18,16 @@
 #include <stddef.h>
 
 #if __STDC_VERSION__ >= 202311L
+/**
+ * @brief Obtains the type of an expression using the available compiler syntax.
+ * @param expr Expression whose type is requested.
+ */
 #define WLF_TYPEOF(expr) typeof(expr)
 #else
+/**
+ * @brief Obtains the type of an expression using the available compiler syntax.
+ * @param expr Expression whose type is requested.
+ */
 #define WLF_TYPEOF(expr) __typeof__(expr)
 #endif
 

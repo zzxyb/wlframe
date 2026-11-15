@@ -56,136 +56,136 @@ struct wlf_wl_backend {
 	struct wl_display *display;         /**< Wayland display pointer */
 	struct wl_registry *registry;       /**< Wayland registry pointer */
 	struct {
-		struct wlf_wl_seat *seat;
-		uint32_t name;
-	} wl_seat;
+		struct wlf_wl_seat *seat; /**< Bound wlf_wl_seat protocol object. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wl_seat; /**< Bound wl_seat global and registry metadata. */
 
 	struct {
 		struct wl_compositor *compositor;  /**< Wayland compositor interface */
-		uint32_t bind_version;
-		uint32_t name;
-	} wl_compositor;
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wl_compositor; /**< Bound wl_compositor global and registry metadata. */
 
 	struct {
-		struct wl_subcompositor *subcompositor;
-		uint32_t bind_version;
-		uint32_t name;
-	} wl_subcompositor;
+		struct wl_subcompositor *subcompositor; /**< Bound wl_subcompositor protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wl_subcompositor; /**< Bound wl_subcompositor global and registry metadata. */
 
 	struct {
-		struct wl_fixes *fixes;
-		uint32_t bind_version;
-		uint32_t name;
-	} wl_fixes;
+		struct wl_fixes *fixes; /**< Bound wl_fixes protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wl_fixes; /**< Bound wl_fixes global and registry metadata. */
 
 	struct {
-		struct wl_shm *shm;
-		struct wlf_render_format_set shm_formats;
-		uint32_t bind_version;
-		uint32_t name;
-	} wl_shm;
+		struct wl_shm *shm; /**< Bound wl_shm protocol object. */
+		struct wlf_render_format_set shm_formats; /**< Render formats advertised by the Wayland shared memory global. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wl_shm; /**< Bound wl_shm global and registry metadata. */
 
 	struct {
-		struct wl_data_device_manager *data_device_manager;
-		uint32_t bind_version;
-		uint32_t name;
-	} wl_data_device_manager;
+		struct wl_data_device_manager *data_device_manager; /**< Bound wl_data_device_manager protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wl_data_device_manager; /**< Bound wl_data_device_manager global and registry metadata. */
 
 	struct {
-		struct xdg_wm_base *wm_base;
-		uint32_t bind_version;
-		uint32_t name;
-	} xdg_wm_base;
+		struct xdg_wm_base *wm_base; /**< Bound xdg_wm_base protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} xdg_wm_base; /**< Bound xdg_wm_base global and registry metadata. */
 
 	struct {
-		struct wp_viewporter *viewporter;
-		uint32_t bind_version;
-		uint32_t name;
-	} wp_viewporter;
+		struct wp_viewporter *viewporter; /**< Bound wp_viewporter protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wp_viewporter; /**< Bound wp_viewporter global and registry metadata. */
 
 	struct {
-		struct zwlr_layer_shell_v1 *layer_shell_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} zwlr_layer_shell_v1;
+		struct zwlr_layer_shell_v1 *layer_shell_v1; /**< Bound zwlr_layer_shell_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} zwlr_layer_shell_v1; /**< Bound zwlr_layer_shell_v1 global and registry metadata. */
 
 	struct {
-		struct xdg_activation_v1 *xdg_activation_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} xdg_activation_v1;
+		struct xdg_activation_v1 *xdg_activation_v1; /**< Bound xdg_activation_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} xdg_activation_v1; /**< Bound xdg_activation_v1 global and registry metadata. */
 
 	struct {
-		struct zxdg_output_manager_v1 *output_manager_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} zxdg_output_manager_v1;
+		struct zxdg_output_manager_v1 *output_manager_v1; /**< Bound zxdg_output_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} zxdg_output_manager_v1; /**< Bound zxdg_output_manager_v1 global and registry metadata. */
 
 	struct {
-		struct wp_alpha_modifier_v1 *alpha_modifier_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} wp_alpha_modifier_v1;
+		struct wp_alpha_modifier_v1 *alpha_modifier_v1; /**< Bound wp_alpha_modifier_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wp_alpha_modifier_v1; /**< Bound wp_alpha_modifier_v1 global and registry metadata. */
 
 	struct {
-		struct wp_content_type_manager_v1 *content_type_manager_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} wp_content_type_manager_v1;
+		struct wp_content_type_manager_v1 *content_type_manager_v1; /**< Bound wp_content_type_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wp_content_type_manager_v1; /**< Bound wp_content_type_manager_v1 global and registry metadata. */
 
 	struct {
-		struct zwp_pointer_gestures_v1 *pointer_gestures_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} zwp_pointer_gestures_v1;
+		struct zwp_pointer_gestures_v1 *pointer_gestures_v1; /**< Bound zwp_pointer_gestures_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} zwp_pointer_gestures_v1; /**< Bound zwp_pointer_gestures_v1 global and registry metadata. */
 
 	struct {
-		struct zwp_text_input_manager_v3 *text_input_manager_v3;
-		uint32_t bind_version;
-		uint32_t name;
-	} zwp_text_input_manager_v3;
+		struct zwp_text_input_manager_v3 *text_input_manager_v3; /**< Bound zwp_text_input_manager_v3 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} zwp_text_input_manager_v3; /**< Bound zwp_text_input_manager_v3 global and registry metadata. */
 
 	struct {
-		struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} wp_single_pixel_buffer_manager_v1;
+		struct wp_single_pixel_buffer_manager_v1 *single_pixel_buffer_manager_v1; /**< Bound wp_single_pixel_buffer_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wp_single_pixel_buffer_manager_v1; /**< Bound wp_single_pixel_buffer_manager_v1 global and registry metadata. */
 
 	struct {
-		struct zxdg_decoration_manager_v1 *decoration_manager;
-		uint32_t bind_version;
-		uint32_t name;
-	} zxdg_decoration_manager_v1;
+		struct zxdg_decoration_manager_v1 *decoration_manager; /**< Bound zxdg_decoration_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} zxdg_decoration_manager_v1; /**< Bound zxdg_decoration_manager_v1 global and registry metadata. */
 
 	struct {
-		struct wp_cursor_shape_manager_v1 *cursor_shape_manager_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} wp_cursor_shape_manager_v1;
+		struct wp_cursor_shape_manager_v1 *cursor_shape_manager_v1; /**< Bound wp_cursor_shape_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wp_cursor_shape_manager_v1; /**< Bound wp_cursor_shape_manager_v1 global and registry metadata. */
 
 	struct {
-		struct xdg_toplevel_icon_manager_v1 *toplevel_icon_manager_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} xdg_toplevel_icon_manager_v1;
+		struct xdg_toplevel_icon_manager_v1 *toplevel_icon_manager_v1; /**< Bound xdg_toplevel_icon_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} xdg_toplevel_icon_manager_v1; /**< Bound xdg_toplevel_icon_manager_v1 global and registry metadata. */
 
 	struct {
-		struct wp_fractional_scale_manager_v1 *fractional_scale_manager_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} wp_fractional_scale_manager_v1;
+		struct wp_fractional_scale_manager_v1 *fractional_scale_manager_v1; /**< Bound wp_fractional_scale_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} wp_fractional_scale_manager_v1; /**< Bound wp_fractional_scale_manager_v1 global and registry metadata. */
 
 	struct {
-		struct zwp_primary_selection_device_manager_v1 *primary_selection_device_manager_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} zwp_primary_selection_device_manager_v1;
+		struct zwp_primary_selection_device_manager_v1 *primary_selection_device_manager_v1; /**< Bound zwp_primary_selection_device_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} zwp_primary_selection_device_manager_v1; /**< Bound zwp_primary_selection_device_manager_v1 global and registry metadata. */
 
 	struct {
-		struct zwp_keyboard_shortcuts_inhibit_manager_v1 *keyboard_shortcuts_inhibit_manager_v1;
-		uint32_t bind_version;
-		uint32_t name;
-	} zwp_keyboard_shortcuts_inhibit_manager_v1;
+		struct zwp_keyboard_shortcuts_inhibit_manager_v1 *keyboard_shortcuts_inhibit_manager_v1; /**< Bound zwp_keyboard_shortcuts_inhibit_manager_v1 protocol object. */
+		uint32_t bind_version; /**< Version used to bind the Wayland global. */
+		uint32_t name; /**< Registry name of the Wayland global. */
+	} zwp_keyboard_shortcuts_inhibit_manager_v1; /**< Bound zwp_keyboard_shortcuts_inhibit_manager_v1 global and registry metadata. */
 
 	struct {
 		/** Emitted when a global is added. Payload: wlf_wl_interface. */
@@ -195,6 +195,10 @@ struct wlf_wl_backend {
 	} events;
 };
 
+/**
+ * @brief Creates a Wayland client backend.
+ * @return New Wayland backend, or NULL if connection or initialization fails.
+ */
 struct wlf_wl_backend *wayland_backend_create(void);
 
 /**
@@ -207,7 +211,8 @@ bool wlf_backend_is_wayland(const struct wlf_backend *backend);
 /**
  * @brief Cast a generic backend to a Wayland backend
  * @param backend Pointer to the generic backend
- * @return Pointer to the Wayland backend, or NULL if the backend is not a Wayland backend
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_wl_backend *wlf_wl_backend_from_backend(struct wlf_backend *backend);
 

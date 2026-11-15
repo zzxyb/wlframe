@@ -55,7 +55,7 @@ enum wlf_content_type {
  */
 struct wlf_wp_content_type_manager_v1 {
 	struct wp_content_type_manager_v1 *base; /**< Underlying protocol object */
-	uint32_t version;
+	uint32_t version; /**< Bound Wayland protocol version. */
 
 	struct {
 		struct wlf_signal destroy; /**< Emitted just before object is freed */
@@ -72,8 +72,8 @@ struct wlf_wp_content_type_manager_v1 {
  */
 struct wlf_wp_content_type_v1 {
 	struct wp_content_type_v1 *base; /**< Underlying protocol object */
-	enum wlf_content_type type;
-	uint32_t version;
+	enum wlf_content_type type; /**< Content hint sent to the compositor. */
+	uint32_t version; /**< Bound Wayland protocol version. */
 
 	struct {
 		struct wlf_signal destroy; /**< Emitted just before object is freed */

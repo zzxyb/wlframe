@@ -17,8 +17,11 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Rectangle geometry and inherited shape state.
+ */
 struct wlf_rect_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	float x;      /**< Left coordinate. */
 	float y;      /**< Top coordinate. */
 	float width;  /**< Rectangle width. */

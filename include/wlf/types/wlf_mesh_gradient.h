@@ -1,6 +1,8 @@
 /**
  * @file        wlf_mesh_gradient.h
  * @brief       Mesh gradient implementation (SVG2-style patches) for wlframe.
+ * @details     Defines mesh patches and the gradient interface used to sample
+ *              colors over a regular grid of patches.
  * @author      YaoBing Xiao
  * @date        2026-03-21
  * @version     v1.0

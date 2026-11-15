@@ -72,7 +72,8 @@ bool wlf_renderer_is_mtl(struct wlf_renderer *wlf_renderer);
  * type if the renderer is Metal-based.
  *
  * @param wlf_renderer Pointer to a generic renderer.
- * @return Pointer to the Metal renderer, or NULL if not Metal-based.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_mtl_renderer *wlf_mtl_renderer_from_render(struct wlf_renderer *wlf_renderer);
 

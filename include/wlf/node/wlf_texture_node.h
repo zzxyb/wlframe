@@ -25,11 +25,11 @@
  * texture is replaced.
  */
 struct wlf_texture_node {
-	struct wlf_scene_node base;
-	struct wlf_texture *texture;
-	enum wlf_scale_filter_mode filter_mode;
-	enum wlf_render_blend_mode blend_mode;
-	struct wlf_listener renderer_destroy;
+	struct wlf_scene_node base; /**< Generic wlf_scene_node interface. */
+	struct wlf_texture *texture; /**< Texture rendered by this node. */
+	enum wlf_scale_filter_mode filter_mode; /**< Texture sampling filter. */
+	enum wlf_render_blend_mode blend_mode; /**< Blending mode used when rendering the node. */
+	struct wlf_listener renderer_destroy; /**< Listener for renderer destroy events. */
 };
 
 /**

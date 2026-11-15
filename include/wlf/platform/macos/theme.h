@@ -65,7 +65,8 @@ bool wlf_theme_is_macos(const struct wlf_theme *theme);
  * @brief Casts a generic theme to a macOS theme.
  *
  * @param theme Pointer to the generic theme.
- * @return Pointer to the macOS theme, or NULL if the theme is not macOS-backed.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_macos_theme *wlf_macos_theme_from_theme(struct wlf_theme *theme);
 

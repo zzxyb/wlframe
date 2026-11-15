@@ -28,7 +28,7 @@
  * Coverage is multiplied into the source color by the pass implementation.
  */
 struct wlf_vector_vertex {
-	float x, y; /**< Vertex position in logical coordinates. */
+	float x, /**< X coordinate. */ y; /**< Vertex position in logical coordinates. */
 	float coverage; /**< Coverage multiplier in the range 0..1. */
 };
 

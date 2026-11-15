@@ -76,8 +76,8 @@ struct wlf_scene {
 	struct wlf_poly_pass *poly_pass; /**< Polygon pass. */
 	struct wlf_path_pass *path_pass; /**< Path pass. */
 
-	struct wlf_listener window_expose;
-	struct wlf_listener window_resize;
+	struct wlf_listener window_expose; /**< Listener for window expose events. */
+	struct wlf_listener window_resize; /**< Listener for window resize events. */
 	struct {
 		/** Payload: struct timespec pointer, valid during signal emission. */
 		struct wlf_signal frame_done;

@@ -44,6 +44,7 @@ struct wlf_xcb_window {
  */
 struct wlf_xcb_window *wlf_xcb_window_create_from_backend(
 	struct wlf_backend *backend, uint32_t width, uint32_t height);
+
 /**
  * @brief Checks whether a window uses the XCB implementation.
  *
@@ -51,6 +52,7 @@ struct wlf_xcb_window *wlf_xcb_window_create_from_backend(
  * @return true for an XCB window, false otherwise.
  */
 bool wlf_window_is_xcb(const struct wlf_window *window);
+
 /**
  * @brief Gets the XCB window containing a generic window.
  *
@@ -59,6 +61,7 @@ bool wlf_window_is_xcb(const struct wlf_window *window);
  * @note Asserts that window is an XCB window.
  */
 struct wlf_xcb_window *wlf_xcb_window_from_window(struct wlf_window *window);
+
 /**
  * @brief Dispatches an XCB event to its managed window.
  *

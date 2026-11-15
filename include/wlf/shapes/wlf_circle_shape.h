@@ -17,8 +17,11 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Circle geometry and inherited shape state.
+ */
 struct wlf_circle_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	float cx; /**< Circle center x. */
 	float cy; /**< Circle center y. */
 	float r;  /**< Circle radius. */

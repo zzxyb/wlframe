@@ -54,7 +54,7 @@ enum wlf_decoration_mode {
  */
 struct wlf_zxdg_decoration_manager_v1 {
 	struct zxdg_decoration_manager_v1 *base; /**< Underlying protocol object */
-	uint32_t version;
+	uint32_t version; /**< Bound Wayland protocol version. */
 
 	struct {
 		struct wlf_signal destroy; /**< Emitted just before object is freed */
@@ -73,7 +73,7 @@ struct wlf_zxdg_decoration_manager_v1 {
  */
 struct wlf_zxdg_toplevel_decoration_v1 {
 	struct zxdg_toplevel_decoration_v1 *base; /**< Underlying protocol object */
-	uint32_t version;
+	uint32_t version; /**< Bound Wayland protocol version. */
 	/**
 	 * Compositor-chosen decoration mode.
 	 * Set to 0 (invalid) until the first configure event arrives.

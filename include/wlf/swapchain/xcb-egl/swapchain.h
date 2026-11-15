@@ -4,11 +4,11 @@
  * @details     Declares the XCB EGL-backed swapchain used by the GLES renderer
  *              to present frames for an XCB window.
  * @author      YaoBing Xiao
- * @date        2026-08-05
+ * @date        2026-11-15
  * @version     v1.0
  * @par Copyright(c):
  * @par History:
- *      version: v1.0, YaoBing Xiao, 2026-08-05, initial version\n
+ *      version: v1.0, YaoBing Xiao, 2026-11-15, initial version\n
  */
 
 #ifndef XCB_EGL_SWAPCHAIN_H

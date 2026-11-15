@@ -48,27 +48,27 @@ struct wlf_xdg_toplevel_window {
 	struct wlf_xdg_wm_base *wm_base;         /**< xdg_wm_base wrapper */
 	struct wlf_xdg_surface *xdg_surface;     /**< xdg_surface role wrapper */
 	struct wlf_xdg_toplevel *xdg_toplevel;   /**< xdg_toplevel role wrapper */
-	struct wlf_zxdg_decoration_manager_v1 *decoration_manager;
-	struct wlf_zxdg_toplevel_decoration_v1 *decoration;
-	struct wlf_wp_fractional_scale_manager_v1 *fractional_scale_manager;
-	struct wlf_wp_fractional_scale_v1 *fractional_scale;
-	struct wlf_wp_viewporter *viewporter;
-	struct wlf_wp_viewport *viewport;
+	struct wlf_zxdg_decoration_manager_v1 *decoration_manager; /**< Decoration manager used for server-side decoration negotiation. */
+	struct wlf_zxdg_toplevel_decoration_v1 *decoration; /**< Per-toplevel decoration negotiation object. */
+	struct wlf_wp_fractional_scale_manager_v1 *fractional_scale_manager; /**< Manager used to create fractional-scale objects. */
+	struct wlf_wp_fractional_scale_v1 *fractional_scale; /**< Per-surface fractional-scale object. */
+	struct wlf_wp_viewporter *viewporter; /**< Manager used to create viewports. */
+	struct wlf_wp_viewport *viewport; /**< Per-surface viewport. */
 	/** Disables SSD negotiation and keeps the scene-owned CSD enabled. */
 	bool force_client_side_decorations;
 
 	struct wlf_listener xdg_surface_configure;   /**< xdg_surface configure listener */
 	struct wlf_listener xdg_toplevel_configure;  /**< xdg_toplevel configure listener */
 	struct wlf_listener xdg_toplevel_close;      /**< xdg_toplevel close listener */
-	struct wlf_listener decoration_configure;
-	struct wlf_listener preferred_buffer_scale;
-	struct wlf_listener preferred_fractional_scale;
+	struct wlf_listener decoration_configure; /**< Listener for decoration configure events. */
+	struct wlf_listener preferred_buffer_scale; /**< Listener for preferred buffer scale events. */
+	struct wlf_listener preferred_fractional_scale; /**< Listener for preferred fractional scale events. */
 	bool has_xdg_surface_configure_listener;     /**< Whether xdg_surface listener is registered */
 	bool has_xdg_toplevel_configure_listener;    /**< Whether configure listener is registered */
 	bool has_xdg_toplevel_close_listener;        /**< Whether close listener is registered */
-	bool has_decoration_configure_listener;
-	bool has_preferred_buffer_scale_listener;
-	bool has_preferred_fractional_scale_listener;
+	bool has_decoration_configure_listener; /**< Whether the decoration configure listener is attached. */
+	bool has_preferred_buffer_scale_listener; /**< Whether the preferred buffer scale listener is attached. */
+	bool has_preferred_fractional_scale_listener; /**< Whether the preferred fractional scale listener is attached. */
 };
 
 /**
@@ -101,26 +101,36 @@ struct wlf_xdg_toplevel_window *wlf_xdg_toplevel_window_from_window(
 	struct wlf_window *window);
 
 /**
- * Forces or releases client-side decoration for one XDG toplevel.
+ * @brief Forces or releases client-side decoration for one XDG toplevel.
  *
  * Enabling this destroys the per-toplevel SSD negotiation object, making CSD
  * effective immediately. Disabling it requests SSD again when the backend
  * exposes xdg-decoration; CSD remains visible until the compositor confirms
  * server-side mode.
  *
+ * @param window Window to inspect or associate with the object.
+ * @param force Whether to force client-side decoration.
  * @return true when the requested policy was applied. false means SSD
  * negotiation could not be recreated and the window safely remains on CSD.
  */
 bool wlf_xdg_toplevel_window_set_force_client_side_decorations(
 	struct wlf_xdg_toplevel_window *window, bool force);
 
-/** @return true when this window currently renders client-side decoration. */
+/**
+ * @brief Checks whether a toplevel currently uses client-side decoration.
+ * @return true when this window currently renders client-side decoration.
+ *
+ * @param window Window to inspect or associate with the object.
+ */
 bool wlf_xdg_toplevel_window_uses_client_side_decorations(
 	const struct wlf_xdg_toplevel_window *window);
 
 /**
- * Returns the active CSD titlebar, or NULL before scene creation and while SSD
+ * @brief Returns the active CSD titlebar, or NULL before scene creation and while SSD
  * or fullscreen mode is active. The returned object is owned by the scene.
+ *
+ * @param window Window to inspect or associate with the object.
+ * @return Borrowed active titlebar, or NULL before scene creation or while SSD/fullscreen is active.
  */
 struct wlf_titlebar *wlf_xdg_toplevel_window_get_titlebar(
 	struct wlf_xdg_toplevel_window *window);

@@ -59,7 +59,8 @@ bool wlf_render_target_info_is_pixman(const struct wlf_render_target_info *rende
  * @brief Casts base render target info to pixman render target info.
  *
  * @param render_target Base render target info object.
- * @return Pixman render target info on success, or NULL if type does not match.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_pixman_render_target_info *wlf_pixman_render_target_info_from_info(
 	struct wlf_render_target_info *render_target);
