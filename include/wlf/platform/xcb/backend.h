@@ -1,7 +1,7 @@
 /**
  * @file        backend.h
  * @brief       XCB backend for native X11 applications.
- * @details     This file declares the X11 backend connection, window tracking,
+ * @details     This file declares the XCB backend connection, window tracking,
  *              window-manager atoms, and backend creation helpers.
  * @author      YaoBing Xiao
  * @date        2026-11-10
@@ -11,8 +11,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-11-10, initial version\n
  */
 
-#ifndef PLATFORM_X11_BACKEND_H
-#define PLATFORM_X11_BACKEND_H
+#ifndef PLATFORM_XCB_BACKEND_H
+#define PLATFORM_XCB_BACKEND_H
 
 #include "wlf/platform/wlf_backend.h"
 #include "wlf/types/wlf_pointer.h"
@@ -20,12 +20,12 @@
 #include <xcb/xcb.h>
 
 /**
- * @brief X11 backend and its owned XCB connection.
+ * @brief XCB backend and its owned XCB connection.
  *
  * @note Windows must be destroyed before the backend. The screen is borrowed
  * from the connection and remains valid until backend destruction.
  */
-struct wlf_x11_backend {
+struct wlf_xcb_backend {
 	struct wlf_backend base; /**< Generic backend interface. */
 	struct wlf_pointer pointer; /**< Embedded core pointer owned by the backend. */
 	struct wlf_keyboard keyboard; /**< Embedded core keyboard owned by the backend. */
@@ -44,26 +44,26 @@ struct wlf_x11_backend {
 };
 
 /**
- * @brief Connects to DISPLAY and initializes the X11 backend.
+ * @brief Connects to DISPLAY and initializes the XCB backend.
  *
  * @return New backend, or NULL on connection or initialization failure.
  * @note Destroy the returned base with wlf_backend_destroy().
  */
-struct wlf_x11_backend *wlf_x11_backend_create(void);
+struct wlf_xcb_backend *wlf_xcb_backend_create(void);
 /**
- * @brief Checks whether a backend uses the X11 implementation.
+ * @brief Checks whether a backend uses the XCB implementation.
  *
  * @param backend Backend to inspect; may be NULL.
- * @return true for an X11 backend, false otherwise.
+ * @return true for an XCB backend, false otherwise.
  */
-bool wlf_backend_is_x11(const struct wlf_backend *backend);
+bool wlf_backend_is_xcb(const struct wlf_backend *backend);
 /**
- * @brief Gets the X11 backend containing a generic backend.
+ * @brief Gets the XCB backend containing a generic backend.
  *
- * @param backend Non-NULL backend known to use the X11 implementation.
- * @return Enclosing X11 backend, borrowed.
- * @note Asserts that backend is an X11 backend.
+ * @param backend Non-NULL backend known to use the XCB implementation.
+ * @return Enclosing XCB backend, borrowed.
+ * @note Asserts that backend is an XCB backend.
  */
-struct wlf_x11_backend *wlf_x11_backend_from_backend(struct wlf_backend *backend);
+struct wlf_xcb_backend *wlf_xcb_backend_from_backend(struct wlf_backend *backend);
 
-#endif // PLATFORM_X11_BACKEND_H
+#endif // PLATFORM_XCB_BACKEND_H

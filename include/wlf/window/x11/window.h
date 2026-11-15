@@ -15,7 +15,7 @@
 #define WINDOW_X11_WINDOW_H
 
 #include "wlf/window/wlf_window.h"
-#include "wlf/platform/x11/backend.h"
+#include "wlf/platform/xcb/backend.h"
 
 /**
  * @brief Toplevel window backed by an XCB window.
@@ -25,7 +25,7 @@
  */
 struct wlf_x11_window {
 	struct wlf_window base; /**< Generic window interface and state. */
-	struct wlf_x11_backend *backend; /**< Borrowed owner of the XCB connection. */
+	struct wlf_xcb_backend *backend; /**< Borrowed owner of the XCB connection. */
 	xcb_window_t window; /**< Owned XCB window ID, or XCB_WINDOW_NONE. */
 	xcb_colormap_t colormap; /**< Owned colormap, or XCB_COLORMAP_NONE. */
 	uint8_t depth; /**< Native window depth used for image uploads. */
@@ -36,7 +36,7 @@ struct wlf_x11_window {
 /**
  * @brief Creates an initially hidden X11 toplevel window.
  *
- * @param backend X11 backend that owns the connection.
+ * @param backend XCB backend that owns the connection.
  * @param width Initial width in pixels, from 1 to INT16_MAX.
  * @param height Initial height in pixels, from 1 to INT16_MAX.
  * @return New window, or NULL for invalid arguments or creation failure.
@@ -62,11 +62,11 @@ struct wlf_x11_window *wlf_x11_window_from_window(struct wlf_window *window);
 /**
  * @brief Dispatches an XCB event to its managed window.
  *
- * @param backend X11 backend whose connection produced the event.
+ * @param backend XCB backend whose connection produced the event.
  * @param event Borrowed event; the caller retains ownership.
  * @note Internal event-loop entry point. Unknown windows are ignored.
  */
-WLF_PRIVATE void wlf_x11_window_handle_event(struct wlf_x11_backend *backend,
+WLF_PRIVATE void wlf_x11_window_handle_event(struct wlf_xcb_backend *backend,
 	xcb_generic_event_t *event);
 
 #endif // WINDOW_X11_WINDOW_H

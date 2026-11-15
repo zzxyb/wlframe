@@ -7,7 +7,7 @@
 #include "wlf/utils/wlf_signal.h"
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/platform/wayland/backend.h"
-#include "wlf/platform/x11/backend.h"
+#include "wlf/platform/xcb/backend.h"
 #elif WLF_HAS_MACOS_PLATFORM
 #include "wlf/platform/macos/backend.h"
 #elif WLF_HAS_WINDOWS_PLATFORM
@@ -43,7 +43,7 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 	const char *wayland_display = wlf_get_env("WAYLAND_DISPLAY");
 	const char *display = wlf_get_env("DISPLAY");
 	if (requested != NULL && strcmp(requested, "wayland") != 0 &&
-			strcmp(requested, "x11") != 0) {
+			strcmp(requested, "xcb") != 0) {
 		wlf_log(WLF_ERROR, "Unknown WLF_BACKEND: %s", requested);
 		return NULL;
 	}
@@ -52,10 +52,10 @@ struct wlf_backend *wlf_backend_autocreate(void) {
 		struct wlf_wl_backend *wayland = wayland_backend_create();
 		backend = wayland != NULL ? &wayland->base : NULL;
 	}
-	if ((requested != NULL && strcmp(requested, "x11") == 0) ||
+	if ((requested != NULL && strcmp(requested, "xcb") == 0) ||
 			(requested == NULL && backend == NULL && display != NULL && *display != '\0')) {
-		struct wlf_x11_backend *x11 = wlf_x11_backend_create();
-		backend = x11 != NULL ? &x11->base : NULL;
+		struct wlf_xcb_backend *xcb = wlf_xcb_backend_create();
+		backend = xcb != NULL ? &xcb->base : NULL;
 	}
 #elif WLF_HAS_MACOS_PLATFORM
 	struct wlf_backend_macos *macos = macos_backend_create();
