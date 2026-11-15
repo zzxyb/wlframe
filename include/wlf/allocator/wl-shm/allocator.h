@@ -1,6 +1,6 @@
 /**
  * @file        allocator.h
- * @brief       Shared memory buffer allocator.
+ * @brief       Wayland shared memory buffer allocator.
  * @details     This file provides a buffer allocator implementation using Wayland shared memory
  *              (wl_shm). The allocator creates CPU-accessible wl_buffer objects suitable for
  *              compositing via a Wayland compositor.
@@ -12,8 +12,8 @@
  *      version: v1.0, YaoBing Xiao, 2026-01-22, initial version\n
  */
 
-#ifndef SHM_ALLOCATOR_H
-#define SHM_ALLOCATOR_H
+#ifndef WL_SHM_ALLOCATOR_H
+#define WL_SHM_ALLOCATOR_H
 
 #include "wlf/allocator/wlf_allocator.h"
 
@@ -28,7 +28,7 @@ struct wl_shm;
  * memory-mapped POSIX shared memory. Buffers are CPU-accessible and
  * usable directly by a Wayland compositor.
  */
-struct wlf_shm_allocator {
+struct wlf_wl_shm_allocator {
 	struct wlf_allocator base;  /**< Base allocator structure */
 	struct wl_shm *wl_shm;      /**< Wayland shared memory global */
 };
@@ -42,23 +42,24 @@ struct wlf_shm_allocator {
  * @param wl_shm Wayland shared memory global to use for buffer creation.
  * @return Pointer to the created allocator, or NULL on failure.
  */
-struct wlf_shm_allocator *wlf_shm_allocator_create(struct wl_shm *wl_shm);
+struct wlf_wl_shm_allocator *wlf_wl_shm_allocator_create(struct wl_shm *wl_shm);
 
 /**
- * @brief Checks if an allocator is a SHM allocator.
+ * @brief Checks if an allocator is a Wayland SHM allocator.
  *
  * @param allocator Allocator to check.
- * @return true if the allocator is a SHM allocator, false otherwise.
+ * @return true if the allocator is a Wayland SHM allocator, false otherwise.
  */
-bool wlf_allocator_is_shm(const struct wlf_allocator *allocator);
+bool wlf_allocator_is_wl_shm(const struct wlf_allocator *allocator);
 
 /**
- * @brief Gets the SHM allocator from a generic allocator.
+ * @brief Gets the Wayland SHM allocator from a generic allocator.
  *
  * @param allocator Generic allocator pointer.
- * @return SHM allocator pointer, or NULL if the allocator is not a SHM allocator.
+ * @return Wayland SHM allocator pointer.
+ * @note Asserts that the allocator uses the Wayland SHM implementation.
  */
-struct wlf_shm_allocator *wlf_shm_allocator_from_allocator(
+struct wlf_wl_shm_allocator *wlf_wl_shm_allocator_from_allocator(
 	struct wlf_allocator *allocator);
 
-#endif // SHM_ALLOCATOR_H
+#endif // WL_SHM_ALLOCATOR_H

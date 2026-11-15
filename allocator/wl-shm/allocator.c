@@ -1,4 +1,4 @@
-#include "wlf/allocator/shm/allocator.h"
+#include "wlf/allocator/wl-shm/allocator.h"
 #include "wlf/buffer/wl-shm/buffer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/types/wlf_pixel_format.h"
@@ -9,8 +9,8 @@
 #include <string.h>
 
 static void allocator_destroy(struct wlf_allocator *allocator) {
-	struct wlf_shm_allocator *shm_allocator =
-		wlf_shm_allocator_from_allocator(allocator);
+	struct wlf_wl_shm_allocator *shm_allocator =
+		wlf_wl_shm_allocator_from_allocator(allocator);
 	free(shm_allocator);
 }
 
@@ -24,8 +24,8 @@ static struct wlf_buffer *allocator_create_buffer(
 		return NULL;
 	}
 
-	struct wlf_shm_allocator *shm_allocator =
-		wlf_shm_allocator_from_allocator(allocator);
+	struct wlf_wl_shm_allocator *shm_allocator =
+		wlf_wl_shm_allocator_from_allocator(allocator);
 	struct wlf_wl_shm_buffer *buffer =
 		wlf_wl_shm_buffer_create(shm_allocator, width, height, format->format);
 
@@ -37,10 +37,10 @@ static const struct wlf_allocator_impl allocator_impl = {
 	.create_buffer = allocator_create_buffer,
 };
 
-struct wlf_shm_allocator *wlf_shm_allocator_create(struct wl_shm *wl_shm) {
-	struct wlf_shm_allocator *allocator = calloc(1, sizeof(*allocator));
+struct wlf_wl_shm_allocator *wlf_wl_shm_allocator_create(struct wl_shm *wl_shm) {
+	struct wlf_wl_shm_allocator *allocator = calloc(1, sizeof(*allocator));
 	if (allocator == NULL) {
-		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_shm_allocator");
+		wlf_log_errno(WLF_ERROR, "failed to allocate wlf_wl_shm_allocator");
 		return NULL;
 	}
 
@@ -50,15 +50,15 @@ struct wlf_shm_allocator *wlf_shm_allocator_create(struct wl_shm *wl_shm) {
 	return allocator;
 }
 
-bool wlf_allocator_is_shm(const struct wlf_allocator *allocator) {
+bool wlf_allocator_is_wl_shm(const struct wlf_allocator *allocator) {
 	return allocator->impl == &allocator_impl;
 }
 
-struct wlf_shm_allocator *wlf_shm_allocator_from_allocator(
+struct wlf_wl_shm_allocator *wlf_wl_shm_allocator_from_allocator(
 		struct wlf_allocator *allocator) {
 	assert(allocator->impl == &allocator_impl);
 
-	struct wlf_shm_allocator *shm_allocator =
+	struct wlf_wl_shm_allocator *shm_allocator =
 		wlf_container_of(allocator, shm_allocator, base);
 
 	return shm_allocator;
