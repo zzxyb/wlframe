@@ -1,5 +1,5 @@
 #include "wlf/buffer/wl-shm/buffer.h"
-#include "wlf/allocator/shm/allocator.h"
+#include "wlf/allocator/wl-shm/allocator.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 #include "wlf/types/wlf_pixel_format.h"
@@ -75,7 +75,7 @@ static const struct wlf_buffer_impl buffer_impl = {
 	.end_data_ptr_access = buffer_end_data_ptr_access,
 };
 
-struct wlf_wl_shm_buffer *wlf_wl_shm_buffer_create(struct wlf_shm_allocator *alloc,
+struct wlf_wl_shm_buffer *wlf_wl_shm_buffer_create(struct wlf_wl_shm_allocator *alloc,
 		int width, int height, uint32_t format) {
 	int stride = get_min_stride(format, width);
 	if (stride < 0) {

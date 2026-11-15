@@ -1,6 +1,7 @@
 #include "wlf/swapchain/xcb-shm/swapchain.h"
 #include "wlf/window/xcb/window.h"
 #include "wlf/buffer/xcb-shm/buffer.h"
+#include "wlf/allocator/xcb-shm/allocator.h"
 #include "wlf/types/wlf_pixel_format.h"
 #include "wlf/utils/wlf_utils.h"
 
@@ -19,14 +20,13 @@ static void swapchain_destroy(struct wlf_swapchain *base) {
 }
 
 static bool swapchain_resize(struct wlf_swapchain *base, int width, int height) {
-	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base->window);
-	struct wlf_xcb_shm_buffer *buffer = wlf_xcb_shm_buffer_create(
-		window->backend->xcb, width, height, base->format.format);
+	struct wlf_buffer *buffer = wlf_allocator_create_buffer(base->allocator,
+		width, height, &base->format);
 	if (buffer == NULL) {
 		return false;
 	}
 	wlf_buffer_drop(base->back);
-	base->back = &buffer->base;
+	base->back = buffer;
 	base->width = width;
 	base->height = height;
 	return true;
@@ -106,7 +106,13 @@ struct wlf_swapchain *wlf_xcb_shm_swapchain_create(struct wlf_window *base,
 	if (swapchain == NULL) {
 		return NULL;
 	}
-	wlf_swapchain_init(&swapchain->base, NULL, &swapchain_impl, width, height);
+	struct wlf_xcb_shm_allocator *allocator =
+		wlf_xcb_shm_allocator_create(window->backend->xcb);
+	if (allocator == NULL) {
+		free(swapchain);
+		return NULL;
+	}
+	wlf_swapchain_init(&swapchain->base, &allocator->base, &swapchain_impl, width, height);
 	swapchain->base.window = base;
 	if (!wlf_render_format_copy(&swapchain->base.format, format) ||
 			!swapchain_resize(&swapchain->base, width, height)) {

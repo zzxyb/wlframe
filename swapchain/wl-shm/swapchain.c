@@ -2,7 +2,7 @@
 #include "wlf/allocator/wlf_allocator.h"
 #include "wlf/buffer/wl-shm/buffer.h"
 #include "wlf/utils/wlf_log.h"
-#include "wlf/allocator/shm/allocator.h"
+#include "wlf/allocator/wl-shm/allocator.h"
 #include "wlf/window/wlf_window.h"
 #include "wlf/platform/wayland/backend.h"
 
@@ -107,7 +107,7 @@ struct wlf_wl_shm_swapchain *wlf_wl_shm_swapchain_create(struct wlf_window *wind
 	}
 
 	struct wlf_wl_backend *wl_backend = wlf_wl_backend_from_backend(window->state.backend);
-	struct wlf_shm_allocator *shm_allocator = wlf_shm_allocator_create(wl_backend->wl_shm.shm);
+	struct wlf_wl_shm_allocator *shm_allocator = wlf_wl_shm_allocator_create(wl_backend->wl_shm.shm);
 	if (shm_allocator == NULL) {
 		free(swapchain);
 		return NULL;

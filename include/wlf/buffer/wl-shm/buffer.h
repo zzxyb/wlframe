@@ -23,7 +23,7 @@
 #include <sys/types.h>
 
 struct wl_buffer;
-struct wlf_shm_allocator;
+struct wlf_wl_shm_allocator;
 
 /**
  * @brief Wayland shared memory buffer attributes.
@@ -64,7 +64,7 @@ struct wlf_wl_shm_buffer {
  * @param format Pixel format (DRM FourCC code).
  * @return Pointer to struct wlf_wl_shm_buffer on success, or NULL on failure.
  */
-struct wlf_wl_shm_buffer *wlf_wl_shm_buffer_create(struct wlf_shm_allocator *alloc,
+struct wlf_wl_shm_buffer *wlf_wl_shm_buffer_create(struct wlf_wl_shm_allocator *alloc,
 	int width, int height, uint32_t format);
 
 /**
