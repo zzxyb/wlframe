@@ -20,6 +20,22 @@
 #include <xcb/xcb.h>
 
 /**
+ * @brief Indices of window-manager atoms interned by the XCB backend.
+ */
+enum wlf_xcb_atom_name {
+	WLF_XCB_ATOM_WM_PROTOCOLS, /**< Supported window-manager protocols. */
+	WLF_XCB_ATOM_WM_DELETE_WINDOW, /**< Window close request protocol. */
+	WLF_XCB_ATOM_UTF8_STRING, /**< UTF-8 string property type. */
+	WLF_XCB_ATOM_NET_WM_NAME, /**< EWMH UTF-8 window title. */
+	WLF_XCB_ATOM_NET_WM_STATE, /**< EWMH window state property. */
+	WLF_XCB_ATOM_NET_WM_STATE_FULLSCREEN, /**< EWMH fullscreen state. */
+	WLF_XCB_ATOM_NET_WM_STATE_MAXIMIZED_VERT, /**< EWMH vertical maximization state. */
+	WLF_XCB_ATOM_NET_WM_STATE_MAXIMIZED_HORZ, /**< EWMH horizontal maximization state. */
+	WLF_XCB_ATOM_MOTIF_WM_HINTS, /**< Motif window decoration hints. */
+	WLF_XCB_ATOM_LAST, /**< Number of atoms; keep this entry last. */
+};
+
+/**
  * @brief XCB backend and its owned XCB connection.
  *
  * @note Windows must be destroyed before the backend. The screen is borrowed
@@ -33,14 +49,7 @@ struct wlf_xcb_backend {
 	xcb_screen_t *screen; /**< Borrowed screen selected during connection. */
 	int screen_number; /**< Screen index used by the XCB EGL platform. */
 	struct wlf_linked_list windows; /**< Managed wlf_xcb_window list linked by link. */
-	/** Atoms used for window titles, state, decorations, and close requests. */
-	struct {
-		xcb_atom_t wm_protocols, /**< X11 atom for WM_PROTOCOLS. */ wm_delete_window; /**< ICCCM protocol and close-request atoms. */
-		xcb_atom_t utf8_string, /**< X11 atom for UTF8_STRING. */ net_wm_name; /**< UTF-8 title property type and name. */
-		xcb_atom_t net_wm_state, /**< X11 atom for NET_WM_STATE. */ net_wm_state_fullscreen; /**< EWMH state property and fullscreen atom. */
-		xcb_atom_t net_wm_state_maximized_vert, /**< X11 atom for NET_WM_STATE_MAXIMIZED_VERT. */ net_wm_state_maximized_horz; /**< EWMH vertical and horizontal maximize atoms. */
-		xcb_atom_t motif_wm_hints; /**< Motif decoration hints property. */
-	} atoms; /**< Window-manager atoms interned on this connection. */
+	xcb_atom_t atoms[WLF_XCB_ATOM_LAST]; /**< Atoms indexed by enum wlf_xcb_atom_name. */
 };
 
 /**
