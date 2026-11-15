@@ -4,7 +4,6 @@
 #include "wlf/renderer/wlf_renderer.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_linked_list.h"
-#include "wlf/buffer/egl/buffer.h"
 #include "wlf/texture/gles/texture.h"
 #include "wlf/pass/gles/render_target_info.h"
 #include "wlf/config.h"
@@ -36,21 +35,10 @@ static struct wlf_render_target_info *renderer_begin_buffer_pass(
 		struct wlf_renderer *renderer, struct wlf_buffer *buffer,
 		const struct wlf_buffer_pass_options *options) {
 	WLF_UNUSED(options);
-	if (!wlf_buffer_is_egl(buffer)) {
-		return NULL;
-	}
-
-	struct wlf_egl_buffer *egl_buffer =
-		wlf_egl_buffer_from_buffer(buffer);
 	struct wlf_gles_renderer *gles_renderer =
 		wlf_gles_renderer_from_renderer(renderer);
-	if (egl_buffer == NULL ||
-			wlf_egl_buffer_get_egl(egl_buffer) != gles_renderer->egl) {
-		return NULL;
-	}
-
 	struct wlf_gles_render_target_info *target =
-		wlf_gles_begin_egl_render_pass(egl_buffer, gles_renderer);
+		wlf_gles_begin_egl_render_pass(buffer, gles_renderer);
 	return target != NULL ? &target->base : NULL;
 }
 

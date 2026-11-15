@@ -155,7 +155,8 @@ if is_linux
 			'../../include/wlf/allocator/egl/allocator.h',
 			'../../include/wlf/allocator/shm/allocator.h',
 
-			'../../include/wlf/buffer/egl/buffer.h',
+			'../../include/wlf/buffer/wl-egl/buffer.h',
+			'../../include/wlf/buffer/xcb-egl/buffer.h',
 			'../../include/wlf/buffer/pixman/buffer.h',
 			'../../include/wlf/buffer/wl-shm/buffer.h',
 

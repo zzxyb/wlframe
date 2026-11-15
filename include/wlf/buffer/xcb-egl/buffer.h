@@ -1,0 +1,104 @@
+/**
+ * @file        buffer.h
+ * @brief       XCB EGL-backed wlframe buffer.
+ * @details     Declares the buffer wrapper used for EGL window surfaces.
+ *              The buffer owns its EGL surface, while the EGL display and
+ *              context remain owned by the GLES renderer.
+ * @author      YaoBing Xiao
+ * @date        2026-08-17
+ * @version     v1.0
+ * @par Copyright(c):
+ * @par History:
+ *      version: v1.0, YaoBing Xiao, 2026-08-17, initial version\n
+ */
+
+#ifndef BUFFER_XCB_EGL_BUFFER_H
+#define BUFFER_XCB_EGL_BUFFER_H
+
+#include "wlf/buffer/wlf_buffer.h"
+#include "wlf/types/wlf_format_set.h"
+
+#include <EGL/egl.h>
+
+#include <stdbool.h>
+#include <stdint.h>
+
+struct wlf_egl;
+
+/**
+ * @brief Buffer backed by a XCB EGL window surface.
+ *
+ * The EGL display is borrowed from the GLES renderer. The buffer owns its
+ * EGL surface. The native XCB window is borrowed.
+ */
+struct wlf_xcb_egl_buffer {
+	struct wlf_buffer base; /**< Generic buffer interface. */
+
+	struct wlf_egl *egl; /**< EGL context owner, borrowed. */
+	EGLConfig config; /**< EGL configuration selected for the surface. */
+	EGLSurface surface; /**< EGL window surface. */
+	bool swap_interval_configured; /**< Whether the EGL swap interval was set. */
+};
+
+/**
+ * @brief Creates an EGL window-surface buffer for an existing XCB window.
+ *
+ * @param egl Borrowed EGL context initialized for the XCB platform.
+ * @param window Nonzero borrowed XCB window ID.
+ * @param width Initial buffer width in pixels, from 1 to INT_MAX.
+ * @param height Initial buffer height in pixels, from 1 to INT_MAX.
+ * @param format Requested render format matching the native visual.
+ * @return New EGL buffer, or NULL for invalid arguments or surface failure.
+ * @note The buffer owns its EGL surface, but not the native window or EGL
+ * context. Release the buffer with wlf_buffer_drop() before either owner.
+ */
+struct wlf_xcb_egl_buffer *wlf_xcb_egl_buffer_create(struct wlf_egl *egl,
+	uint32_t window, uint32_t width, uint32_t height,
+	const struct wlf_render_format *format);
+
+/**
+ * @brief Checks whether a generic buffer uses the XCB EGL implementation.
+ * @param buffer Buffer to inspect.
+ * @return true when @p buffer is a XCB EGL buffer, false otherwise.
+ */
+bool wlf_buffer_is_xcb_egl(const struct wlf_buffer *buffer);
+
+/**
+ * @brief Casts a generic buffer to an EGL buffer.
+ * @param buffer Buffer known to use the XCB EGL implementation.
+ * @return Enclosing EGL buffer.
+ * @note Asserts that the buffer uses this implementation.
+ */
+struct wlf_xcb_egl_buffer *wlf_xcb_egl_buffer_from_buffer(struct wlf_buffer *buffer);
+
+/**
+ * @brief Updates buffer dimensions after the native XCB window is resized.
+ * @param buffer EGL buffer to resize.
+ * @param width New width in pixels.
+ * @param height New height in pixels.
+ * @return true on success, false for invalid dimensions or a NULL buffer.
+ */
+bool wlf_xcb_egl_buffer_resize(struct wlf_xcb_egl_buffer *buffer, uint32_t width, uint32_t height);
+
+/**
+ * @brief Returns the EGL context wrapper associated with a buffer.
+ * @param buffer EGL buffer to inspect.
+ * @return Borrowed EGL context wrapper, or NULL for a NULL buffer.
+ */
+struct wlf_egl *wlf_xcb_egl_buffer_get_egl(const struct wlf_xcb_egl_buffer *buffer);
+
+/**
+ * @brief Returns the EGL presentation surface owned by a buffer.
+ * @param buffer EGL buffer to inspect.
+ * @return EGL surface, or EGL_NO_SURFACE for a NULL buffer.
+ */
+EGLSurface wlf_xcb_egl_buffer_get_surface(const struct wlf_xcb_egl_buffer *buffer);
+
+/**
+ * @brief Configures the non-blocking EGL swap interval for a buffer.
+ * @param buffer EGL buffer whose surface is current or will be used for swap.
+ * @return true on success, false when EGL rejects the interval.
+ */
+bool wlf_xcb_egl_buffer_configure_swap_interval(struct wlf_xcb_egl_buffer *buffer);
+
+#endif // BUFFER_XCB_EGL_BUFFER_H
