@@ -10,6 +10,18 @@
 #include <string.h>
 #include <time.h>
 
+static const char *const atom_map[WLF_XCB_ATOM_LAST] = {
+	[WLF_XCB_ATOM_WM_PROTOCOLS] = "WM_PROTOCOLS",
+	[WLF_XCB_ATOM_WM_DELETE_WINDOW] = "WM_DELETE_WINDOW",
+	[WLF_XCB_ATOM_UTF8_STRING] = "UTF8_STRING",
+	[WLF_XCB_ATOM_NET_WM_NAME] = "_NET_WM_NAME",
+	[WLF_XCB_ATOM_NET_WM_STATE] = "_NET_WM_STATE",
+	[WLF_XCB_ATOM_NET_WM_STATE_FULLSCREEN] = "_NET_WM_STATE_FULLSCREEN",
+	[WLF_XCB_ATOM_NET_WM_STATE_MAXIMIZED_VERT] = "_NET_WM_STATE_MAXIMIZED_VERT",
+	[WLF_XCB_ATOM_NET_WM_STATE_MAXIMIZED_HORZ] = "_NET_WM_STATE_MAXIMIZED_HORZ",
+	[WLF_XCB_ATOM_MOTIF_WM_HINTS] = "_MOTIF_WM_HINTS",
+};
+
 static void backend_destroy(struct wlf_backend *base) {
 	struct wlf_xcb_backend *backend = wlf_xcb_backend_from_backend(base);
 	assert(wlf_linked_list_empty(&backend->windows));
@@ -168,30 +180,16 @@ struct wlf_xcb_backend *wlf_xcb_backend_create(void) {
 		goto error;
 	}
 	backend->screen = iter.data;
-	struct {
-		const char *name;
-		xcb_atom_t *atom;
-	} atoms[] = {
-		{ "WM_PROTOCOLS", &backend->atoms.wm_protocols },
-		{ "WM_DELETE_WINDOW", &backend->atoms.wm_delete_window },
-		{ "UTF8_STRING", &backend->atoms.utf8_string },
-		{ "_NET_WM_NAME", &backend->atoms.net_wm_name },
-		{ "_NET_WM_STATE", &backend->atoms.net_wm_state },
-		{ "_NET_WM_STATE_FULLSCREEN", &backend->atoms.net_wm_state_fullscreen },
-		{ "_NET_WM_STATE_MAXIMIZED_VERT", &backend->atoms.net_wm_state_maximized_vert },
-		{ "_NET_WM_STATE_MAXIMIZED_HORZ", &backend->atoms.net_wm_state_maximized_horz },
-		{ "_MOTIF_WM_HINTS", &backend->atoms.motif_wm_hints },
-	};
-	xcb_intern_atom_cookie_t cookies[(sizeof(atoms) / sizeof(atoms[0]))];
-	for (size_t i = 0; i < (sizeof(atoms) / sizeof(atoms[0])); i++) {
-		cookies[i] = xcb_intern_atom(backend->xcb, false, strlen(atoms[i].name), atoms[i].name);
+	xcb_intern_atom_cookie_t cookies[WLF_XCB_ATOM_LAST];
+	for (size_t i = 0; i < WLF_XCB_ATOM_LAST; i++) {
+		cookies[i] = xcb_intern_atom(backend->xcb, false, strlen(atom_map[i]), atom_map[i]);
 	}
-	for (size_t i = 0; i < (sizeof(atoms) / sizeof(atoms[0])); i++) {
+	for (size_t i = 0; i < WLF_XCB_ATOM_LAST; i++) {
 		xcb_intern_atom_reply_t *reply = xcb_intern_atom_reply(backend->xcb, cookies[i], NULL);
 		if (reply == NULL) {
 			goto error;
 		}
-		*atoms[i].atom = reply->atom;
+		backend->atoms[i] = reply->atom;
 		free(reply);
 	}
 	backend->base.features.server_side_decorations = true;

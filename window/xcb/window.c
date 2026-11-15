@@ -49,8 +49,8 @@ static void window_hide(struct wlf_window *base) {
 static void window_set_title(struct wlf_window *base, const char *title) {
 	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	xcb_change_property(window->backend->xcb, XCB_PROP_MODE_REPLACE,
-		window->window, window->backend->atoms.net_wm_name,
-		window->backend->atoms.utf8_string, 8, strlen(title), title);
+		window->window, window->backend->atoms[WLF_XCB_ATOM_NET_WM_NAME],
+		window->backend->atoms[WLF_XCB_ATOM_UTF8_STRING], 8, strlen(title), title);
 	xcb_change_property(window->backend->xcb, XCB_PROP_MODE_REPLACE,
 		window->window, XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8, strlen(title), title);
 }
@@ -101,8 +101,8 @@ static void window_set_flags(struct wlf_window *base, uint32_t flags) {
 	struct wlf_xcb_window *window = wlf_xcb_window_from_window(base);
 	uint32_t hints[] = { 2, 0, !!(flags & WLF_WINDOW_FLAG_DECORATED), 0, 0 };
 	xcb_change_property(window->backend->xcb, XCB_PROP_MODE_REPLACE,
-		window->window, window->backend->atoms.motif_wm_hints,
-		window->backend->atoms.motif_wm_hints, 32, 5, hints);
+		window->window, window->backend->atoms[WLF_XCB_ATOM_MOTIF_WM_HINTS],
+		window->backend->atoms[WLF_XCB_ATOM_MOTIF_WM_HINTS], 32, 5, hints);
 	base->state.server_side_decorated = !!(flags & WLF_WINDOW_FLAG_DECORATED);
 	update_size_hints(base, 0, 0);
 }
@@ -113,7 +113,7 @@ static void send_state(struct wlf_xcb_window *window, bool enabled,
 		.response_type = XCB_CLIENT_MESSAGE,
 		.format = 32,
 		.window = window->window,
-		.type = window->backend->atoms.net_wm_state,
+		.type = window->backend->atoms[WLF_XCB_ATOM_NET_WM_STATE],
 		.data.data32 = { enabled ? 1 : 0, first, second, 1, 0 },
 	};
 	xcb_send_event(window->backend->xcb, false, window->backend->screen->root,
@@ -127,22 +127,22 @@ static void window_set_state(struct wlf_window *base, enum wlf_window_state_flag
 		xcb_atom_t atoms[3];
 		size_t count = 0;
 		if (state & WLF_WINDOW_FULLSCREEN) {
-			atoms[count++] = window->backend->atoms.net_wm_state_fullscreen;
+			atoms[count++] = window->backend->atoms[WLF_XCB_ATOM_NET_WM_STATE_FULLSCREEN];
 		}
 		if (state & WLF_WINDOW_MAXIMIZED) {
-			atoms[count++] = window->backend->atoms.net_wm_state_maximized_vert;
-			atoms[count++] = window->backend->atoms.net_wm_state_maximized_horz;
+			atoms[count++] = window->backend->atoms[WLF_XCB_ATOM_NET_WM_STATE_MAXIMIZED_VERT];
+			atoms[count++] = window->backend->atoms[WLF_XCB_ATOM_NET_WM_STATE_MAXIMIZED_HORZ];
 		}
 		xcb_change_property(window->backend->xcb, XCB_PROP_MODE_REPLACE,
-			window->window, window->backend->atoms.net_wm_state,
+			window->window, window->backend->atoms[WLF_XCB_ATOM_NET_WM_STATE],
 			XCB_ATOM_ATOM, 32, count, atoms);
 		return;
 	}
 	send_state(window, state & WLF_WINDOW_FULLSCREEN,
-		window->backend->atoms.net_wm_state_fullscreen, XCB_ATOM_NONE);
+		window->backend->atoms[WLF_XCB_ATOM_NET_WM_STATE_FULLSCREEN], XCB_ATOM_NONE);
 	send_state(window, state & WLF_WINDOW_MAXIMIZED,
-		window->backend->atoms.net_wm_state_maximized_vert,
-		window->backend->atoms.net_wm_state_maximized_horz);
+		window->backend->atoms[WLF_XCB_ATOM_NET_WM_STATE_MAXIMIZED_VERT],
+		window->backend->atoms[WLF_XCB_ATOM_NET_WM_STATE_MAXIMIZED_HORZ]);
 }
 
 static void *window_native_handle(struct wlf_window *base) {
@@ -206,7 +206,8 @@ struct wlf_xcb_window *wlf_xcb_window_create_from_backend(
 		return NULL;
 	}
 	xcb_icccm_set_wm_protocols(backend->xcb, window->window,
-		backend->atoms.wm_protocols, 1, &backend->atoms.wm_delete_window);
+		backend->atoms[WLF_XCB_ATOM_WM_PROTOCOLS], 1,
+		&backend->atoms[WLF_XCB_ATOM_WM_DELETE_WINDOW]);
 	window_set_flags(&window->base, window->base.state.flags);
 	return window;
 }
@@ -268,8 +269,8 @@ void wlf_xcb_window_handle_event(struct wlf_xcb_backend *backend,
 	}
 	case XCB_CLIENT_MESSAGE: {
 		xcb_client_message_event_t *ev = (void *)event;
-		if (ev->type == backend->atoms.wm_protocols && ev->format == 32 &&
-				ev->data.data32[0] == backend->atoms.wm_delete_window) {
+		if (ev->type == backend->atoms[WLF_XCB_ATOM_WM_PROTOCOLS] && ev->format == 32 &&
+				ev->data.data32[0] == backend->atoms[WLF_XCB_ATOM_WM_DELETE_WINDOW]) {
 			wlf_window_close(base);
 		}
 		break;
