@@ -182,7 +182,8 @@ if is_linux
 			'../../include/wlf/renderer/vulkan/instance.h',
 			'../../include/wlf/renderer/vulkan/renderer.h',
 
-			'../../include/wlf/swapchain/egl/swapchain.h',
+			'../../include/wlf/swapchain/wl-egl/swapchain.h',
+			'../../include/wlf/swapchain/xcb-egl/swapchain.h',
 			'../../include/wlf/swapchain/wl-shm/swapchain.h',
 			'../../include/wlf/swapchain/vulkan/swapchain.h',
 

@@ -5,10 +5,12 @@
 #if WLF_HAS_LINUX_PLATFORM
 #include "wlf/renderer/vulkan/renderer.h"
 #include "wlf/platform/xcb/backend.h"
+#include "wlf/platform/wayland/backend.h"
 #include "wlf/swapchain/xcb-shm/swapchain.h"
 #include "wlf/renderer/gles/renderer.h"
 #include "wlf/renderer/pixman/renderer.h"
-#include "wlf/swapchain/egl/swapchain.h"
+#include "wlf/swapchain/wl-egl/swapchain.h"
+#include "wlf/swapchain/xcb-egl/swapchain.h"
 #include "wlf/swapchain/vulkan/swapchain.h"
 #endif
 
@@ -46,9 +48,15 @@ struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window, int w
 			wlf_wl_shm_swapchain_create(window, width, height, format);
 		swapchain = wl_shm != NULL ? &wl_shm->base : NULL;
 	} else if (wlf_renderer_is_gles(window->state.renderer)) {
-		struct wlf_egl_swapchain *egl =
-			wlf_egl_swapchain_create(window, width, height, format);
-		swapchain = egl != NULL ? &egl->base : NULL;
+		if (wlf_backend_is_xcb(window->state.backend)) {
+			struct wlf_xcb_egl_swapchain *xcb_egl =
+				wlf_xcb_egl_swapchain_create(window, width, height, format);
+			swapchain = xcb_egl != NULL ? &xcb_egl->base : NULL;
+		} else if (wlf_backend_is_wayland(window->state.backend)) {
+			struct wlf_wl_egl_swapchain *wl_egl =
+				wlf_wl_egl_swapchain_create(window, width, height, format);
+			swapchain = wl_egl != NULL ? &wl_egl->base : NULL;
+		}
 	} else if (wlf_renderer_is_vk(window->state.renderer)) {
 		struct wlf_vk_swapchain *vulkan =
 			wlf_vk_swapchain_create(window, width, height, format);

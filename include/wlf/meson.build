@@ -42,7 +42,8 @@ if is_linux
 		'dmabuf',
 		'renderer/pixman',
 		'swapchain/wl-shm',
-		'swapchain/egl',
+		'swapchain/wl-egl',
+		'swapchain/xcb-egl',
 		'swapchain/vulkan',
 	]
 endif
