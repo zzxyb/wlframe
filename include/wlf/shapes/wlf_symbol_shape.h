@@ -17,8 +17,11 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Reusable symbol definition and its child shapes.
+ */
 struct wlf_symbol_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	char id[64]; /**< Symbol identifier. */
 };
 

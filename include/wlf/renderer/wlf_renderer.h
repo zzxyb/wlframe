@@ -53,10 +53,25 @@ enum wlf_renderer_type {
  * Custom renderers (e.g., VulkanRenderer, PixmanRenderer) must implement these callbacks.
  */
 struct wlf_renderer_impl {
-	void (*destroy)(struct wlf_renderer *render);
+	void (*destroy)(struct wlf_renderer *render); /**< Releases implementation-specific resources. */
+	/**
+	 * @brief Begins rendering to a supported buffer.
+	 *
+	 * @param renderer Renderer to use.
+	 * @param buffer Destination buffer.
+	 * @param options Buffer rendering options.
+	 * @return New render target, or NULL if unsupported or initialization fails.
+	 */
 	struct wlf_render_target_info *(*begin_buffer_pass)(
 		struct wlf_renderer *renderer, struct wlf_buffer *buffer,
 		const struct wlf_buffer_pass_options *options);
+	/**
+	 * @brief Creates a texture from a supported buffer.
+	 *
+	 * @param renderer Renderer to use.
+	 * @param buffer Source buffer.
+	 * @return New texture, or NULL if unsupported or allocation fails.
+	 */
 	struct wlf_texture *(*texture_from_buffer)(struct wlf_renderer *renderer,
 		struct wlf_buffer *buffer);
 };
@@ -69,7 +84,7 @@ struct wlf_renderer_impl {
  * event signals, and optional implementation data.
  */
 struct wlf_renderer {
-	const struct wlf_renderer_impl *impl;
+	const struct wlf_renderer_impl *impl; /**< Implementation virtual method table. */
 
 	struct {
 		struct wlf_signal destroy;  /**< Signal emitted when the renderer is destroyed. */

@@ -64,7 +64,7 @@ struct wlf_touch_down_event {
 	void *surface;  /**< surface touched. */
 	uint32_t time_msec; /**< Timestamp in milliseconds. */
 	int32_t touch_id; /**< Logical touch point identifier. */
-	double x, y; /**< Backend coordinates; surface-local for Wayland. */
+	double x, /**< X coordinate. */ y; /**< Backend coordinates; surface-local for Wayland. */
 };
 
 /**
@@ -83,7 +83,7 @@ struct wlf_touch_motion_event {
 	struct wlf_touch *touch; /**< Touch device that generated the event. */
 	uint32_t time_msec; /**< Timestamp in milliseconds. */
 	int32_t touch_id; /**< Logical touch point identifier. */
-	double x, y; /**< Backend coordinates; surface-local for Wayland. */
+	double x, /**< X coordinate. */ y; /**< Backend coordinates; surface-local for Wayland. */
 };
 
 /**
@@ -101,7 +101,7 @@ struct wlf_touch_cancel_event {
 struct wlf_touch_shape_event {
 	struct wlf_touch *touch; /**< Touch device that generated the event. */
 	int32_t touch_id; /**< Logical touch point identifier. */
-	double major, minor; /**< Major/minor axis lengths of touch contact. */
+	double major, /**< Major axis length of the touch ellipse. */ minor; /**< Major/minor axis lengths of touch contact. */
 };
 
 /**

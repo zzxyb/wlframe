@@ -19,8 +19,11 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Container grouping child shapes.
+ */
 struct wlf_shape_tree {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 
 	struct wlf_linked_list children; /**< Child list using struct wlf_shape::link. */
 };

@@ -48,6 +48,13 @@ struct wlf_quaternion wlf_quaternion_make(double w, double x, double y, double z
 char* wlf_quaternion_to_str(const struct wlf_quaternion *quaternion);
 
 
+/**
+ * @brief Formats a quaternion with the requested decimal precision.
+ *
+ * @param quaternion Quaternion to format.
+ * @param precision Number of digits after the decimal point.
+ * @return Allocated string, or NULL on allocation failure; free it with free().
+ */
 char* wlf_quaternion_to_str_prec(const struct wlf_quaternion *quaternion, uint8_t precision);
 
 /**

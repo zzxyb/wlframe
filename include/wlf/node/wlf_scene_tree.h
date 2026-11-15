@@ -58,7 +58,8 @@ bool wlf_scene_node_is_tree(const struct wlf_scene_node *node);
  * @brief Converts a scene node pointer to a scene tree pointer.
  *
  * @param node Scene node pointer.
- * @return Scene tree pointer if the node is a tree, otherwise NULL.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_scene_tree *wlf_scene_tree_from_node(struct wlf_scene_node *node);
 

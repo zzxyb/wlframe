@@ -73,7 +73,8 @@ bool wlf_swapchain_is_vk(const struct wlf_swapchain *swapchain);
 /**
  * @brief Casts a generic swapchain to a Vulkan swapchain.
  * @param swapchain Swapchain known to be Vulkan-backed.
- * @return Enclosing Vulkan swapchain, or NULL when the type does not match.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_vk_swapchain *wlf_vk_swapchain_from_swapchain(struct wlf_swapchain *swapchain);
 

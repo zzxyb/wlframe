@@ -39,8 +39,8 @@ struct wlf_filter {
 	char id[64];                         /**< Identifier used by SVG url() references */
 	enum wlf_filter_units units;         /**< Coordinate space for the filter region */
 	enum wlf_filter_units primitive_units; /**< Coordinate space for effect primitives */
-	float x, y;                          /**< Filter region origin */
-	float width, height;                 /**< Filter region size */
+	float x, /**< X coordinate. */ y;                          /**< Filter region origin */
+	float width, /**< Width in pixels. */ height;                 /**< Filter region size */
 	struct wlf_linked_list effects;      /**< Ordered list of owned effect shapes */
 	struct wlf_filter *next;             /**< Next filter in an SVG image */
 };

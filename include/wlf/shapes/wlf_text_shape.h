@@ -22,13 +22,16 @@
  * @brief Horizontal text anchor mode.
  */
 enum wlf_text_anchor {
-	WLF_TEXT_ANCHOR_START = 0,
-	WLF_TEXT_ANCHOR_MIDDLE = 1,
-	WLF_TEXT_ANCHOR_END = 2,
+	WLF_TEXT_ANCHOR_START = 0, /**< Align the start of the text run with the anchor. */
+	WLF_TEXT_ANCHOR_MIDDLE = 1, /**< Center the text run on the anchor. */
+	WLF_TEXT_ANCHOR_END = 2, /**< Align the end of the text run with the anchor. */
 };
 
+/**
+ * @brief Text geometry and typography attributes.
+ */
 struct wlf_text_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	float x; /**< Text anchor x coordinate. */
 	float y; /**< Text anchor y coordinate. */
 	char font_family[64]; /**< Font family name. */

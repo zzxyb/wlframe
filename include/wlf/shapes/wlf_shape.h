@@ -57,7 +57,7 @@ struct wlf_shape_impl {
  * shape's type-specific destroy implementation runs.
  */
 struct wlf_shape_listener {
-	void (*destroy)(void *data, struct wlf_shape *shape);
+	void (*destroy)(void *data, struct wlf_shape *shape); /**< Releases implementation-specific resources. */
 };
 
 /**
@@ -67,7 +67,7 @@ struct wlf_shape {
 	const struct wlf_shape_impl *impl; /**< Implementation for the concrete shape type. */
 
 	struct wlf_linked_list link; /**< List link used by shape tree children. */
-	float x, y; /**< Position relative to parent. */
+	float x, /**< X coordinate. */ y; /**< Position relative to parent. */
 
 	struct {
 		const struct wlf_shape_listener *listener; /**< Registered listener. */

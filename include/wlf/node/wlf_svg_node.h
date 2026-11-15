@@ -20,7 +20,7 @@
 #include "wlf/svg/wlf_svg.h"
 
 /**
- * A composite scene node backed by a parsed SVG image.
+ * @brief A composite scene node backed by a parsed SVG image.
  *
  * The node owns @ref image and exposes its generated scene children through
  * @ref children. SVG geometry is represented by regular wlframe shape and text
@@ -28,13 +28,13 @@
  * pipeline on every renderer backend.
  */
 struct wlf_svg_node {
-	struct wlf_scene_node base;
-	struct wlf_linked_list children;
-	struct wlf_svg_image *image;
+	struct wlf_scene_node base; /**< Generic wlf_scene_node interface. */
+	struct wlf_linked_list children; /**< List of generated child scene nodes. */
+	struct wlf_svg_image *image; /**< SVG image owned by this object. */
 };
 
 /**
- * Creates an SVG node from an already parsed image.
+ * @brief Creates an SVG node from an already parsed image.
  *
  * On success the node takes ownership of @p image. On failure ownership stays
  * with the caller. SVG text requires a renderer to be associated with the
@@ -50,7 +50,7 @@ struct wlf_svg_node *wlf_svg_node_create(struct wlf_scene_node *parent,
 	int x, int y, struct wlf_svg_image *image);
 
 /**
- * Parses a file and creates an SVG node.
+ * @brief Parses a file and creates an SVG node.
  *
  * @param parent Parent container node.
  * @param x Horizontal position relative to the parent.
@@ -64,11 +64,16 @@ struct wlf_svg_node *wlf_svg_node_create_from_file(
 	struct wlf_scene_node *parent, int x, int y,
 	const char *filename, const char *units, float dpi);
 
-/** @return true when @p node is an SVG node. */
+/**
+ * @brief Checks whether a scene node is backed by an SVG image.
+ * @return true when @p node is an SVG node.
+ *
+ * @param node Scene node to inspect or modify.
+ */
 bool wlf_scene_node_is_svg(const struct wlf_scene_node *node);
 
 /**
- * Casts a scene node to an SVG node.
+ * @brief Casts a scene node to an SVG node.
  *
  * @param node Scene node known to be an SVG node.
  * @return SVG node containing @p node.

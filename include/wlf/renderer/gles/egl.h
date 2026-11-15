@@ -93,9 +93,9 @@ struct wlf_egl {
 			struct {
 				bool EXT_platform_wayland; /**< EGL_EXT_platform_wayland: Wayland display support (EXT). */
 				bool KHR_platform_wayland; /**< EGL_KHR_platform_wayland: Wayland display support (KHR). */
-			} wayland;
-		} platform;
-	} exts;
+			} wayland; /**< Wayland EGL platform extension support. */
+		} platform; /**< Platform-specific extension support. */
+	} exts; /**< Supported graphics extensions. */
 
 	struct {
 		PFNEGLGETPLATFORMDISPLAYEXTPROC       eglGetPlatformDisplayEXT;      /**< Create a platform-specific EGL display. */
@@ -119,7 +119,7 @@ struct wlf_egl {
 		PFNEGLEXPORTDMABUFIMAGEMESAPROC       eglExportDMABUFImageMESA;      /**< Export an EGLImage as DMA-BUF file descriptors. */
 		PFNEGLGETDISPLAYDRIVERCONFIGPROC      eglGetDisplayDriverConfig;     /**< Retrieve Mesa driver configuration string. */
 		PFNEGLGETDISPLAYDRIVERNAMEPROC        eglGetDisplayDriverName;       /**< Retrieve Mesa driver name string. */
-	} procs;
+	} procs; /**< Loaded graphics extension entry points. */
 };
 
 /**

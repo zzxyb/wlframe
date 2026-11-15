@@ -27,22 +27,22 @@
  * renderer texture owned by the node.
  */
 struct wlf_text_node {
-	struct wlf_scene_node base;
-	char *text;
-	char *font_family;
-	double font_size;
-	struct wlf_color color;
-	int max_width;
-	double natural_width;
-	double baseline;
-	double raster_scale;
-	enum wlf_text_font_slant font_slant;
-	enum wlf_text_font_weight font_weight;
-	struct wlf_text *text_context;
-	struct wlf_renderer *renderer;
-	struct wlf_texture *texture;
-	struct wlf_listener renderer_destroy;
-	struct wlf_listener window_scale;
+	struct wlf_scene_node base; /**< Generic wlf_scene_node interface. */
+	char *text; /**< UTF-8 text rendered by this node. */
+	char *font_family; /**< Requested font family name. */
+	double font_size; /**< Font size in logical pixels. */
+	struct wlf_color color; /**< Text or fill color. */
+	int max_width; /**< Maximum text layout width. */
+	double natural_width; /**< Unconstrained text advance width. */
+	double baseline; /**< Text baseline offset from the layout origin. */
+	double raster_scale; /**< Scale used for the cached text raster. */
+	enum wlf_text_font_slant font_slant; /**< Requested font slant. */
+	enum wlf_text_font_weight font_weight; /**< Requested font weight. */
+	struct wlf_text *text_context; /**< Text layout and rasterization context. */
+	struct wlf_renderer *renderer; /**< Renderer used by this object. */
+	struct wlf_texture *texture; /**< Texture rendered by this node. */
+	struct wlf_listener renderer_destroy; /**< Listener for renderer destroy events. */
+	struct wlf_listener window_scale; /**< Listener for window scale events. */
 };
 
 /**

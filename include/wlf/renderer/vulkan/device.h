@@ -63,12 +63,12 @@ struct wlf_vk_device {
 		PFN_vkGetSemaphoreFdKHR vkGetSemaphoreFdKHR;                 /**< Exports a semaphore to a file descriptor. */
 		PFN_vkImportSemaphoreFdKHR vkImportSemaphoreFdKHR;           /**< Imports a semaphore from a file descriptor. */
 		PFN_vkQueueSubmit2KHR vkQueueSubmit2KHR;                     /**< Submits commands using the Vulkan 1.3 submission model. */
-		PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR;
-		PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR;
-		PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR;
-		PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR;
-		PFN_vkQueuePresentKHR vkQueuePresentKHR;
-	} api;
+		PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR; /**< Creates a Vulkan swapchain. */
+		PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR; /**< Destroys a Vulkan swapchain. */
+		PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR; /**< Queries the images belonging to a swapchain. */
+		PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR; /**< Acquires the next swapchain image. */
+		PFN_vkQueuePresentKHR vkQueuePresentKHR; /**< Presents swapchain images to a queue. */
+	} api; /**< Loaded Vulkan entry points. */
 };
 
 /**

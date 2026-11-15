@@ -74,11 +74,11 @@ struct wlf_swapchain_impl {
 struct wlf_swapchain {
 	const struct wlf_swapchain_impl *impl; /**< Virtual method table */
 	struct wlf_allocator *allocator;       /**< Allocator used to create buffers (NULL if destroyed) */
-	struct wlf_window *window;
+	struct wlf_window *window; /**< Window associated with this object. */
 	struct wlf_buffer *back;                /**< Generic buffer used for rendering */
 
-	int width, height;                     /**< Size of all buffers in pixels */
-	struct wlf_render_format format;
+	int width, /**< Width in pixels. */ height;                     /**< Size of all buffers in pixels */
+	struct wlf_render_format format; /**< Render format selected for the window. */
 
 	struct {
 		struct wlf_signal destroy;         /**< Signal emitted when swapchain is destroyed */
@@ -101,6 +101,15 @@ struct wlf_swapchain {
 void wlf_swapchain_init(struct wlf_swapchain *swapchain, struct wlf_allocator *allocator,
 	const struct wlf_swapchain_impl *impl, int width, int height);
 
+/**
+ * @brief Creates a swapchain matching the window backend and renderer.
+ *
+ * @param window Window whose backend and renderer select the swapchain.
+ * @param width Initial width in logical pixels.
+ * @param height Initial height in logical pixels.
+ * @param format Requested render format.
+ * @return New platform swapchain, or NULL if unsupported or allocation fails.
+ */
 struct wlf_swapchain *wlf_swapchain_auto_create(struct wlf_window *window,
 	int width, int height, const struct wlf_render_format *format);
 

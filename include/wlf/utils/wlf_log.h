@@ -34,6 +34,9 @@ enum wlf_log_importance {
 
 /**
  * @brief Type definition for the log callback function.
+ * @param importance Importance of the log message.
+ * @param fmt Printf-style message format.
+ * @param args Arguments referenced by the format string.
  */
 typedef void (*wlf_log_func_t)(enum wlf_log_importance importance,
 	const char *fmt, va_list args);
@@ -59,18 +62,34 @@ enum wlf_log_importance wlf_log_get_verbosity(void);
 
 #ifdef __GNUC__
 /**
- * @brief Macro to specify printf-style format attributes for GCC.
+ * @brief Declares printf-style format checking when supported by the compiler.
+ * @param start Index of the format-string parameter.
+ * @param end Index of the first variadic argument, or zero for va_list.
  */
 #define _WLF_ATTRIB_PRINTF(start, end) __attribute__((format(printf, start, end)))
 #else
+/**
+ * @brief Omits format attributes on compilers that do not support them.
+ * @param start Unused format-string parameter index.
+ * @param end Unused variadic argument index.
+ */
 #define _WLF_ATTRIB_PRINTF(start, end) // No attributes for non-GCC compilers
 #endif
 
 #if defined(__GNUC__) || defined(__clang__)
+/**
+ * @brief Name of the current function for assertion diagnostics.
+ */
 #define _WLF_FUNCTION_NAME __PRETTY_FUNCTION__
 #elif defined(_MSC_VER)
+/**
+ * @brief Name of the current function for assertion diagnostics.
+ */
 #define _WLF_FUNCTION_NAME __FUNCTION__
 #else
+/**
+ * @brief Name of the current function for assertion diagnostics.
+ */
 #define _WLF_FUNCTION_NAME __func__
 #endif
 
@@ -123,19 +142,37 @@ bool _wlf_assert(bool condition, const char* format, ...) _WLF_ATTRIB_PRINTF(2, 
 
 #if __STDC_VERSION__ >= 202311L
 /**
- * @brief Macros for logging with variadic arguments in C11 and later.
+ * @brief Logs a formatted message using C23 variadic macro syntax.
+ * @param verb Log importance level.
+ * @param fmt Printf-style message format.
+ * @param ... Arguments referenced by the format string.
  */
 #define wlf_log(verb, fmt, ...) \
 	_wlf_log(verb, "[%s:%d] " fmt, _WLF_FILENAME, __LINE__ __VA_OPT__(,) __VA_ARGS__)
+/**
+ * @brief Logs a formatted message followed by the current errno description.
+ * @param verb Log importance level.
+ * @param fmt Printf-style message format.
+ * @param ... Arguments referenced by the format string.
+ */
 #define wlf_log_errno(verb, fmt, ...) \
 	wlf_log(verb, fmt ": %s" __VA_OPT__(,) __VA_ARGS__, strerror(errno))
 
 #else
 /**
- * @brief Macros for logging with variadic arguments for older C standards.
+ * @brief Logs a formatted message using the compiler variadic macro extension.
+ * @param verb Log importance level.
+ * @param fmt Printf-style message format.
+ * @param ... Arguments referenced by the format string.
  */
 #define wlf_log(verb, fmt, ...) \
 	_wlf_log(verb, "[%s:%d] " fmt, _WLF_FILENAME, __LINE__, ##__VA_ARGS__)
+/**
+ * @brief Logs a formatted message followed by the current errno description.
+ * @param verb Log importance level.
+ * @param fmt Printf-style message format.
+ * @param ... Arguments referenced by the format string.
+ */
 #define wlf_log_errno(verb, fmt, ...) \
 	wlf_log(verb, fmt ": %s", ##__VA_ARGS__, strerror(errno))
 

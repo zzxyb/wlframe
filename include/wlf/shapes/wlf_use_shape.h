@@ -17,8 +17,11 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Reference to a reusable shape definition.
+ */
 struct wlf_use_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	char href[64]; /**< Referenced symbol id/href. */
 	float x; /**< X offset. */
 	float y; /**< Y offset. */

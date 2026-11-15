@@ -79,7 +79,8 @@ bool wlf_buffer_is_wl_shm(struct wlf_buffer *buffer);
  * @brief Gets the Wayland SHM buffer from a generic buffer.
  *
  * @param buffer Generic buffer pointer.
- * @return Wayland SHM buffer pointer, or NULL if the buffer is not a Wayland SHM buffer.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_wl_shm_buffer *wlf_wl_shm_buffer_from_buffer(struct wlf_buffer *buffer);
 

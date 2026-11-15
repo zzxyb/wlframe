@@ -46,6 +46,8 @@ struct wlf_wl_keyboard *wlf_wl_keyboard_create(struct wl_seat *seat);
  *
  * Emits wlf_keyboard.events.destroy, releases the wl_keyboard, and frees
  * the allocation. Passing NULL is a no-op.
+ *
+ * @param keyboard Wayland keyboard to destroy, or NULL.
  */
 void wlf_wl_keyboard_destroy(struct wlf_wl_keyboard *keyboard);
 
@@ -53,6 +55,9 @@ void wlf_wl_keyboard_destroy(struct wlf_wl_keyboard *keyboard);
  * @brief Downcasts a wlf_keyboard to wlf_wl_keyboard.
  *
  * Asserts that keyboard was created by this implementation.
+ *
+ * @param base Generic keyboard created by this implementation.
+ * @return Enclosing Wayland keyboard; asserts on an incompatible type.
  */
 struct wlf_wl_keyboard *wlf_wl_keyboard_from_base(struct wlf_keyboard *base);
 

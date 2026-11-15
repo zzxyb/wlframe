@@ -52,7 +52,7 @@ struct wlf_gles_renderer {
 		bool OES_texture_half_float_linear; /**< GL_OES_texture_half_float_linear: linear filtering for fp16 textures. */
 		bool EXT_texture_norm16;            /**< GL_EXT_texture_norm16: 16-bit normalised texture formats. */
 		bool EXT_disjoint_timer_query;      /**< GL_EXT_disjoint_timer_query: GPU timestamp queries. */
-	} exts;
+	} exts; /**< Supported graphics extensions. */
 
 	struct {
 		PFNGLEGLIMAGETARGETTEXTURE2DOESPROC           glEGLImageTargetTexture2DOES;          /**< Attach a 2-D EGLImage as a texture. */
@@ -68,7 +68,7 @@ struct wlf_gles_renderer {
 		PFNGLGETQUERYOBJECTIVEXTPROC                  glGetQueryObjectivEXT;                 /**< Retrieve a signed integer query result. */
 		PFNGLGETQUERYOBJECTUI64VEXTPROC               glGetQueryObjectui64vEXT;              /**< Retrieve a 64-bit unsigned integer query result. */
 		PFNGLGETINTEGER64VEXTPROC                     glGetInteger64vEXT;                    /**< Retrieve a 64-bit integer GL parameter. */
-	} procs;
+	} procs; /**< Loaded graphics extension entry points. */
 };
 
 /**
@@ -95,8 +95,8 @@ bool wlf_renderer_is_gles(const struct wlf_renderer *renderer);
 /**
  * @brief Downcasts a base renderer pointer to a GLES renderer pointer.
  * @param renderer Pointer to the base renderer.
- * @return Pointer to the enclosing wlf_gles_renderer, or NULL if the renderer
- *         is not a GLES renderer.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_gles_renderer *wlf_gles_renderer_from_renderer(struct wlf_renderer *renderer);
 

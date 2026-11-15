@@ -60,7 +60,7 @@ struct wlf_curve_impl {
  * curve's type-specific destroy implementation runs.
  */
 struct wlf_curve_listener {
-	void (*destroy)(void *data, struct wlf_curve *curve);
+	void (*destroy)(void *data, struct wlf_curve *curve); /**< Releases implementation-specific resources. */
 };
 
 /**

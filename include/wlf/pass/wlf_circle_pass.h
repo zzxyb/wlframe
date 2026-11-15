@@ -27,7 +27,7 @@ struct wlf_circle_pass;
  */
 struct wlf_render_circle_options {
 	const struct wlf_circle_shape *shape; /**< Shape geometry to render. */
-	double offset_x, offset_y; /**< Translation in logical coordinates. */
+	double offset_x, /**< Horizontal translation of the shape. */ offset_y; /**< Translation in logical coordinates. */
 	float opacity; /**< Opacity in the inclusive range 0..1. */
 	const pixman_region32_t *clip; /**< Optional logical clip region. */
 	enum wlf_render_blend_mode blend_mode; /**< Compositing mode. */

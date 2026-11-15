@@ -17,8 +17,11 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Ellipse geometry and inherited shape state.
+ */
 struct wlf_ellipse_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	float cx; /**< Ellipse center x. */
 	float cy; /**< Ellipse center y. */
 	float rx; /**< Radius on x axis. */

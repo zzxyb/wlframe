@@ -33,7 +33,7 @@ struct wlf_path {
  * @brief Shape wrapper for a path list.
  */
 struct wlf_path_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	struct wlf_path *paths; /**< Head of path list. */
 	bool owns_paths; /**< Whether destroy should free paths. */
 	struct wlf_shape_state state; /**< Shared fill/stroke style payload. */

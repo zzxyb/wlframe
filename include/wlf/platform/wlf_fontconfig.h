@@ -16,7 +16,13 @@
 
 #include <stddef.h>
 
+/**
+ * @brief Maximum number of font families stored for each semantic role.
+ */
 #define WLF_FONTCONFIG_MAX_FALLBACKS 8
+/**
+ * @brief Font family name capacity in bytes, including the terminating NUL.
+ */
 #define WLF_FONTCONFIG_FAMILY_NAME_MAX 64
 
 /**
@@ -26,14 +32,14 @@
  * or monospace code text.
  */
 enum wlf_font_role {
-	WLF_FONT_ROLE_UI = 0,
-	WLF_FONT_ROLE_SANS_SERIF,
-	WLF_FONT_ROLE_SERIF,
-	WLF_FONT_ROLE_MONOSPACE,
-	WLF_FONT_ROLE_ROUNDED,
-	WLF_FONT_ROLE_EMOJI,
-	WLF_FONT_ROLE_TITLE,
-	WLF_FONT_ROLE_COUNT,
+	WLF_FONT_ROLE_UI = 0, /**< Semantic font role: ui. */
+	WLF_FONT_ROLE_SANS_SERIF, /**< Semantic font role: sans serif. */
+	WLF_FONT_ROLE_SERIF, /**< Semantic font role: serif. */
+	WLF_FONT_ROLE_MONOSPACE, /**< Semantic font role: monospace. */
+	WLF_FONT_ROLE_ROUNDED, /**< Semantic font role: rounded. */
+	WLF_FONT_ROLE_EMOJI, /**< Semantic font role: emoji. */
+	WLF_FONT_ROLE_TITLE, /**< Semantic font role: title. */
+	WLF_FONT_ROLE_COUNT, /**< Number of semantic font roles; not a usable role. */
 };
 
 struct wlf_fontconfig;
@@ -55,10 +61,10 @@ struct wlf_fontconfig_impl {
  * Stores the ordered fallback family list for each semantic font role.
  */
 struct wlf_fontconfig {
-	const struct wlf_fontconfig_impl *impl;
-	double ui_scale;
-	char families[WLF_FONT_ROLE_COUNT][WLF_FONTCONFIG_MAX_FALLBACKS][WLF_FONTCONFIG_FAMILY_NAME_MAX];
-	size_t counts[WLF_FONT_ROLE_COUNT];
+	const struct wlf_fontconfig_impl *impl; /**< Implementation virtual method table. */
+	double ui_scale; /**< Scale applied to platform font defaults. */
+	char families[WLF_FONT_ROLE_COUNT][WLF_FONTCONFIG_MAX_FALLBACKS][WLF_FONTCONFIG_FAMILY_NAME_MAX]; /**< Ordered font family fallbacks for each semantic role. */
+	size_t counts[WLF_FONT_ROLE_COUNT]; /**< Number of valid font families for each role. */
 };
 
 /**

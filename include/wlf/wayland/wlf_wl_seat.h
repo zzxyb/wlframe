@@ -34,9 +34,9 @@ struct wp_cursor_shape_manager_v1;
 
 /** @brief Seat capabilities bitmask (mirrors wl_seat_capability). */
 enum wlf_wl_seat_capability {
-	WLF_WL_SEAT_CAPABILITY_POINTER  = 1,
-	WLF_WL_SEAT_CAPABILITY_KEYBOARD = 2,
-	WLF_WL_SEAT_CAPABILITY_TOUCH    = 4,
+	WLF_WL_SEAT_CAPABILITY_POINTER  = 1, /**< Seat provides a pointer device. */
+	WLF_WL_SEAT_CAPABILITY_KEYBOARD = 2, /**< Seat provides a keyboard device. */
+	WLF_WL_SEAT_CAPABILITY_TOUCH    = 4, /**< Seat provides a touch device. */
 };
 
 /**
@@ -44,30 +44,30 @@ enum wlf_wl_seat_capability {
  */
 struct wlf_wl_seat {
 	struct wl_seat *wl_seat;  /**< Underlying Wayland object. */
-	uint32_t version;
+	uint32_t version; /**< Bound Wayland protocol version. */
 	uint32_t capabilities;    /**< Current capability bitmask. */
 	char *name;               /**< Seat identifier (heap-allocated). */
-	struct wlf_pointer *pointer;
-	struct wlf_keyboard *keyboard;
-	struct wlf_touch *touch;
-	struct wlf_window *pointer_window;
-	struct wlf_window *keyboard_window;
-	struct wlf_window *touch_window;
-	struct wp_cursor_shape_manager_v1 *cursor_shape_manager;
-	struct wl_compositor *cursor_compositor;
-	struct wl_shm *cursor_shm;
+	struct wlf_pointer *pointer; /**< Pointer that generated the event. */
+	struct wlf_keyboard *keyboard; /**< Keyboard associated with the seat. */
+	struct wlf_touch *touch; /**< Touch device associated with the seat. */
+	struct wlf_window *pointer_window; /**< Window with pointer focus. */
+	struct wlf_window *keyboard_window; /**< Window with keyboard focus. */
+	struct wlf_window *touch_window; /**< Window receiving the active touch sequence. */
+	struct wp_cursor_shape_manager_v1 *cursor_shape_manager; /**< Borrowed cursor-shape manager, when available. */
+	struct wl_compositor *cursor_compositor; /**< Borrowed compositor used to create cursor surfaces. */
+	struct wl_shm *cursor_shm; /**< Borrowed shared memory global used for themed cursors. */
 	struct {
-		struct wlf_listener pointer_enter, pointer_leave, pointer_motion;
-		struct wlf_listener pointer_button, pointer_axis, pointer_frame;
-		struct wlf_listener keyboard_keymap, keyboard_enter, keyboard_leave;
-		struct wlf_listener keyboard_key, keyboard_modifiers;
-		struct wlf_listener keyboard_repeat_info;
-		struct wlf_listener touch_down, touch_up, touch_motion, touch_cancel;
-		struct wlf_listener touch_frame, touch_shape, touch_orientation;
-		struct wlf_listener pointer_window_destroy;
-		struct wlf_listener keyboard_window_destroy;
-		struct wlf_listener touch_window_destroy;
-	} listeners;
+		struct wlf_listener pointer_enter, /**< Listener for pointer enter events. */ pointer_leave, /**< Listener for pointer leave events. */ pointer_motion; /**< Listener for pointer motion events. */
+		struct wlf_listener pointer_button, /**< Listener for pointer button events. */ pointer_axis, /**< Listener for pointer axis events. */ pointer_frame; /**< Listener for pointer frame events. */
+		struct wlf_listener keyboard_keymap, /**< Listener for keyboard keymap events. */ keyboard_enter, /**< Listener for keyboard enter events. */ keyboard_leave; /**< Listener for keyboard leave events. */
+		struct wlf_listener keyboard_key, /**< Listener for keyboard key events. */ keyboard_modifiers; /**< Listener for keyboard modifiers events. */
+		struct wlf_listener keyboard_repeat_info; /**< Listener for keyboard repeat info events. */
+		struct wlf_listener touch_down, /**< Listener for touch down events. */ touch_up, /**< Listener for touch up events. */ touch_motion, /**< Listener for touch motion events. */ touch_cancel; /**< Listener for touch cancel events. */
+		struct wlf_listener touch_frame, /**< Listener for touch frame events. */ touch_shape, /**< Listener for touch shape events. */ touch_orientation; /**< Listener for touch orientation events. */
+		struct wlf_listener pointer_window_destroy; /**< Listener for pointer window destroy events. */
+		struct wlf_listener keyboard_window_destroy; /**< Listener for keyboard window destroy events. */
+		struct wlf_listener touch_window_destroy; /**< Listener for touch window destroy events. */
+	} listeners; /**< Listeners attached to related objects. */
 
 	struct {
 		struct wlf_signal destroy;       /**< Emitted before destruction. */
@@ -89,10 +89,19 @@ struct wlf_wl_seat *wlf_wl_seat_create(struct wl_registry *wl_registry,
 
 /**
  * @brief Destroys a wlf_wl_seat. Passing NULL is a no-op.
+ *
+ * @param seat Wayland seat to configure or destroy.
  */
 void wlf_wl_seat_destroy(struct wlf_wl_seat *seat);
 
-/** Updates the globals used for cursor-shape or themed cursor rendering. */
+/**
+ * @brief Updates the globals used for cursor-shape or themed cursor rendering.
+ *
+ * @param seat Wayland seat to configure or destroy.
+ * @param shape_manager Borrowed cursor-shape manager, or NULL to use themed cursors.
+ * @param compositor Borrowed compositor used to create cursor surfaces.
+ * @param shm Borrowed shared memory global used to load themed cursors.
+ */
 void wlf_wl_seat_configure_cursor(struct wlf_wl_seat *seat,
 	struct wp_cursor_shape_manager_v1 *shape_manager,
 	struct wl_compositor *compositor, struct wl_shm *shm);

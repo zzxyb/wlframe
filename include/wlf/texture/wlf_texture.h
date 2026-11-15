@@ -36,7 +36,7 @@ struct wlf_texture_read_pixels_options {
 	void *data;                  /**< Memory location to read pixels into. */
 	uint32_t format;             /**< DRM fourcc format used for writing the pixel data. */
 	uint32_t stride;             /**< Row stride in bytes for @p data. */
-	uint32_t dst_x, dst_y;       /**< Destination offsets within @p data to start writing. */
+	uint32_t dst_x, /**< Destination X offset in pixels. */ dst_y;       /**< Destination offsets within @p data to start writing. */
 	/** Source box of the texture to read from. If empty, the full texture is assumed. */
 	const struct wlf_rect src_box;
 };
@@ -91,7 +91,7 @@ struct wlf_texture {
 	const struct wlf_texture_impl *impl;  /**< Virtual method table. */
 	struct wlf_renderer *renderer;        /**< Renderer that owns this texture. */
 
-	uint32_t width, height;               /**< Texture dimensions in pixels. */
+	uint32_t width, /**< Width in pixels. */ height;               /**< Texture dimensions in pixels. */
 };
 
 /**

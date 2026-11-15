@@ -69,7 +69,8 @@ bool wlf_output_is_wayland(const struct wlf_output *output);
 /**
  * @brief Converts a generic wlf_output to a wlf_wl_output.
  * @param output The generic output.
- * @return Wayland-specific backend struct, or NULL if output is not Wayland-backed.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_wl_output *wlf_wl_output_from_backend(struct wlf_output *output);
 

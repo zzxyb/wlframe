@@ -23,6 +23,9 @@
 #include <limits.h>
 
 #ifndef PATH_MAX
+/**
+ * @brief Fallback maximum path length, including space for a terminating NUL.
+ */
 #define PATH_MAX 4096
 #endif
 

@@ -92,11 +92,25 @@ struct wlf_text;
 
 struct wlf_text_impl {
 	const char *name; /**< Human-readable implementation name. */
+	/**
+	 * @brief Lays out and rasterizes text.
+	 *
+	 * @param text Text implementation to use.
+	 * @param options Text layout and rendering options.
+	 * @param raster Output raster receiving allocated pixel storage and metrics.
+	 * @return true on success, false on layout or allocation failure.
+	 */
 	bool (*rasterize)(struct wlf_text *text,
 		const struct wlf_text_options *options,
-		struct wlf_text_raster *raster); /**< Shape and rasterize text. */
+		struct wlf_text_raster *raster);
+	/**
+	 * @brief Releases resources allocated for a text raster.
+	 *
+	 * @param text Text implementation that created the raster.
+	 * @param raster Raster whose resources are released.
+	 */
 	void (*destroy_raster)(struct wlf_text *text,
-		struct wlf_text_raster *raster); /**< Release raster-owned resources. */
+		struct wlf_text_raster *raster);
 	void (*destroy)(struct wlf_text *text); /**< Destroy the text implementation. */
 };
 

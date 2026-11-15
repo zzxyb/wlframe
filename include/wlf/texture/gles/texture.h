@@ -59,7 +59,8 @@ bool wlf_texture_is_gles(const struct wlf_texture *texture);
 /**
  * @brief Casts a generic texture to a GLES texture.
  * @param texture Texture known to be GLES-backed.
- * @return Enclosing GLES texture, or NULL when the type does not match.
+ * @return Pointer to the enclosing implementation object.
+ * @note Asserts that the object uses this implementation.
  */
 struct wlf_gles_texture *wlf_gles_texture_from_texture(
 	struct wlf_texture *texture);

@@ -17,8 +17,11 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Line segment geometry and inherited shape state.
+ */
 struct wlf_line_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	float x1; /**< Start x. */
 	float y1; /**< Start y. */
 	float x2; /**< End x. */

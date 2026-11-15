@@ -81,7 +81,7 @@ struct wlf_buffer {
 
 	bool dropped;                /**< Whether the buffer has been dropped (pending destruction) */
 	size_t n_locks;              /**< Lock counter for reference tracking */
-	uint32_t width, height;      /**< Buffer dimensions in pixels */
+	uint32_t width, /**< Width in pixels. */ height;      /**< Buffer dimensions in pixels */
 	bool accessing_data_ptr;     /**< Flag indicating if raw data is currently being accessed */
 
 	struct {
@@ -191,6 +191,7 @@ void wlf_buffer_drop(struct wlf_buffer *buffer);
  * and each lock must be paired with an unlock.
  *
  * @param buffer Buffer to lock.
+ * @return The same buffer with its lock count incremented.
  */
 struct wlf_buffer *wlf_buffer_lock(struct wlf_buffer *buffer);
 

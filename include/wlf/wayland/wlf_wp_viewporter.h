@@ -45,7 +45,7 @@ struct wp_viewport;
  */
 struct wlf_wp_viewporter {
 	struct wp_viewporter *base; /**< Underlying protocol object */
-	uint32_t version;
+	uint32_t version; /**< Bound Wayland protocol version. */
 
 	struct {
 		struct wlf_signal destroy; /**< Emitted just before object is freed */
@@ -64,7 +64,7 @@ struct wlf_wp_viewporter {
  */
 struct wlf_wp_viewport {
 	struct wp_viewport *base; /**< Underlying protocol object */
-	uint32_t version;
+	uint32_t version; /**< Bound Wayland protocol version. */
 
 	struct {
 		struct wlf_signal destroy; /**< Emitted just before object is freed */

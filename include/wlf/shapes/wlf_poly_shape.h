@@ -17,8 +17,11 @@
 
 #include <stdbool.h>
 
+/**
+ * @brief Polyline or polygon geometry and inherited shape state.
+ */
 struct wlf_poly_shape {
-	struct wlf_shape base;
+	struct wlf_shape base; /**< Generic wlf_shape interface. */
 	float *points; /**< Flat point array: x0,y0,x1,y1,... */
 	int count; /**< Number of points. */
 	bool closed; /**< true for polygon, false for polyline. */

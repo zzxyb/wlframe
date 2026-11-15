@@ -58,11 +58,11 @@ struct wlf_vk_instance {
 	struct {
 		PFN_vkCreateDebugUtilsMessengerEXT createDebugUtilsMessengerEXT;   /**< Function pointer to `vkCreateDebugUtilsMessengerEXT`. */
 		PFN_vkDestroyDebugUtilsMessengerEXT destroyDebugUtilsMessengerEXT; /**< Function pointer to `vkDestroyDebugUtilsMessengerEXT`. */
-		PFN_vkDestroySurfaceKHR destroySurfaceKHR;
+		PFN_vkDestroySurfaceKHR destroySurfaceKHR; /**< Destroys a Vulkan presentation surface. */
 #if WLF_HAS_LINUX_PLATFORM
-		PFN_vkCreateWaylandSurfaceKHR createWaylandSurfaceKHR;
+		PFN_vkCreateWaylandSurfaceKHR createWaylandSurfaceKHR; /**< Creates a Vulkan surface for a native Wayland window. */
 #endif
-	} api;
+	} api; /**< Loaded Vulkan entry points. */
 };
 
 /**

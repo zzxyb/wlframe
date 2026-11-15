@@ -31,6 +31,14 @@
 struct wlf_backend;
 struct wlf_theme;
 
+/**
+ * @brief Callback invoked when a backend event-source descriptor is ready.
+ *
+ * @param backend Backend dispatching the event.
+ * @param fd Ready event-source file descriptor.
+ * @param revents Poll event mask reported for the descriptor.
+ * @param data User data associated with the event source.
+ */
 typedef void (*wlf_backend_event_source_dispatch_t)(
 	struct wlf_backend *backend, int fd, uint32_t revents, void *data);
 
@@ -80,7 +88,7 @@ struct wlf_backend {
 	struct {
 		/** Whether the platform can provide server-side window decorations. */
 		bool server_side_decorations;
-	} features;
+	} features; /**< Backend capability flags. */
 
 	struct {
 		int fd;  /**< File descriptor to monitor */
@@ -115,8 +123,10 @@ void wlf_backend_init(struct wlf_backend *backend,
 	const struct wlf_backend_impl *impl);
 
 /**
- * Creates and attaches the host platform theme to a backend.
+ * @brief Creates and attaches the host platform theme to a backend.
  * Calling this more than once is harmless.
+ *
+ * @param backend Backend receiving the platform theme.
  * @return true when a theme is available.
  */
 bool wlf_backend_init_theme(struct wlf_backend *backend);
