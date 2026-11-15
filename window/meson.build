@@ -4,6 +4,6 @@ wlf_files += files(
 )
 
 if is_linux
-	subdir('x11')
+	subdir('xcb')
 	subdir('wayland')
 endif

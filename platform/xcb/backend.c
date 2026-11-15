@@ -1,5 +1,5 @@
 #include "wlf/platform/xcb/backend.h"
-#include "wlf/window/x11/window.h"
+#include "wlf/window/xcb/window.h"
 #include "wlf/utils/wlf_log.h"
 #include "wlf/utils/wlf_utils.h"
 
@@ -36,7 +36,7 @@ static void backend_exe(struct wlf_backend *base) {
 	while (base->running && !xcb_connection_has_error(backend->xcb)) {
 		xcb_generic_event_t *event;
 		while (base->running && (event = xcb_poll_for_event(backend->xcb)) != NULL) {
-			wlf_x11_window_handle_event(backend, event);
+			wlf_xcb_window_handle_event(backend, event);
 			free(event);
 		}
 		if (!base->running || xcb_connection_has_error(backend->xcb)) {
@@ -45,7 +45,7 @@ static void backend_exe(struct wlf_backend *base) {
 
 		/* Snapshot IDs: frame callbacks may destroy or create windows. */
 		size_t count = 0;
-		struct wlf_x11_window *window;
+		struct wlf_xcb_window *window;
 		wlf_linked_list_for_each(window, &backend->windows, link) {
 			if (window->frame_pending && window->base.state.visible) {
 				count++;
